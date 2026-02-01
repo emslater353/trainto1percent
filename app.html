@@ -1,0 +1,3104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 1% OS — Train to the Top 1% in the AI Era</title>
+    <meta name="description" content="Build the skills AI can't replace — with adaptive technology that tracks your growth, locks in your progress, and proves how far you've come.">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://trainto1percent.com/">
+    <meta property="og:title" content="Top 1% OS — Train to the Top 1% in the AI Era">
+    <meta property="og:description" content="Build the skills AI can't replace — with adaptive technology that tracks your growth, locks in your progress, and proves how far you've come.">
+    <meta property="og:image" content="https://trainto1percent.com/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://trainto1percent.com/">
+    <meta name="twitter:title" content="Top 1% OS — Train to the Top 1% in the AI Era">
+    <meta name="twitter:description" content="Build the skills AI can't replace — with adaptive technology that tracks your growth, locks in your progress, and proves how far you've come.">
+    <meta name="twitter:image" content="https://trainto1percent.com/og-image.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a; --bg-secondary: #111111; --bg-tertiary: #1a1a1a;
+            --text-primary: #f5f5f5; --text-secondary: #888888; --text-muted: #555555;
+            --accent: #c9ff2f; --danger: #ff4444; --success: #4ade80; --warning: #fbbf24;
+            --ideas: #6b8afd; --personality: #fd6b8a; --execution: #8afd6b;
+            --font-display: 'Instrument Serif', Georgia, serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-mono); background: var(--bg-primary); color: var(--text-primary); line-height: 1.6; font-size: 14px; }
+        
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 14px 28px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.3s; text-decoration: none; }
+        .btn-primary { background: var(--accent); color: var(--bg-primary); }
+        .btn-primary:hover { background: var(--text-primary); }
+        .btn-primary:disabled { background: var(--bg-tertiary); color: var(--text-muted); cursor: not-allowed; }
+        .btn-secondary { background: transparent; border: 1px solid var(--bg-tertiary); color: var(--text-secondary); }
+        .btn-secondary:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+        .btn-success { background: var(--success); color: var(--bg-primary); }
+        .btn-full { width: 100%; }
+        .btn-small { padding: 10px 16px; font-size: 10px; }
+
+        .screen-center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container-sm { width: 100%; max-width: 420px; }
+        .container-md { width: 100%; max-width: 600px; }
+
+        .logo { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 30px; text-align: center; }
+        .logo span { color: var(--accent); }
+
+        .card { background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); padding: 25px; margin-bottom: 15px; }
+        .card-title { font-family: var(--font-display); font-size: 22px; margin-bottom: 8px; }
+        .card-subtitle { color: var(--text-secondary); font-size: 12px; margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid var(--bg-tertiary); }
+        .card-header-title { font-size: 12px; font-weight: 700; }
+        .card-badge { font-size: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 6px; }
+        .form-input, .form-textarea { width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--bg-tertiary); color: var(--text-primary); font-family: var(--font-mono); font-size: 13px; }
+        .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
+        .form-textarea { min-height: 80px; resize: vertical; }
+
+        .text-link { color: var(--accent); text-decoration: none; cursor: pointer; }
+        .text-link:hover { text-decoration: underline; }
+        .text-center { text-align: center; }
+        .text-secondary { color: var(--text-secondary); }
+        .text-small { font-size: 12px; }
+        .mt-10 { margin-top: 10px; }
+        .mt-20 { margin-top: 20px; }
+        .mb-10 { margin-bottom: 10px; }
+        .mb-20 { margin-bottom: 20px; }
+        .flex { display: flex; }
+        .gap-10 { gap: 10px; }
+        .gap-15 { gap: 15px; }
+
+        .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .choice-card { background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); padding: 25px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .choice-card:hover { border-color: var(--text-secondary); }
+        .choice-card.selected { border-color: var(--accent); }
+        .choice-icon { font-size: 32px; margin-bottom: 12px; }
+        .choice-title { font-size: 13px; margin-bottom: 6px; }
+        .choice-desc { font-size: 11px; color: var(--text-secondary); }
+
+        .upload-zone { border: 2px dashed var(--bg-tertiary); padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .upload-zone:hover { border-color: var(--accent); }
+        .file-input { display: none; }
+        .uploaded-file { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-tertiary); margin-top: 12px; }
+        .uploaded-remove { color: var(--danger); cursor: pointer; margin-left: auto; }
+
+        .progress-bar { display: flex; gap: 5px; margin-bottom: 25px; }
+        .progress-dot { flex: 1; height: 3px; background: var(--bg-tertiary); border-radius: 2px; }
+        .progress-dot.active { background: var(--accent); }
+        .progress-dot.done { background: var(--accent); opacity: 0.5; }
+        .q-number { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+        .q-text { font-family: var(--font-display); font-size: 20px; line-height: 1.4; margin-bottom: 20px; }
+        .options { display: flex; flex-direction: column; gap: 8px; }
+        .option { padding: 14px; background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); cursor: pointer; text-align: left; font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); transition: all 0.3s; }
+        .option:hover { border-color: var(--text-secondary); }
+
+        .results-meters { display: flex; justify-content: center; gap: 25px; margin: 25px 0; }
+        .meter { text-align: center; }
+        .meter-circle { width: 90px; height: 90px; border-radius: 50%; border: 4px solid; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 22px; font-weight: 700; }
+        .meter-circle.ideas { border-color: var(--ideas); color: var(--ideas); }
+        .meter-circle.personality { border-color: var(--personality); color: var(--personality); }
+        .meter-circle.execution { border-color: var(--execution); color: var(--execution); }
+        .meter-label { font-size: 11px; }
+        .verdict { background: var(--bg-primary); border-left: 3px solid var(--accent); padding: 15px; margin: 20px 0; text-align: left; }
+        .verdict-title { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+        .verdict-text { font-size: 13px; line-height: 1.5; }
+
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab { padding: 8px 16px; background: var(--bg-tertiary); border: none; color: var(--text-secondary); font-family: var(--font-mono); font-size: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .tab.active { background: var(--accent); color: var(--bg-primary); }
+
+        .app-layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: var(--bg-secondary); border-right: 1px solid var(--bg-tertiary); padding: 20px 12px; position: fixed; height: 100vh; display: flex; flex-direction: column; overflow-y: auto; }
+        .sidebar-logo { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; padding: 0 8px; }
+        .sidebar-logo span { color: var(--accent); }
+        .sidebar-streak { background: var(--bg-primary); border: 1px solid var(--bg-tertiary); padding: 12px; margin-bottom: 15px; text-align: center; }
+        .streak-value { font-size: 24px; font-weight: 700; color: var(--accent); }
+        .streak-label { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar-nav { list-style: none; flex: 1; }
+        .sidebar-nav li { margin-bottom: 3px; }
+        .sidebar-nav a { display: block; padding: 9px 10px; color: var(--text-secondary); text-decoration: none; font-size: 11px; border-radius: 3px; transition: all 0.2s; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { background: var(--bg-tertiary); color: var(--text-primary); }
+        .sidebar-nav a.active { border-left: 2px solid var(--accent); }
+        .sidebar-user { padding: 10px; background: var(--bg-tertiary); border-radius: 3px; font-size: 11px; }
+        .sidebar-name { margin-bottom: 3px; }
+        .sidebar-email { font-size: 9px; color: var(--text-secondary); margin-bottom: 6px; word-break: break-all; }
+        .sidebar-logout { font-size: 9px; color: var(--text-muted); cursor: pointer; }
+        .sidebar-logout:hover { color: var(--danger); }
+        .main { flex: 1; margin-left: 220px; padding: 25px; }
+        .page-header { margin-bottom: 25px; }
+        .page-title { font-family: var(--font-display); font-size: 24px; margin-bottom: 5px; }
+        .page-subtitle { color: var(--text-secondary); font-size: 12px; }
+
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat { background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); padding: 18px; text-align: center; }
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--accent); }
+        .stat-label { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+
+        .mode-bars { display: flex; flex-direction: column; gap: 12px; }
+        .mode-bar { display: flex; align-items: center; gap: 12px; }
+        .mode-name { width: 80px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .mode-name.ideas { color: var(--ideas); }
+        .mode-name.personality { color: var(--personality); }
+        .mode-name.execution { color: var(--execution); }
+        .mode-track { flex: 1; height: 6px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden; }
+        .mode-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+        .mode-fill.ideas { background: var(--ideas); }
+        .mode-fill.personality { background: var(--personality); }
+        .mode-fill.execution { background: var(--execution); }
+        .mode-value { width: 40px; text-align: right; font-size: 14px; font-weight: 700; }
+
+        .grid-2 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; }
+
+        .quest { background: var(--bg-primary); border: 1px solid var(--bg-tertiary); padding: 18px; margin-bottom: 10px; }
+        .quest.boss { border-color: var(--warning); background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(251,191,36,0.08) 100%); }
+        .quest.done { opacity: 0.5; }
+        .quest-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .quest-mode { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 6px; }
+        .quest-mode.ideas { background: rgba(107,138,253,0.2); color: var(--ideas); }
+        .quest-mode.personality { background: rgba(253,107,138,0.2); color: var(--personality); }
+        .quest-mode.execution { background: rgba(138,253,107,0.2); color: var(--execution); }
+        .quest-diff { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+        .quest-diff.easy { color: var(--success); }
+        .quest-diff.standard { color: var(--warning); }
+        .quest-diff.hard { color: var(--danger); }
+        .quest-diff.boss { color: var(--warning); font-weight: 700; }
+        .quest-title { font-size: 13px; line-height: 1.4; margin-bottom: 10px; }
+        .quest-meta { display: flex; gap: 12px; font-size: 10px; color: var(--text-secondary); margin-bottom: 12px; }
+        .quest-xp { color: var(--accent); font-weight: 700; }
+        .quest-tip { font-size: 10px; color: var(--text-muted); font-style: italic; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--bg-tertiary); }
+        .quest-actions { display: flex; gap: 6px; }
+
+        .receipt { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--bg-tertiary); }
+        .receipt:last-child { border-bottom: none; }
+        .receipt-check { width: 20px; height: 20px; background: var(--accent); color: var(--bg-primary); display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+        .receipt-content { flex: 1; }
+        .receipt-title { font-size: 11px; margin-bottom: 2px; }
+        .receipt-meta { font-size: 9px; color: var(--text-secondary); }
+        .receipt-reflection { font-size: 10px; color: var(--text-secondary); margin-top: 6px; padding: 8px; background: var(--bg-primary); font-style: italic; }
+
+        .capsule-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+        .capsule { background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); padding: 20px; text-align: center; }
+        .capsule.locked { opacity: 0.5; }
+        .capsule.unlocked { border-color: var(--accent); }
+        .capsule-day { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+        .capsule-icon { font-size: 28px; margin-bottom: 8px; }
+        .capsule-status { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+        .capsule-status.locked { color: var(--text-muted); }
+        .capsule-status.unlocked { color: var(--accent); }
+
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 160px); }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px 0; }
+        .chat-msg { display: flex; gap: 10px; margin-bottom: 15px; }
+        .chat-msg.user { flex-direction: row-reverse; }
+        .chat-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+        .chat-msg.ai .chat-avatar { background: var(--accent); color: var(--bg-primary); }
+        .chat-bubble { max-width: 70%; padding: 10px 14px; background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); font-size: 12px; line-height: 1.5; }
+        .chat-msg.user .chat-bubble { background: var(--bg-tertiary); }
+        .chat-input-row { display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--bg-tertiary); }
+        .chat-input { flex: 1; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); color: var(--text-primary); font-family: var(--font-mono); font-size: 12px; resize: none; }
+        .chat-input:focus { outline: none; border-color: var(--accent); }
+        .chat-send { padding: 10px 18px; background: var(--accent); border: none; color: var(--bg-primary); font-family: var(--font-mono); font-size: 10px; font-weight: 700; cursor: pointer; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal { background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); padding: 25px; max-width: 450px; width: 100%; }
+        .modal-title { font-family: var(--font-display); font-size: 20px; margin-bottom: 15px; }
+
+        .spinner { width: 20px; height: 20px; border: 2px solid var(--bg-tertiary); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .capsule-grid { grid-template-columns: repeat(2, 1fr); }
+            .choice-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 700px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; }
+            .results-meters { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const OPENAI_API = '/.netlify/functions/openai';
+const SUPABASE_URL = 'https://snbchuvvnbwvghmbxehv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuYmNodXZ2bmJ3dmdobWJ4ZWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MDg5NzMsImV4cCI6MjA4NTQ4NDk3M30.cKPieraN3FRT_5ilAQL0X2b9kIpklzE49xGzVJwYxZo';
+const STRIPE_LINK = 'https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01';
+const STRIPE_ANNUAL = 'https://buy.stripe.com/dRm5kDbgP5CPdk89qO9ws02';
+
+const S = {
+    screen: 'login', user: null, scores: {ideas:50,personality:50,execution:50},
+    quests: [], receipts: [], chat: [], loading: false, modal: null, selectedQuest: null,
+    quizStep: 0, quizAnswers: [], uploadedFile: null, diff: 'standard', gptAnalysis: null, weeklyReview: null,
+    coachMode: 'ideas', // which coach is active
+    // Onboarding data
+    onboardStep: 1, // 1=account, 2=occupation, 3=goals, 4=interests, 5=commitment, 6=upload
+    onboardData: {
+        occupation: '',
+        industry: '',
+        experience: '',
+        goals: [],
+        forecastInterests: []
+    },
+    freeQuizMode: false, // true if taking quiz from landing page (not logged in)
+    freeQuizScores: null, // store scores from free quiz
+    // Forecasts
+    forecasts: [],
+    forecastFilter: 'all', // all, ai, tech, crypto, politics, science
+    forecastPerson: 'all',
+    selectedForecast: null,
+    opportunities: {}
+};
+
+async function db(table, method, data=null, query='') {
+    const url = `${SUPABASE_URL}/rest/v1/${table}${query}`;
+    const opt = { method, headers: {'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''} };
+    if(data) opt.body = JSON.stringify(data);
+    try { const r = await fetch(url,opt); if(!r.ok) return null; const t = await r.text(); return t ? JSON.parse(t) : true; } catch(e) { return null; }
+}
+
+async function ai(msgs, tokens=500, type='general') {
+    try {
+        const r = await fetch(OPENAI_API, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({messages:msgs, type:type})
+        });
+        const d = await r.json(); if(d.error) throw new Error(d.error); return d.content;
+    } catch(e) { console.error(e); return null; }
+}
+
+const Qs = [
+    // DECISION MAKING (Ideas)
+    {t:"When facing a complex decision, you typically:",o:[
+        {t:"Map out all possible scenarios and outcomes",m:"ideas",w:2},
+        {t:"Talk through it with people you trust",m:"personality",w:2},
+        {t:"Make a quick call and adjust as you go",m:"execution",w:2},
+        {t:"Research until you feel completely confident",m:"ideas",w:1}
+    ]},
+    {t:"When someone presents a plan with flaws, you:",o:[
+        {t:"Point out the logical gaps immediately",m:"ideas",w:2},
+        {t:"Ask questions to help them see the issues",m:"personality",w:2},
+        {t:"Focus on what's actionable and move forward",m:"execution",w:2},
+        {t:"Stay quiet to avoid conflict",m:"personality",w:-1}
+    ]},
+    {t:"Your ideas usually:",o:[
+        {t:"Stay in your head or a notes app",m:"ideas",w:-1},
+        {t:"Get shared but rarely acted on",m:"ideas",w:1},
+        {t:"Turn into conversations that energize others",m:"personality",w:2},
+        {t:"Become projects you actually complete",m:"execution",w:2}
+    ]},
+    // SOCIAL DYNAMICS (Personality)
+    {t:"At a networking event or party, you:",o:[
+        {t:"Find one interesting person for deep conversation",m:"ideas",w:1},
+        {t:"Work the room and meet lots of people",m:"personality",w:2},
+        {t:"Look for people who can help your goals",m:"execution",w:1},
+        {t:"Leave early—draining",m:"personality",w:-1}
+    ]},
+    {t:"When someone disagrees with you publicly:",o:[
+        {t:"Defend your position with logic and evidence",m:"ideas",w:2},
+        {t:"Find common ground to defuse tension",m:"personality",w:2},
+        {t:"Stand firm—conflict doesn't bother you",m:"execution",w:1},
+        {t:"Back down to keep the peace",m:"execution",w:-1}
+    ]},
+    {t:"People come to you when they need:",o:[
+        {t:"A fresh perspective or creative solution",m:"ideas",w:2},
+        {t:"Someone to listen and support them",m:"personality",w:2},
+        {t:"Someone to help get things done",m:"execution",w:2},
+        {t:"They don't usually come to me",m:"personality",w:-1}
+    ]},
+    {t:"Your humor style is:",o:[
+        {t:"Witty, clever, observational",m:"ideas",w:1},
+        {t:"Warm, self-deprecating, brings people together",m:"personality",w:2},
+        {t:"Sarcastic, dry, quick",m:"execution",w:1},
+        {t:"I'm not really the funny one",m:"personality",w:-1}
+    ]},
+    // EXECUTION & FOLLOW-THROUGH
+    {t:"When you commit to something:",o:[
+        {t:"You think it through carefully first",m:"ideas",w:1},
+        {t:"You get others bought in",m:"personality",w:1},
+        {t:"You do it—your word is your bond",m:"execution",w:2},
+        {t:"Honestly, you often don't follow through",m:"execution",w:-2}
+    ]},
+    {t:"Your to-do list is:",o:[
+        {t:"Full of ideas, loosely organized",m:"ideas",w:1},
+        {t:"Shared with others for accountability",m:"personality",w:1},
+        {t:"Short and gets done daily",m:"execution",w:2},
+        {t:"Overwhelming and growing",m:"execution",w:-1}
+    ]},
+    {t:"When a project stalls, you typically:",o:[
+        {t:"Rethink the strategy—maybe wrong approach",m:"ideas",w:1},
+        {t:"Get others involved to push through",m:"personality",w:1},
+        {t:"Force yourself to just do the next step",m:"execution",w:2},
+        {t:"Let it sit—maybe it wasn't meant to be",m:"execution",w:-2}
+    ]},
+    // AMBITION & RISK
+    {t:"When you want something from someone:",o:[
+        {t:"Build a compelling logical case",m:"ideas",w:2},
+        {t:"Build relationship first, ask later",m:"personality",w:2},
+        {t:"Ask directly—worst they can say is no",m:"execution",w:2},
+        {t:"Hint and hope they offer",m:"personality",w:-1}
+    ]},
+    {t:"Taking risks makes you feel:",o:[
+        {t:"Excited if it's a calculated risk",m:"ideas",w:1},
+        {t:"Better when others are taking them with you",m:"personality",w:1},
+        {t:"Alive—you'd rather act than wait",m:"execution",w:2},
+        {t:"Anxious—you prefer safety",m:"execution",w:-1}
+    ]},
+    // SELF-ASSESSMENT
+    {t:"Your biggest professional weakness is:",o:[
+        {t:"Overthinking and analysis paralysis",m:"ideas",w:-1},
+        {t:"Caring too much what others think",m:"personality",w:-1},
+        {t:"Taking on too much and burning out",m:"execution",w:1},
+        {t:"Not finishing what you start",m:"execution",w:-2}
+    ]},
+    {t:"If you had to give a TEDx talk tomorrow:",o:[
+        {t:"Exciting—you have lots of ideas to share",m:"ideas",w:2},
+        {t:"Scary but you'd rise to the occasion",m:"personality",w:1},
+        {t:"You'd focus on lessons from things you've built",m:"execution",w:2},
+        {t:"Terrifying—public speaking is your nightmare",m:"personality",w:-1}
+    ]},
+    {t:"In five years, you want people to say you:",o:[
+        {t:"See things others miss",m:"ideas",w:2},
+        {t:"Are magnetic and well-connected",m:"personality",w:2},
+        {t:"Ship like crazy and make things happen",m:"execution",w:2},
+        {t:"Are reliable and steady",m:"execution",w:1}
+    ]}
+];
+
+// Occupation and industry options
+const OCCUPATIONS = [
+    "Software Engineer / Developer",
+    "Product Manager",
+    "Designer (UX/UI/Graphic)",
+    "Data Scientist / Analyst",
+    "Marketing / Growth",
+    "Sales / Business Development", 
+    "Founder / CEO",
+    "Executive / C-Suite",
+    "Consultant",
+    "Finance / Accounting",
+    "Operations / Project Manager",
+    "Content Creator / Writer",
+    "Student",
+    "Unemployed / Between Jobs",
+    "Other"
+];
+
+const INDUSTRIES = [
+    "Technology / Software",
+    "Finance / Banking",
+    "Healthcare",
+    "E-commerce / Retail",
+    "Media / Entertainment",
+    "Consulting",
+    "Education",
+    "Real Estate",
+    "Manufacturing",
+    "Government / Non-profit",
+    "Crypto / Web3",
+    "AI / Machine Learning",
+    "Other"
+];
+
+const GOALS = [
+    {id: "decisions", label: "Make better decisions faster", icon: "🎯"},
+    {id: "relationships", label: "Build stronger professional relationships", icon: "🤝"},
+    {id: "shipping", label: "Ship projects without procrastinating", icon: "🚀"},
+    {id: "ai-prep", label: "Prepare for AI disruption", icon: "🤖"},
+    {id: "business", label: "Build a business", icon: "💼"},
+    {id: "career", label: "Get promoted / change careers", icon: "📈"},
+    {id: "influence", label: "Become more influential", icon: "⚡"},
+    {id: "confidence", label: "Build confidence", icon: "💪"}
+];
+
+const FORECAST_INTERESTS = [
+    {id: "ai", label: "AI & Technology", icon: "🤖"},
+    {id: "work", label: "Future of Work", icon: "💼"},
+    {id: "finance", label: "Finance & Markets", icon: "📈"},
+    {id: "crypto", label: "Crypto & Web3", icon: "₿"},
+    {id: "media", label: "Media & Content", icon: "🎬"},
+    {id: "tech", label: "Robotics & Hardware", icon: "🦾"}
+];
+
+const QB = {
+    ideas: {
+        easy: [{t:"Write down one decision you've been avoiding.",xp:20,tip:"Awareness first."},{t:"Ask one clarifying question today.",xp:25,tip:"Questions > assumptions."}],
+        standard: [{t:"Make a decision you've postponed 3+ days. Tell someone.",xp:50,tip:"Deciding is a muscle."},{t:"Take your best idea, write 3 next steps. Share it.",xp:45,tip:"Ideas without steps are dreams."}],
+        hard: [{t:"Make a reversible decision in 2 minutes. No research. Act.",xp:80,tip:"Speed > perfection."},{t:"Pitch an idea to someone who can say yes.",xp:90,tip:"Ideas need oxygen."}]
+    },
+    personality: {
+        easy: [{t:"Give someone a specific, genuine compliment.",xp:20,tip:"'I noticed you...' works."},{t:"Start a conversation with someone you don't usually talk to.",xp:25,tip:"New connections = leverage."}],
+        standard: [{t:"Add levity to a tense moment. Notice reactions.",xp:50,tip:"Humor defuses."},{t:"Disagree respectfully in a group setting.",xp:55,tip:"Calibrated disagreement builds respect."}],
+        hard: [{t:"Post a genuine opinion on LinkedIn/Twitter. Your take.",xp:80,tip:"If it feels risky, it's right."},{t:"Have a difficult conversation you've been avoiding.",xp:90,tip:"The conversation you fear is the one you need."}],
+        anon: [{t:"Create an anonymous account and post one opinion.",xp:40,tip:"Start protected."},{t:"Reply to someone influential with a thoughtful take (anon ok).",xp:45,tip:"Anonymous reps count."}]
+    },
+    execution: {
+        easy: [{t:"Send one email you've been putting off.",xp:20,tip:"Done > perfect."},{t:"Complete one small task on your list for 3+ days.",xp:25,tip:"Clear the queue."}],
+        standard: [{t:"Rewrite your last email 40% shorter. Send it.",xp:45,tip:"Brevity = respect."},{t:"Decline a meeting that doesn't serve your goals.",xp:55,tip:"'I can't make this work' is complete."}],
+        hard: [{t:"Ask for something you want. Directly. No hints.",xp:80,tip:"Clear asks get clear answers."},{t:"Follow up on a commitment someone made. Hold them accountable.",xp:75,tip:"Accountability goes both ways."}]
+    },
+    boss: [
+        {t:"Ask for a raise or promotion. Make the case.",xp:200,m:"execution",tip:"You don't get what you don't ask for."},
+        {t:"Publish something with your name. Blog, tweet thread, article.",xp:180,m:"personality",tip:"Reputation is built in public."},
+        {t:"Have THE conversation you've avoided for weeks.",xp:200,m:"personality",tip:"Avoidance compounds."},
+        {t:"Ship a side project. Announce it publicly.",xp:190,m:"execution",tip:"Shipping is the skill."}
+    ]
+};
+
+function weakest() { const {ideas:i,personality:p,execution:e}=S.scores; if(i<=p&&i<=e)return'ideas'; if(p<=i&&p<=e)return'personality'; return'execution'; }
+function strongest() { const {ideas:i,personality:p,execution:e}=S.scores; if(i>=p&&i>=e)return'ideas'; if(p>=i&&p>=e)return'personality'; return'execution'; }
+
+// Skew the weakest score down to create urgency, keep others real
+function skewScores(raw) {
+    const modes = ['ideas', 'personality', 'execution'];
+    const weakestMode = modes.reduce((a, b) => raw[a] < raw[b] ? a : b);
+    const skewAmount = Math.floor(Math.random() * 6) + 10; // 10-15 points
+    
+    return {
+        ideas: raw.ideas,
+        personality: raw.personality,
+        execution: raw.execution,
+        [weakestMode]: Math.max(20, raw[weakestMode] - skewAmount)
+    };
+}
+
+// Calculate percentile for display (makes scores feel more meaningful)
+function getPercentile(score) {
+    // Rough mapping: 20=5th, 50=50th, 80=95th
+    if (score <= 30) return Math.round(score * 0.5);
+    if (score <= 50) return Math.round(15 + (score - 30) * 1.25);
+    if (score <= 70) return Math.round(40 + (score - 50) * 2);
+    return Math.round(80 + (score - 70) * 0.67);
+}
+function dayNum() { if(!S.user?.start_date)return 1; return Math.floor((Date.now()-new Date(S.user.start_date).getTime())/86400000)+1; }
+function totalXP() { return S.receipts.reduce((s,r)=>s+(r.xp||0),0); }
+
+// Get date string in YYYY-MM-DD format (timezone safe)
+function getDateStr(date = new Date()) {
+    const d = new Date(date);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// Calculate streak from receipts
+function streak() {
+    if(!S.receipts || !S.receipts.length) return 0;
+    
+    // Get unique dates from receipts (in YYYY-MM-DD format for consistent comparison)
+    const receiptDates = [...new Set(S.receipts.map(r => {
+        if(!r.ts) return null;
+        return getDateStr(new Date(r.ts));
+    }).filter(d => d))].sort().reverse(); // Most recent first
+    
+    if(!receiptDates.length) return 0;
+    
+    const today = getDateStr();
+    const yesterday = getDateStr(new Date(Date.now() - 86400000));
+    
+    // If most recent activity was before yesterday, streak is broken
+    if(receiptDates[0] !== today && receiptDates[0] !== yesterday) return 0;
+    
+    // Count consecutive days going backwards from today
+    let streakCount = 0;
+    let checkDate = new Date();
+    
+    // Start from today and go backwards
+    for(let i = 0; i < 365; i++) { // Max 1 year streak
+        const dateStr = getDateStr(checkDate);
+        if(receiptDates.includes(dateStr)) {
+            streakCount++;
+            checkDate = new Date(checkDate.getTime() - 86400000); // Go back one day
+        } else if(i === 0 && receiptDates[0] === yesterday) {
+            // Today has no activity but yesterday did - still valid, start from yesterday
+            checkDate = new Date(checkDate.getTime() - 86400000);
+        } else {
+            break; // Gap found, streak ends
+        }
+    }
+    
+    return streakCount;
+}
+
+// Update streak when user completes a quest (also tracks in localStorage for persistence)
+function updateStreakData() {
+    const today = getDateStr();
+    const streakData = JSON.parse(localStorage.getItem('t1p_streak') || '{}');
+    
+    // Record today's activity
+    if(!streakData.activeDates) streakData.activeDates = [];
+    if(!streakData.activeDates.includes(today)) {
+        streakData.activeDates.push(today);
+        // Keep only last 365 days
+        streakData.activeDates = streakData.activeDates.slice(-365);
+    }
+    streakData.lastActive = today;
+    
+    localStorage.setItem('t1p_streak', JSON.stringify(streakData));
+}
+
+// Progressive Quest Curriculum - Gets harder each week
+const CURRICULUM = {
+    ideas: [
+        // Week 1-2: Awareness
+        [{t:"Write down one decision you've been avoiding.",xp:20,tip:"Awareness first."},{t:"Notice when you're overthinking today. Just notice.",xp:15,tip:"Pattern recognition."}],
+        [{t:"Ask one clarifying question in a meeting.",xp:25,tip:"Questions > assumptions."},{t:"Identify one assumption you're making about a project.",xp:20,tip:"Name it to tame it."}],
+        // Week 3-4: Action
+        [{t:"Make a small decision in under 2 minutes. No research.",xp:35,tip:"Speed builds muscle."},{t:"Share one idea with someone who can act on it.",xp:40,tip:"Ideas need oxygen."}],
+        [{t:"Make a decision you've postponed 3+ days. Tell someone.",xp:50,tip:"Deciding is a muscle."},{t:"Take your best idea, write 3 next steps. Share it.",xp:45,tip:"Ideas without steps are dreams."}],
+        // Week 5-6: Challenge
+        [{t:"Challenge one belief you hold about your work. Write the counter-argument.",xp:55,tip:"Strong opinions, loosely held."},{t:"Propose a new approach to a stuck problem. In writing.",xp:60,tip:"Written = committed."}],
+        [{t:"Make a reversible decision in 2 minutes. No research. Act on it.",xp:70,tip:"Speed > perfection."},{t:"Kill one project or idea you've been holding onto.",xp:65,tip:"Pruning creates growth."}],
+        // Week 7+: Mastery
+        [{t:"Pitch an idea to someone who can say yes. Get a real response.",xp:90,tip:"Ideas need champions."},{t:"Make a decision that affects others. Own it publicly.",xp:85,tip:"Leaders decide."}]
+    ],
+    personality: [
+        // Week 1-2: Awareness
+        [{t:"Notice one social dynamic in a meeting today.",xp:15,tip:"Observation first."},{t:"Pay attention to how someone responds to you. What worked?",xp:20,tip:"Calibration starts with noticing."}],
+        [{t:"Give someone a specific, genuine compliment.",xp:25,tip:"'I noticed you...' works."},{t:"Start a conversation with someone you don't usually talk to.",xp:25,tip:"New connections = leverage."}],
+        // Week 3-4: Action
+        [{t:"Add levity to a slightly tense moment. Notice reactions.",xp:40,tip:"Humor defuses."},{t:"Ask someone 'What's been on your mind?' and actually listen.",xp:35,tip:"Curiosity > agenda."}],
+        [{t:"Disagree respectfully in a group setting. Stay calm.",xp:50,tip:"Calibrated disagreement builds respect."},{t:"Give feedback to someone. Specific and constructive.",xp:55,tip:"Feedback is a gift."}],
+        // Week 5-6: Challenge
+        [{t:"Recover gracefully from an awkward moment. Document what worked.",xp:60,tip:"Recovery > prevention."},{t:"Have a mildly uncomfortable conversation. Stay in it.",xp:65,tip:"Comfort zone expands."}],
+        [{t:"Post a genuine opinion online. Your take, your name.",xp:75,tip:"If it feels risky, it's right."},{t:"Ask for feedback from someone whose opinion intimidates you.",xp:70,tip:"Intimidation = respect."}],
+        // Week 7+: Mastery
+        [{t:"Have a difficult conversation you've been avoiding. Be direct.",xp:90,tip:"The conversation you fear is the one you need."},{t:"Influence a group decision without dominating.",xp:85,tip:"Soft power > hard power."}]
+    ],
+    execution: [
+        // Week 1-2: Awareness
+        [{t:"Track how long tasks actually take today vs your estimate.",xp:15,tip:"Awareness of time."},{t:"Notice one thing you're procrastinating on. Just notice.",xp:20,tip:"Name the avoidance."}],
+        [{t:"Send one email you've been putting off.",xp:25,tip:"Done > perfect."},{t:"Complete one small task on your list for 3+ days.",xp:25,tip:"Clear the queue."}],
+        // Week 3-4: Action
+        [{t:"Rewrite your last email 40% shorter. Send it.",xp:40,tip:"Brevity = respect."},{t:"Set a 25-min timer and work on ONE thing. No switching.",xp:35,tip:"Focus is a skill."}],
+        [{t:"Decline a meeting that doesn't serve your goals. No apology.",xp:50,tip:"'I can't make this' is complete."},{t:"Ship something at 80%. Stop polishing.",xp:55,tip:"Shipped > perfect."}],
+        // Week 5-6: Challenge
+        [{t:"Follow up on a commitment someone made. Hold them accountable.",xp:60,tip:"Accountability goes both ways."},{t:"Set a deadline and hit it. No extensions.",xp:65,tip:"Deadlines reveal priorities."}],
+        [{t:"Ask for something you want. Directly. No hints.",xp:75,tip:"Clear asks get clear answers."},{t:"Delegate something you usually do yourself.",xp:70,tip:"Leverage > labor."}],
+        // Week 7+: Mastery
+        [{t:"Ship a complete project this week. Announce it.",xp:90,tip:"Shipping is the skill."},{t:"Say no to something good to protect something great.",xp:85,tip:"No is a complete sentence."}]
+    ],
+    boss: [
+        // Progressive boss quests
+        [{t:"Send a message to someone you admire. Genuine, not needy.",xp:100,m:"personality"},{t:"Publish something with your name on it. Anywhere.",xp:100,m:"execution"}],
+        [{t:"Ask for a small raise or new responsibility.",xp:150,m:"execution"},{t:"Share a contrarian opinion in a professional setting.",xp:140,m:"personality"}],
+        [{t:"Pitch yourself for an opportunity you're not sure you're ready for.",xp:180,m:"ideas"},{t:"Have THE conversation you've avoided for weeks.",xp:180,m:"personality"}],
+        [{t:"Ask for a significant raise or promotion. Make the case.",xp:200,m:"execution"},{t:"Ship a side project and announce it publicly.",xp:200,m:"execution"}]
+    ]
+};
+
+function getWeekNumber() {
+    const start = S.user?.start_date ? new Date(S.user.start_date) : new Date();
+    const now = new Date();
+    const diff = now - start;
+    return Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1;
+}
+
+function getCurriculumWeek() {
+    const week = getWeekNumber();
+    // Map week to curriculum index (0-6, then stays at 6 for mastery)
+    if (week <= 2) return 0;
+    if (week <= 4) return 1;
+    if (week <= 6) return 2;
+    if (week <= 8) return 3;
+    if (week <= 10) return 4;
+    if (week <= 12) return 5;
+    return 6; // Mastery level
+}
+
+function genQuests() {
+    const w = weakest();
+    const d = S.diff || 'standard'; // Use user-selected difficulty
+    const qs = [];
+    
+    // Get quests from QB (quest bank) based on selected difficulty
+    const modeQuests = QB[w][d] || QB[w]['standard'];
+    
+    // 2 quests from weakest mode
+    const shuffled = [...modeQuests].sort(() => Math.random() - 0.5);
+    shuffled.slice(0, 2).forEach(q => {
+        qs.push({...q, mode: w, diff: d, id: Date.now() + Math.random(), done: false});
+    });
+    
+    // 1 quest from each other mode
+    ['ideas', 'personality', 'execution'].filter(m => m !== w).forEach(m => {
+        const otherQuests = QB[m][d] || QB[m]['standard'];
+        const q = otherQuests[Math.floor(Math.random() * otherQuests.length)];
+        qs.push({...q, mode: m, diff: d, id: Date.now() + Math.random(), done: false});
+    });
+    
+    // Anonymous option for personality if struggling (only on easy)
+    if (w === 'personality' && S.scores.personality < 40 && d === 'easy') {
+        const anonQuests = QB.personality.anon;
+        if (anonQuests?.length) {
+            const q = anonQuests[Math.floor(Math.random() * anonQuests.length)];
+            qs.push({...q, mode: 'personality', diff: 'anon', id: Date.now() + Math.random(), done: false});
+        }
+    }
+    
+    // Boss quest on hard mode
+    if (d === 'hard' && QB.boss?.length) {
+        const boss = QB.boss[Math.floor(Math.random() * QB.boss.length)];
+        qs.push({t: boss.t, xp: boss.xp, mode: boss.m, diff: 'boss', tip: boss.tip, id: Date.now() + Math.random(), done: false, boss: true});
+    }
+    
+    return qs;
+}
+
+function getDiffLabel(diff) {
+    const labels = {easy: 'Easy', standard: 'Standard', hard: 'Hard', anon: 'Anon OK', boss: 'Boss'};
+    return labels[diff] || diff;
+}
+
+function shouldRefreshQuests() {
+    if (!S.user?.lastQuestWeek) return true;
+    return getWeekNumber() > S.user.lastQuestWeek;
+}
+
+function checkWeeklyProgress() {
+    if (shouldRefreshQuests()) {
+        // Keep completed quests in history, generate new ones
+        const newQuests = genQuests();
+        S.quests = newQuests;
+        S.user.lastQuestWeek = getWeekNumber();
+        save();
+    }
+}
+
+function capsules(){
+    const start=S.user?.start_date?new Date(S.user.start_date):new Date(), d=dayNum();
+    return [
+        {day:1,label:'Day 1',unlocked:true,scores:S.user?.baseline_scores||S.scores},
+        {day:30,label:'Day 30',unlocked:d>=30,scores:d>=30?S.scores:null},
+        {day:60,label:'Day 60',unlocked:d>=60,scores:d>=60?S.scores:null},
+        {day:90,label:'Day 90',unlocked:d>=90,scores:d>=90?S.scores:null}
+    ];
+}
+
+function render(){
+    const screens={
+        login:loginH, signup:signupH, forgot:forgotH, pricing:pricingH,
+        // Free quiz flow (from landing page)
+        freeQuiz:quizH, freeResults:freeResultsH,
+        // Onboarding flow
+        onboarding:onboardingH, upload:uploadH, analyzing:analyzingH, quiz:quizH, results:resultsH,
+        // App screens
+        dashboard:()=>appH(dashH()), quests:()=>appH(questsH()), coach:()=>appH(coachH()), 
+        receipts:()=>appH(receiptsH()), capsules:()=>appH(capsulesH()), review:()=>appH(reviewH()), 
+        settings:()=>appH(settingsH()), forecasts:()=>appH(forecastsH())
+    };
+    document.getElementById('app').innerHTML=(screens[S.screen]||loginH)()+(S.modal?modalH():'');
+    if(typeof updateHash === 'function') updateHash();
+    bindEvents();
+}
+
+function loginH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">TOP <span>1%</span> OS</div><div class="card"><h2 class="card-title">Welcome back</h2><p class="card-subtitle">Continue your training</p><form id="login-form"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required></div><button type="submit" class="btn btn-primary btn-full">Sign In</button></form><p class="text-center mt-10"><a class="text-link text-small" id="forgot-pass">Forgot password?</a></p><p class="text-center text-secondary text-small mt-20">New? <a class="text-link" id="to-signup">Start training</a></p></div><div class="card mt-20 text-center" style="border-color:var(--accent)"><p class="text-small mb-10">Not sure yet?</p><button class="btn btn-secondary btn-full" id="take-free-quiz">Take Free Diagnostic →</button><p class="text-secondary text-small mt-10">2 minutes. No signup required.</p></div></div></div>`;}
+
+function freeResultsH(){
+    const {ideas:i,personality:p,execution:e}=S.freeQuizScores||S.scores;
+    const avgScore = Math.round((i+p+e)/3);
+    const percentile = getPercentile(avgScore);
+    const weak = ['ideas','personality','execution'].reduce((a,b)=>(S.freeQuizScores||S.scores)[a]<(S.freeQuizScores||S.scores)[b]?a:b);
+    
+    return `<div class="screen-center"><div class="container-md"><div class="logo">TOP <span>1%</span> OS</div>
+    <div class="card text-center">
+        <h2 class="card-title">Your Mode Profile</h2>
+        <p class="text-secondary text-small mb-20">Based on your responses</p>
+        
+        <div class="results-meters">
+            <div class="meter"><div class="meter-circle ideas">${i}%</div><div class="meter-label">Ideas</div></div>
+            <div class="meter"><div class="meter-circle personality">${p}%</div><div class="meter-label">Personality</div></div>
+            <div class="meter"><div class="meter-circle execution">${e}%</div><div class="meter-label">Execution</div></div>
+        </div>
+        
+        <div class="verdict">
+            <div class="verdict-title">Your Position</div>
+            <div class="verdict-text">You're in the <strong>${percentile}th percentile</strong>. Top 1% starts at 85+.</div>
+        </div>
+        
+        <div class="verdict" style="border-color:var(--danger)">
+            <div class="verdict-title" style="color:var(--danger)">Your Gap</div>
+            <div class="verdict-text"><strong style="text-transform:capitalize">${weak}</strong> is holding you back. This is where focused training pays off.</div>
+        </div>
+        
+        <div style="background:var(--bg-primary);padding:20px;margin-top:25px;border:1px solid var(--accent)">
+            <p class="text-small mb-10">Ready to train your weak spots?</p>
+            <button class="btn btn-primary btn-full" id="free-to-signup">Start Training →</button>
+            <p class="text-secondary text-small mt-10">$9.99/mo · Cancel anytime</p>
+        </div>
+    </div>
+    <p class="text-center mt-20"><a class="text-link text-small" id="back-login">Already have an account? Sign in</a></p>
+    </div></div>`;
+}
+
+function forgotH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">TOP <span>1%</span> OS</div><div class="card"><h2 class="card-title">Reset Password</h2><p class="card-subtitle">Enter your email to reset</p><form id="forgot-form"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="reset-email" required></div><button type="submit" class="btn btn-primary btn-full">Send Reset Link</button></form><p class="text-center text-secondary text-small mt-20"><a class="text-link" id="back-login">Back to sign in</a></p></div></div></div>`;}
+
+function signupH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">TOP <span>1%</span> OS</div><div class="card"><h2 class="card-title">Start training</h2><p class="card-subtitle">Build skills AI can't replace</p><form id="signup-form"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="name" required></div><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required minlength="6"></div><button type="submit" class="btn btn-primary btn-full">Create Account</button></form><p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p></div></div></div>`;}
+
+function pricingH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">TOP <span>1%</span> OS</div><div class="card text-center"><h2 class="card-title">Choose Your Plan</h2><p class="text-secondary text-small mb-20">Cancel anytime</p><div style="display:flex;flex-direction:column;gap:15px"><div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary)"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Most Popular</div><div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div><a href="${STRIPE_LINK}" class="btn btn-primary btn-full mt-20">Start Monthly →</a></div>${STRIPE_ANNUAL?`<div style="border:1px solid var(--bg-tertiary);padding:20px"><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Best Value — 2 Months Free</div><div style="font-size:36px;font-weight:700">$99<span style="font-size:14px;color:var(--text-secondary)">/year</span></div><a href="${STRIPE_ANNUAL}" class="btn btn-secondary btn-full mt-20">Start Annual →</a></div>`:''}</div><ul style="list-style:none;text-align:left;margin-top:25px;font-size:12px"><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Mode diagnostic + ChatGPT analysis</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progressive weekly quests</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ 3 AI Coaches (Ideas, Personality, Execution)</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progress capsules + Weekly reviews</li><li style="padding:8px 0">✓ Cancel anytime</li></ul></div></div></div>`;}
+
+function onboardingH(){
+    const step = S.onboardStep;
+    const totalSteps = 6;
+    
+    // Progress bar
+    const progressBar = `<div class="progress-bar" style="margin-bottom:30px">${Array(totalSteps).fill(0).map((_,i)=>`<div class="progress-dot ${i<step?'done':i===step-1?'active':''}"></div>`).join('')}</div>`;
+    
+    if(step === 1) {
+        // Account creation
+        return `<div class="screen-center"><div class="container-sm"><div class="logo">TOP <span>1%</span> OS</div>
+        ${progressBar}
+        <div class="card">
+            <h2 class="card-title">Let's start with you</h2>
+            <p class="card-subtitle">Create your account</p>
+            <form id="onboard-account-form">
+                <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="ob-name" value="${S.user?.name||''}" required></div>
+                <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="ob-email" value="${S.user?.email||''}" required></div>
+                <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="ob-pass" minlength="6" required></div>
+                <button type="submit" class="btn btn-primary btn-full">Continue →</button>
+            </form>
+        </div>
+        <p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p>
+        </div></div>`;
+    }
+    
+    if(step === 2) {
+        // Occupation
+        return `<div class="screen-center"><div class="container-sm"><div class="logo">TOP <span>1%</span> OS</div>
+        ${progressBar}
+        <div class="card">
+            <h2 class="card-title">What do you do?</h2>
+            <p class="card-subtitle">This helps us personalize your training</p>
+            <form id="onboard-occupation-form">
+                <div class="form-group">
+                    <label class="form-label">Occupation</label>
+                    <select class="form-input" id="ob-occupation" required>
+                        <option value="">Select your role...</option>
+                        ${OCCUPATIONS.map(o=>`<option value="${o}" ${S.onboardData.occupation===o?'selected':''}>${o}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Industry</label>
+                    <select class="form-input" id="ob-industry" required>
+                        <option value="">Select your industry...</option>
+                        ${INDUSTRIES.map(i=>`<option value="${i}" ${S.onboardData.industry===i?'selected':''}>${i}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Years of Experience</label>
+                    <select class="form-input" id="ob-experience" required>
+                        <option value="">Select...</option>
+                        <option value="0-2" ${S.onboardData.experience==='0-2'?'selected':''}>0-2 years</option>
+                        <option value="3-5" ${S.onboardData.experience==='3-5'?'selected':''}>3-5 years</option>
+                        <option value="6-10" ${S.onboardData.experience==='6-10'?'selected':''}>6-10 years</option>
+                        <option value="10+" ${S.onboardData.experience==='10+'?'selected':''}>10+ years</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Continue →</button>
+            </form>
+        </div>
+        </div></div>`;
+    }
+    
+    if(step === 3) {
+        // Goals
+        const selectedGoals = S.onboardData.goals || [];
+        return `<div class="screen-center"><div class="container-md"><div class="logo">TOP <span>1%</span> OS</div>
+        ${progressBar}
+        <div class="card">
+            <h2 class="card-title">What's driving you here?</h2>
+            <p class="card-subtitle">Select all that apply</p>
+            <div class="goal-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0">
+                ${GOALS.map(g=>`
+                    <div class="choice-card goal-option ${selectedGoals.includes(g.id)?'selected':''}" data-goal="${g.id}" style="padding:15px;cursor:pointer">
+                        <div style="font-size:24px;margin-bottom:8px">${g.icon}</div>
+                        <div style="font-size:12px">${g.label}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <button class="btn btn-primary btn-full" id="goals-continue" ${selectedGoals.length===0?'disabled':''}>Continue →</button>
+        </div>
+        </div></div>`;
+    }
+    
+    if(step === 4) {
+        // Forecast interests
+        const selectedInterests = S.onboardData.forecastInterests || [];
+        return `<div class="screen-center"><div class="container-md"><div class="logo">TOP <span>1%</span> OS</div>
+        ${progressBar}
+        <div class="card">
+            <h2 class="card-title">What futures are you watching?</h2>
+            <p class="card-subtitle">We'll show you relevant forecasts and opportunities</p>
+            <div class="interest-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:20px 0">
+                ${FORECAST_INTERESTS.map(f=>`
+                    <div class="choice-card interest-option ${selectedInterests.includes(f.id)?'selected':''}" data-interest="${f.id}" style="padding:15px;cursor:pointer">
+                        <div style="font-size:24px;margin-bottom:8px">${f.icon}</div>
+                        <div style="font-size:11px">${f.label}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <button class="btn btn-primary btn-full" id="interests-continue" ${selectedInterests.length===0?'disabled':''}>Continue →</button>
+        </div>
+        </div></div>`;
+    }
+    
+    if(step === 5) {
+        // Commitment
+        return `<div class="screen-center"><div class="container-sm"><div class="logo">TOP <span>1%</span> OS</div>
+        ${progressBar}
+        <div class="card text-center">
+            <h2 class="card-title">One last thing</h2>
+            <div style="background:var(--bg-primary);border-left:3px solid var(--accent);padding:20px;margin:20px 0;text-align:left">
+                <p style="font-size:14px;line-height:1.7;margin:0">
+                    <strong>Top 1% isn't for everyone.</strong><br><br>
+                    This takes 10 minutes a day.<br>
+                    Real quests. Real accountability.<br>
+                    You'll be pushed outside your comfort zone.<br><br>
+                    The people who succeed here are the ones who show up daily, even when it's hard.
+                </p>
+            </div>
+            <label style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:15px;background:var(--bg-primary);margin:20px 0">
+                <input type="checkbox" id="commitment-check" style="width:20px;height:20px">
+                <span style="font-size:13px;text-align:left">I'm ready to put in the work</span>
+            </label>
+            <button class="btn btn-primary btn-full" id="commitment-continue" disabled>Continue →</button>
+        </div>
+        </div></div>`;
+    }
+    
+    if(step === 6) {
+        // Quiz or upload choice (with quiz as primary path)
+        const hasQuizScores = S.freeQuizScores !== null;
+        return `<div class="screen-center"><div class="container-md"><div class="logo">TOP <span>1%</span> OS</div>
+        ${progressBar}
+        <div class="card">
+            <h2 class="card-title">${hasQuizScores ? 'Boost Your Accuracy' : 'Mode Assessment'}</h2>
+            <p class="card-subtitle">${hasQuizScores ? 'We have your quiz results. Want to refine with ChatGPT data?' : 'Let\'s measure your current modes'}</p>
+            
+            ${hasQuizScores ? `
+                <div class="verdict mb-20">
+                    <div class="verdict-title">Your Quiz Results</div>
+                    <div class="verdict-text">Ideas: ${S.freeQuizScores.ideas}% · Personality: ${S.freeQuizScores.personality}% · Execution: ${S.freeQuizScores.execution}%</div>
+                </div>
+            ` : ''}
+            
+            <div class="choice-grid">
+                ${!hasQuizScores ? `
+                <div class="choice-card" id="ch-quiz" style="border-color:var(--accent)">
+                    <div class="choice-icon">📝</div>
+                    <div class="choice-title">Take Assessment</div>
+                    <div class="choice-desc">15 questions · 3 minutes</div>
+                </div>
+                ` : ''}
+                <div class="choice-card" id="ch-upload">
+                    <div class="choice-icon">📤</div>
+                    <div class="choice-title">Upload ChatGPT</div>
+                    <div class="choice-desc">Most accurate · Takes 2-3 min</div>
+                </div>
+            </div>
+            
+            ${hasQuizScores ? `
+                <button class="btn btn-primary btn-full mt-20" id="skip-to-pricing">Use Quiz Results →</button>
+                <p class="text-center text-secondary text-small mt-10">You can always upload ChatGPT data later in Settings</p>
+            ` : `
+                <p class="text-center text-secondary text-small mt-20">
+                    <a class="text-link" id="skip-assessment">Skip assessment for now →</a>
+                </p>
+            `}
+        </div>
+        </div></div>`;
+    }
+    
+    return '';
+}
+
+function uploadH(){return `<div class="screen-center"><div class="container-md"><div class="logo">TOP <span>1%</span> OS</div>
+<h2 class="card-title text-center mb-10">Upload ChatGPT History</h2>
+<p class="text-center text-secondary text-small mb-20">This gives us the most accurate read on your modes. Takes 2-3 minutes to analyze.</p>
+<div class="card">
+    <div class="verdict mb-20">
+        <div class="verdict-title">How to Export</div>
+        <div class="verdict-text">
+            1. <a href="https://chat.openai.com/#settings/DataControls" target="_blank" class="text-link">Click here to open ChatGPT Settings</a><br>
+            2. Click "Export data"<br>
+            3. Check your email for the download link<br>
+            4. Download and <strong>unzip</strong> the file<br>
+            5. Upload the <strong>conversations.json</strong> file from inside
+        </div>
+    </div>
+    <div class="upload-zone" id="upload-zone">
+        <div style="font-size:32px;margin-bottom:10px">📁</div>
+        <div>Drop <strong>conversations.json</strong> here</div>
+        <div class="text-secondary text-small mt-10">Found inside the unzipped folder</div>
+        <input type="file" class="file-input" id="file-input" accept=".json">
+    </div>
+    ${S.uploadedFile?`<div class="uploaded-file"><span>📄</span><span>${S.uploadedFile.name}</span><span class="uploaded-remove" id="rm-file">✕</span></div>`:''}
+</div>
+<div class="text-center mt-20">
+    <button class="btn btn-primary" id="analyze-btn" ${!S.uploadedFile?'disabled':''}>Analyze →</button>
+    <p class="mt-20"><a class="text-link" id="skip-upload">Skip for now →</a></p>
+    <p class="text-secondary text-small mt-10">You can always do this later in Settings</p>
+</div></div></div>`;}
+
+function analyzingH(){return `<div class="screen-center"><div class="container-sm text-center"><div class="logo">TOP <span>1%</span> OS</div><div class="card"><div class="spinner"></div><p class="text-secondary mt-20">Analyzing patterns...</p></div></div></div>`;}
+
+function quizH(){
+    const q=Qs[S.quizStep];
+    const isFree = S.freeQuizMode || S.screen === 'freeQuiz';
+    return `<div class="screen-center"><div class="container-md">
+        <div class="logo">TOP <span>1%</span> OS</div>
+        ${isFree ? '<p class="text-center text-secondary text-small mb-20">Free Mode Assessment</p>' : ''}
+        <div class="progress-bar">${Qs.map((_,i)=>`<div class="progress-dot ${i<S.quizStep?'done':i===S.quizStep?'active':''}"></div>`).join('')}</div>
+        <div class="q-number">Question ${S.quizStep+1} of ${Qs.length}</div>
+        <div class="q-text">${q.t}</div>
+        <div class="options">${q.o.map((o,i)=>`<button class="option" data-idx="${i}">${o.t}</button>`).join('')}</div>
+        ${isFree ? `<p class="text-center mt-20"><a class="text-link text-small" id="quit-quiz">← Back to login</a></p>` : ''}
+    </div></div>`;
+}
+
+function resultsH(){
+    const {ideas:i,personality:p,execution:e}=S.scores;
+    const avgScore = Math.round((i+p+e)/3);
+    const percentile = getPercentile(avgScore);
+    const weak = weakest();
+    
+    return `<div class="screen-center"><div class="container-md"><div class="logo">TOP <span>1%</span> OS</div>
+    <div class="card text-center">
+        <h2 class="card-title">Your Mode Profile</h2>
+        <p class="text-secondary text-small mb-10">Based on your assessment</p>
+        
+        <div class="results-meters">
+            <div class="meter"><div class="meter-circle ideas">${i}%</div><div class="meter-label">Ideas</div></div>
+            <div class="meter"><div class="meter-circle personality">${p}%</div><div class="meter-label">Personality</div></div>
+            <div class="meter"><div class="meter-circle execution">${e}%</div><div class="meter-label">Execution</div></div>
+        </div>
+        
+        <div class="verdict">
+            <div class="verdict-title">Current Position</div>
+            <div class="verdict-text">You're in the <strong>${percentile}th percentile</strong>. Top 1% operates at 85%+ across all modes.</div>
+        </div>
+        
+        <div class="verdict" style="border-color:var(--${weak})">
+            <div class="verdict-title">Training Focus</div>
+            <div class="verdict-text">Your <strong style="text-transform:capitalize">${weak}</strong> mode needs the most attention. We'll prioritize quests here.</div>
+        </div>
+        
+        ${S.gptAnalysis?`<div class="verdict"><div class="verdict-title">ChatGPT Insights</div><div class="verdict-text">${S.gptAnalysis.patterns?.join(' · ')||'Analysis complete.'}</div></div>`:''}
+        
+        <div class="form-group mt-20">
+            <label class="form-label">Quest Difficulty</label>
+            <div class="tabs">
+                <button class="tab ${S.diff==='easy'?'active':''}" data-diff="easy">Easy</button>
+                <button class="tab ${S.diff==='standard'?'active':''}" data-diff="standard">Standard</button>
+                <button class="tab ${S.diff==='hard'?'active':''}" data-diff="hard">Hard</button>
+            </div>
+            <p class="text-secondary text-small mt-10">Start easy and level up, or dive into hard mode.</p>
+        </div>
+        
+        <button class="btn btn-primary btn-full mt-20" id="start-app">Begin Training →</button>
+    </div></div></div>`;
+}
+
+function appH(c){return `<div class="app-layout"><aside class="sidebar"><div class="sidebar-logo">TOP <span>1%</span> OS</div><div class="sidebar-streak"><div class="streak-value">🔥 ${streak()}</div><div class="streak-label">Day Streak</div></div><ul class="sidebar-nav"><li><a href="#" data-screen="dashboard" class="${S.screen==='dashboard'?'active':''}">◉ Dashboard</a></li><li><a href="#" data-screen="quests" class="${S.screen==='quests'?'active':''}">⚔ Quests</a></li><li><a href="#" data-screen="coach" class="${S.screen==='coach'?'active':''}">◎ AI Coach</a></li><li><a href="#" data-screen="forecasts" class="${S.screen==='forecasts'?'active':''}">🔮 Forecasts</a></li><li><a href="#" data-screen="receipts" class="${S.screen==='receipts'?'active':''}">◈ Receipts</a></li><li><a href="#" data-screen="capsules" class="${S.screen==='capsules'?'active':''}">📦 Capsules</a></li><li><a href="#" data-screen="review" class="${S.screen==='review'?'active':''}">📊 Review</a></li><li><a href="#" data-screen="settings" class="${S.screen==='settings'?'active':''}">⚙ Settings</a></li></ul><div class="sidebar-user"><div class="sidebar-name">${S.user?.name||'User'}</div><div class="sidebar-email">${S.user?.email||''}</div><span class="sidebar-logout" id="logout">Sign out</span></div></aside><main class="main">${c}</main></div>`;}
+
+function dashH(){const active=S.quests.filter(q=>!q.done).slice(0,3),recent=S.receipts.slice(-3).reverse();return `<div class="page-header"><h1 class="page-title">Dashboard</h1><p class="page-subtitle">Day ${dayNum()}</p></div><div class="stats"><div class="stat"><div class="stat-value">${totalXP()}</div><div class="stat-label">XP</div></div><div class="stat"><div class="stat-value">${S.receipts.length}</div><div class="stat-label">Receipts</div></div><div class="stat"><div class="stat-value">${streak()}</div><div class="stat-label">Streak</div></div><div class="stat"><div class="stat-value">${dayNum()}</div><div class="stat-label">Day</div></div></div><div class="grid-2"><div><div class="card"><div class="card-header"><span class="card-header-title">Mode Levels</span></div><div class="mode-bars"><div class="mode-bar"><span class="mode-name ideas">Ideas</span><div class="mode-track"><div class="mode-fill ideas" style="width:${S.scores.ideas}%"></div></div><span class="mode-value">${S.scores.ideas}%</span></div><div class="mode-bar"><span class="mode-name personality">Personality</span><div class="mode-track"><div class="mode-fill personality" style="width:${S.scores.personality}%"></div></div><span class="mode-value">${S.scores.personality}%</span></div><div class="mode-bar"><span class="mode-name execution">Execution</span><div class="mode-track"><div class="mode-fill execution" style="width:${S.scores.execution}%"></div></div><span class="mode-value">${S.scores.execution}%</span></div></div></div><div class="card"><div class="card-header"><span class="card-header-title">Today's Quests</span><a href="#" data-screen="quests" class="text-link">All →</a></div>${active.length?active.map(q=>`<div class="quest ${q.boss?'boss':''}"><div class="quest-header"><span class="quest-mode ${q.mode}">${q.mode}</span><span class="quest-diff ${q.diff}">${q.boss?'👑 BOSS':q.diff}</span></div><div class="quest-title">${q.t}</div><div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span></div><div class="quest-actions"><button class="btn btn-small btn-success complete-q" data-id="${q.id}">✓ Done</button></div></div>`).join(''):'<p class="text-secondary text-small">All done!</p>'}</div></div><div><div class="card"><div class="card-header"><span class="card-header-title">Recent Receipts</span></div>${recent.length?recent.map(r=>`<div class="receipt"><div class="receipt-check">✓</div><div class="receipt-content"><div class="receipt-title">${r.title}</div><div class="receipt-meta">${r.mode} · +${r.xp} XP</div></div></div>`).join(''):'<p class="text-secondary text-small">Complete quests to earn receipts.</p>'}</div></div></div>`;}
+
+function questsH(){const active=S.quests.filter(q=>!q.done),done=S.quests.filter(q=>q.done);const diffLabel=d=>{const l={easy:'Easy',standard:'Standard',hard:'Hard',anon:'Anon OK',boss:'Boss'};return l[d]||d;};return `<div class="page-header"><h1 class="page-title">IRL Quests</h1><p class="page-subtitle">Focus: ${weakest()} mode</p></div><div class="flex gap-10 mb-20"><button class="btn btn-small ${S.diff==='easy'?'btn-primary':'btn-secondary'}" data-setdiff="easy">Easy</button><button class="btn btn-small ${S.diff==='standard'?'btn-primary':'btn-secondary'}" data-setdiff="standard">Standard</button><button class="btn btn-small ${S.diff==='hard'?'btn-primary':'btn-secondary'}" data-setdiff="hard">Hard</button><button class="btn btn-small btn-secondary" id="refresh-q">↻ Refresh</button></div><div class="card mb-20"><div class="card-header"><span class="card-header-title">Active</span><span class="card-badge">${active.length}</span></div>${active.length?active.map(q=>`<div class="quest ${q.boss?'boss':''}"><div class="quest-header"><span class="quest-mode ${q.mode}">${q.mode}</span><span class="quest-diff ${q.diff}">${q.boss?'👑 BOSS':diffLabel(q.diff)}</span></div><div class="quest-title">${q.t}</div><div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span>${q.diff==='anon'?'<span>🔒 Anon OK</span>':''}</div>${q.tip?`<div class="quest-tip">💡 ${q.tip}</div>`:''}<div class="quest-actions"><button class="btn btn-small btn-success complete-q" data-id="${q.id}">✓ Complete</button><button class="btn btn-small btn-secondary skip-q" data-id="${q.id}">Skip</button></div></div>`).join(''):'<p class="text-secondary text-small">All done! Refresh for more.</p>'}</div>${done.length?`<div class="card"><div class="card-header"><span class="card-header-title">Completed</span></div>${done.map(q=>`<div class="quest done"><div class="quest-title">${q.t}</div><div class="quest-meta">✓ +${q.xp} XP</div></div>`).join('')}</div>`:''}`;}
+
+function coachH(){
+    const mode = S.coachMode;
+    const modeChats = S.chat.filter(m => m.mode === mode);
+    const coachDesc = {
+        ideas: "Strategic thinking, decision-making, analysis",
+        personality: "Communication, influence, social calibration", 
+        execution: "Action-taking, follow-through, shipping"
+    };
+    const msgs = modeChats.length ? modeChats.map(m=>`<div class="chat-msg ${m.u?'user':'ai'}"><div class="chat-avatar">${m.u?(S.user?.name?.[0]||'U'):'AI'}</div><div class="chat-bubble">${m.t}</div></div>`).join('') : `<div class="chat-msg ai"><div class="chat-avatar">AI</div><div class="chat-bubble">I'm your ${mode} coach. Tell me a situation and I'll give you tactical advice on ${coachDesc[mode].toLowerCase()}.</div></div>`;
+    return `<div class="page-header"><h1 class="page-title">AI Coaches</h1><p class="page-subtitle">Tactical advice for each mode</p></div><div class="tabs mb-20"><button class="tab ${mode==='ideas'?'active':''}" data-coach="ideas">💡 Ideas</button><button class="tab ${mode==='personality'?'active':''}" data-coach="personality">🎭 Personality</button><button class="tab ${mode==='execution'?'active':''}" data-coach="execution">⚡ Execution</button></div><div class="card mb-10" style="padding:12px"><span class="text-small text-secondary">${coachDesc[mode]}</span></div><div class="chat-container"><div class="chat-messages" id="chat-msgs">${msgs}${S.loading?'<div class="chat-msg ai"><div class="chat-avatar">AI</div><div class="chat-bubble"><div class="spinner"></div></div></div>':''}</div><div class="chat-input-row"><textarea class="chat-input" id="chat-input" placeholder="Describe a situation..." rows="2"></textarea><button class="chat-send" id="send-msg">Send</button></div></div>`;
+}
+
+function receiptsH(){const by={ideas:S.receipts.filter(r=>r.mode==='ideas'),personality:S.receipts.filter(r=>r.mode==='personality'),execution:S.receipts.filter(r=>r.mode==='execution')};return `<div class="page-header"><h1 class="page-title">Receipts</h1><p class="page-subtitle">Proof of action</p></div><div class="stats" style="grid-template-columns:repeat(3,1fr)"><div class="stat"><div class="stat-value" style="color:var(--ideas)">${by.ideas.length}</div><div class="stat-label">Ideas</div></div><div class="stat"><div class="stat-value" style="color:var(--personality)">${by.personality.length}</div><div class="stat-label">Personality</div></div><div class="stat"><div class="stat-value" style="color:var(--execution)">${by.execution.length}</div><div class="stat-label">Execution</div></div></div><div class="card"><div class="card-header"><span class="card-header-title">All Receipts</span><span class="card-badge">${totalXP()} XP</span></div>${S.receipts.length?[...S.receipts].reverse().map(r=>`<div class="receipt"><div class="receipt-check">✓</div><div class="receipt-content"><div class="receipt-title">${r.title}</div><div class="receipt-meta">${new Date(r.ts).toLocaleDateString()} · ${r.mode} · +${r.xp} XP</div>${r.reflection?`<div class="receipt-reflection">"${r.reflection}"</div>`:''}</div></div>`).join(''):'<p class="text-secondary" style="padding:15px 0">Receipts appear here as you complete quests.</p>'}</div>`;}
+
+function capsulesH(){const caps=capsules(),base=S.user?.baseline_scores||S.scores;return `<div class="page-header"><h1 class="page-title">Progress Capsules</h1><p class="page-subtitle">Locked snapshots of growth</p></div><div class="capsule-grid">${caps.map(c=>`<div class="capsule ${c.unlocked?'unlocked':'locked'}"><div class="capsule-day">${c.label}</div><div class="capsule-icon">${c.unlocked?'📦':'🔒'}</div><div class="capsule-status ${c.unlocked?'unlocked':'locked'}">${c.unlocked?'Unlocked':`${c.day-dayNum()}d left`}</div></div>`).join('')}</div><div class="grid-2"><div class="card"><div class="card-header"><span class="card-header-title">Day 1 Baseline</span></div><div class="mode-bars"><div class="mode-bar"><span class="mode-name ideas">Ideas</span><div class="mode-track"><div class="mode-fill ideas" style="width:${base.ideas}%"></div></div><span class="mode-value">${base.ideas}%</span></div><div class="mode-bar"><span class="mode-name personality">Personality</span><div class="mode-track"><div class="mode-fill personality" style="width:${base.personality}%"></div></div><span class="mode-value">${base.personality}%</span></div><div class="mode-bar"><span class="mode-name execution">Execution</span><div class="mode-track"><div class="mode-fill execution" style="width:${base.execution}%"></div></div><span class="mode-value">${base.execution}%</span></div></div></div><div class="card"><div class="card-header"><span class="card-header-title">Current</span><span class="card-badge">Day ${dayNum()}</span></div><div class="mode-bars"><div class="mode-bar"><span class="mode-name ideas">Ideas</span><div class="mode-track"><div class="mode-fill ideas" style="width:${S.scores.ideas}%"></div></div><span class="mode-value">${S.scores.ideas}%</span></div><div class="mode-bar"><span class="mode-name personality">Personality</span><div class="mode-track"><div class="mode-fill personality" style="width:${S.scores.personality}%"></div></div><span class="mode-value">${S.scores.personality}%</span></div><div class="mode-bar"><span class="mode-name execution">Execution</span><div class="mode-track"><div class="mode-fill execution" style="width:${S.scores.execution}%"></div></div><span class="mode-value">${S.scores.execution}%</span></div></div></div></div>`;}
+
+function reviewH(){const week=S.receipts.filter(r=>(Date.now()-new Date(r.ts))<7*86400000);return `<div class="page-header"><h1 class="page-title">Weekly Review</h1><p class="page-subtitle">AI analysis of your progress</p></div><div class="card mb-20"><div class="card-header"><span class="card-header-title">This Week</span></div><div class="stats" style="grid-template-columns:repeat(3,1fr);margin:0"><div class="stat"><div class="stat-value">${week.length}</div><div class="stat-label">Quests</div></div><div class="stat"><div class="stat-value">${week.reduce((s,r)=>s+r.xp,0)}</div><div class="stat-label">XP</div></div><div class="stat"><div class="stat-value">${streak()}</div><div class="stat-label">Streak</div></div></div></div><div class="card"><div class="card-header"><span class="card-header-title">AI Analysis</span><button class="btn btn-small btn-secondary" id="gen-review">Generate</button></div><div id="review-out">${S.weeklyReview?`<div style="font-size:13px;line-height:1.6">${S.weeklyReview.replace(/\n/g,'<br>')}</div>`:`<p class="text-secondary text-small">${week.length<3?'Complete 3+ quests this week to generate.':'Click Generate for AI review.'}</p>`}</div></div>`;}
+
+function settingsH(){return `<div class="page-header"><h1 class="page-title">Settings</h1></div>
+<div class="card mb-20"><div class="card-header"><span class="card-header-title">Account</span></div>
+<p class="text-small mb-10"><strong>Name:</strong> ${S.user?.name}</p>
+<p class="text-small mb-10"><strong>Email:</strong> ${S.user?.email}</p>
+<p class="text-small mb-10"><strong>Plan:</strong> Monthly</p>
+<p class="text-small"><strong>Day:</strong> ${dayNum()}</p>
+</div>
+
+<div class="card mb-20"><div class="card-header"><span class="card-header-title">Re-assess Modes</span></div>
+<p class="text-secondary text-small mb-10">Upload new ChatGPT data or retake the quiz to update your mode profile.</p>
+<div class="flex gap-10"><button class="btn btn-small btn-secondary" id="re-upload">Upload ChatGPT</button><button class="btn btn-small btn-secondary" id="re-quiz">Retake Quiz</button></div>
+</div>
+
+<div class="card mb-20"><div class="card-header"><span class="card-header-title">Support & Feedback</span></div>
+<p class="text-secondary text-small mb-15">Questions, ideas, or issues? We'd love to hear from you.</p>
+<form id="support-form">
+<div class="form-group"><label class="form-label">Subject</label>
+<select class="form-input" id="support-subject" required>
+<option value="">Select a topic...</option>
+<option value="Question">General Question</option>
+<option value="Bug Report">Bug Report</option>
+<option value="Feature Request">Feature Request / Idea</option>
+<option value="Billing">Billing Issue</option>
+<option value="Other">Other</option>
+</select></div>
+<div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" id="support-message" rows="4" placeholder="Tell us what's on your mind..." required></textarea></div>
+<button type="submit" class="btn btn-small btn-primary">Send Message</button>
+</form>
+</div>
+
+<div class="card mb-20"><div class="card-header"><span class="card-header-title">Subscription</span></div>
+<p class="text-secondary text-small mb-15">Manage billing or cancel anytime.</p>
+<a href="https://billing.stripe.com/p/login/3cIeVd98He9l4NC1Ym9ws00" target="_blank" class="btn btn-small btn-secondary">Manage Subscription</a>
+</div>
+
+<div class="card"><div class="card-header"><span class="card-header-title">Security</span></div>
+<p class="text-secondary text-small mb-10"><a class="text-link" id="toggle-password-form">Change password →</a></p>
+<div id="password-form-container" style="display:none">
+<form id="change-password-form">
+<div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-input" id="current-pass" required></div>
+<div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-input" id="new-pass" required minlength="6"></div>
+<div class="form-group"><label class="form-label">Confirm New Password</label><input type="password" class="form-input" id="confirm-pass" required></div>
+<button type="submit" class="btn btn-small btn-primary">Update Password</button>
+</form>
+</div>
+</div>`;}
+
+
+function modalH(){
+    if(S.modal==='complete'){
+        const q=S.selectedQuest;
+        return `<div class="modal-overlay" id="modal-bg"><div class="modal"><h3 class="modal-title">Quest Complete! 🎯</h3><p class="text-secondary text-small mb-20">${q.t}</p><div class="form-group"><label class="form-label">Reflection (optional)</label><textarea class="form-textarea" id="reflection" placeholder="What happened? What did you learn?"></textarea></div><div class="flex gap-10"><button class="btn btn-primary btn-full" id="confirm-done">Log Receipt (+${q.xp} XP)</button><button class="btn btn-secondary" id="cancel-modal">Cancel</button></div></div></div>`;
+    }
+    if(S.modal==='resetPassword'){
+        return `<div class="modal-overlay" id="modal-bg"><div class="modal"><h3 class="modal-title">Set New Password</h3><p class="text-secondary text-small mb-20">Enter your new password below.</p>
+        <form id="reset-password-form">
+        <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-input" id="reset-new-pass" required minlength="6"></div>
+        <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" class="form-input" id="reset-confirm-pass" required></div>
+        <button type="submit" class="btn btn-primary btn-full">Reset Password</button>
+        </form></div></div>`;
+    }
+    return '';
+}
+
+function bindEvents(){
+    // Auth forms
+    document.getElementById('login-form')?.addEventListener('submit',e=>{e.preventDefault();login();});
+    document.getElementById('signup-form')?.addEventListener('submit',e=>{e.preventDefault();signup();});
+    document.getElementById('forgot-form')?.addEventListener('submit',e=>{e.preventDefault();resetPassword();});
+    document.getElementById('reset-password-form')?.addEventListener('submit',e=>{e.preventDefault();completePasswordReset();});
+    
+    // Navigation
+    document.getElementById('to-signup')?.addEventListener('click',()=>{S.onboardStep=1;S.screen='onboarding';render();});
+    document.getElementById('to-login')?.addEventListener('click',()=>{S.screen='login';S.freeQuizMode=false;render();});
+    document.getElementById('forgot-pass')?.addEventListener('click',()=>{S.screen='forgot';render();});
+    document.getElementById('back-login')?.addEventListener('click',()=>{S.screen='login';S.freeQuizMode=false;render();});
+    
+    // Free quiz flow
+    document.getElementById('take-free-quiz')?.addEventListener('click',()=>{
+        S.freeQuizMode=true;
+        S.quizStep=0;
+        S.quizAnswers=[];
+        S.screen='freeQuiz';
+        render();
+    });
+    document.getElementById('quit-quiz')?.addEventListener('click',()=>{
+        S.freeQuizMode=false;
+        S.screen='login';
+        render();
+    });
+    document.getElementById('free-to-signup')?.addEventListener('click',()=>{
+        S.onboardStep=1;
+        S.screen='onboarding';
+        render();
+    });
+    
+    // Onboarding flow
+    document.getElementById('onboard-account-form')?.addEventListener('submit',e=>{
+        e.preventDefault();
+        handleOnboardAccount();
+    });
+    document.getElementById('onboard-occupation-form')?.addEventListener('submit',e=>{
+        e.preventDefault();
+        handleOnboardOccupation();
+    });
+    
+    // Goals selection
+    document.querySelectorAll('.goal-option').forEach(g=>g.addEventListener('click',()=>{
+        const goalId = g.dataset.goal;
+        if(S.onboardData.goals.includes(goalId)){
+            S.onboardData.goals = S.onboardData.goals.filter(id=>id!==goalId);
+        } else {
+            S.onboardData.goals.push(goalId);
+        }
+        render();
+    }));
+    document.getElementById('goals-continue')?.addEventListener('click',()=>{
+        if(S.onboardData.goals.length > 0){
+            S.onboardStep=4;
+            render();
+        }
+    });
+    
+    // Interests selection
+    document.querySelectorAll('.interest-option').forEach(i=>i.addEventListener('click',()=>{
+        const interestId = i.dataset.interest;
+        if(S.onboardData.forecastInterests.includes(interestId)){
+            S.onboardData.forecastInterests = S.onboardData.forecastInterests.filter(id=>id!==interestId);
+        } else {
+            S.onboardData.forecastInterests.push(interestId);
+        }
+        render();
+    }));
+    document.getElementById('interests-continue')?.addEventListener('click',()=>{
+        if(S.onboardData.forecastInterests.length > 0){
+            S.onboardStep=5;
+            render();
+        }
+    });
+    
+    // Commitment checkbox
+    document.getElementById('commitment-check')?.addEventListener('change',e=>{
+        const btn = document.getElementById('commitment-continue');
+        if(btn) btn.disabled = !e.target.checked;
+    });
+    document.getElementById('commitment-continue')?.addEventListener('click',()=>{
+        S.onboardStep=6;
+        render();
+    });
+    
+    // Assessment choice
+    document.getElementById('ch-upload')?.addEventListener('click',()=>{S.screen='upload';render();});
+    document.getElementById('ch-quiz')?.addEventListener('click',()=>{
+        S.quizStep=0;
+        S.quizAnswers=[];
+        S.screen='quiz';
+        render();
+    });
+    document.getElementById('skip-to-pricing')?.addEventListener('click',()=>{
+        // Use free quiz scores
+        if(S.freeQuizScores) S.scores = {...S.freeQuizScores};
+        S.screen='pricing';
+        render();
+    });
+    document.getElementById('skip-assessment')?.addEventListener('click',()=>{
+        // Skip with default scores
+        S.scores = {ideas:50,personality:50,execution:50};
+        S.screen='pricing';
+        render();
+    });
+    
+    // Upload
+    const zone=document.getElementById('upload-zone'),inp=document.getElementById('file-input');
+    zone?.addEventListener('click',()=>inp?.click());
+    inp?.addEventListener('change',e=>handleFile(e.target.files[0]));
+    document.getElementById('rm-file')?.addEventListener('click',()=>{S.uploadedFile=null;render();});
+    document.getElementById('analyze-btn')?.addEventListener('click',analyzeFile);
+    document.getElementById('skip-upload')?.addEventListener('click',()=>{
+        // If we have free quiz scores, use those
+        if(S.freeQuizScores) S.scores = {...S.freeQuizScores};
+        S.screen='results';
+        render();
+    });
+    
+    // Quiz
+    document.querySelectorAll('.option').forEach(o=>o.addEventListener('click',()=>answerQuiz(+o.dataset.idx)));
+    document.querySelectorAll('[data-diff]').forEach(b=>b.addEventListener('click',()=>{S.diff=b.dataset.diff;render();}));
+    document.getElementById('start-app')?.addEventListener('click',startApp);
+    
+    // App navigation
+    document.querySelectorAll('[data-screen]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();S.screen=a.dataset.screen;render();}));
+    document.getElementById('logout')?.addEventListener('click',logout);
+    
+    // Quests
+    document.querySelectorAll('.complete-q').forEach(b=>b.addEventListener('click',()=>openModal(b.dataset.id)));
+    document.querySelectorAll('.skip-q').forEach(b=>b.addEventListener('click',()=>skipQuest(b.dataset.id)));
+    document.querySelectorAll('[data-setdiff]').forEach(b=>b.addEventListener('click',()=>{S.diff=b.dataset.setdiff;S.quests=genQuests();save();render();}));
+    document.getElementById('refresh-q')?.addEventListener('click',()=>{S.quests=genQuests();save();render();});
+    
+    // Modal
+    document.getElementById('modal-bg')?.addEventListener('click',e=>{if(e.target.id==='modal-bg')closeModal();});
+    document.getElementById('cancel-modal')?.addEventListener('click',closeModal);
+    document.getElementById('confirm-done')?.addEventListener('click',confirmDone);
+    
+    // Chat
+    document.getElementById('send-msg')?.addEventListener('click',sendChat);
+    document.getElementById('chat-input')?.addEventListener('keypress',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
+    document.querySelectorAll('[data-coach]').forEach(b=>b.addEventListener('click',()=>{S.coachMode=b.dataset.coach;render();}));
+    
+    // Review
+    document.getElementById('gen-review')?.addEventListener('click',genReview);
+    
+    // Settings
+    document.getElementById('re-upload')?.addEventListener('click',()=>{S.screen='upload';render();});
+    document.getElementById('re-quiz')?.addEventListener('click',()=>{S.quizStep=0;S.quizAnswers=[];S.screen='quiz';render();});
+    document.getElementById('support-form')?.addEventListener('submit',e=>{e.preventDefault();submitSupport();});
+    document.getElementById('change-password-form')?.addEventListener('submit',e=>{e.preventDefault();changePassword();});
+    document.getElementById('toggle-password-form')?.addEventListener('click',e=>{
+        e.preventDefault();
+        const container = document.getElementById('password-form-container');
+        if(container) container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    // Forecasts
+    document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{S.forecastFilter=b.dataset.filter;render();}));
+    document.querySelectorAll('.view-forecast-detail').forEach(b=>b.addEventListener('click',()=>{
+        S.selectedForecast = FORECAST_DATABASE.find(f => f.id === b.dataset.id);
+        S.modal = 'forecastDetail';
+        render();
+    }));
+    document.getElementById('close-forecast-modal')?.addEventListener('click',()=>{S.modal=null;S.selectedForecast=null;render();});
+    document.querySelectorAll('.add-quest-path').forEach(b=>b.addEventListener('click',()=>{
+        addQuestPathToQueue(b.dataset.forecast, parseInt(b.dataset.opp));
+    }));
+}
+
+// Onboarding handlers
+async function handleOnboardAccount(){
+    const name = document.getElementById('ob-name').value;
+    const email = document.getElementById('ob-email').value;
+    const pass = document.getElementById('ob-pass').value;
+    
+    // Check if email exists
+    const ex = await db('users','GET',null,`?email=eq.${encodeURIComponent(email)}`);
+    if(ex?.length){alert('Email already exists. Please sign in.');return;}
+    
+    S.user = {name, email, password: pass, start_date: new Date().toISOString(), onboarded: false};
+    localStorage.setItem('t1p_pending', JSON.stringify(S.user));
+    S.onboardStep = 2;
+    render();
+}
+
+function handleOnboardOccupation(){
+    S.onboardData.occupation = document.getElementById('ob-occupation').value;
+    S.onboardData.industry = document.getElementById('ob-industry').value;
+    S.onboardData.experience = document.getElementById('ob-experience').value;
+    S.onboardStep = 3;
+    render();
+}
+
+async function login(){
+    const email=document.getElementById('email').value,pass=document.getElementById('pass').value;
+    const users=await db('users','GET',null,`?email=eq.${encodeURIComponent(email)}`);
+    if(users?.length&&users[0].password===pass){
+        S.user=users[0];S.scores=users[0].scores||{ideas:50,personality:50,execution:50};
+        S.receipts=users[0].receipts||[];S.quests=users[0].quests?.length?users[0].quests:genQuests();S.diff=users[0].diff||'standard';
+        localStorage.setItem('t1p_session',JSON.stringify(S.user));
+        S.screen=S.user.onboarded?'dashboard':'onboarding';render();
+    } else alert('Invalid credentials');
+}
+
+async function signup(){
+    const name=document.getElementById('name').value,email=document.getElementById('email').value,pass=document.getElementById('pass').value;
+    const ex=await db('users','GET',null,`?email=eq.${encodeURIComponent(email)}`);
+    if(ex?.length){alert('Email exists');return;}
+    S.user={name,email,password:pass,start_date:new Date().toISOString(),onboarded:false};
+    localStorage.setItem('t1p_pending',JSON.stringify(S.user));
+    S.screen='pricing';render();
+}
+
+function handleFile(f){if(f?.name.endsWith('.json')){S.uploadedFile=f;render();}else alert('Upload .json file');}
+
+async function analyzeFile(){
+    S.screen='analyzing';render();
+    try{
+        const txt=await S.uploadedFile.text();
+        const res=await ai([{role:'user',content:txt.substring(0,20000)}],600,'analyze');
+        const data=JSON.parse(res);
+        if(data?.ideas !== undefined){
+            // Apply skewing to GPT scores too
+            const skewed = skewScores({ideas:data.ideas,personality:data.personality,execution:data.execution});
+            S.scores = skewed;
+            S.gptAnalysis = {scores: skewed, summary: data.summary};
+        }
+    }catch(e){console.error(e);}
+    S.screen='results';render();
+}
+
+function answerQuiz(i){
+    S.quizAnswers.push(Qs[S.quizStep].o[i]);
+    if(S.quizStep<Qs.length-1){
+        S.quizStep++;
+        render();
+    } else {
+        // Calculate raw scores
+        const raw = {ideas:50, personality:50, execution:50};
+        S.quizAnswers.forEach(a => {
+            raw[a.m] = Math.min(100, Math.max(0, raw[a.m] + a.w * 5)); // Adjusted multiplier for 15 questions
+        });
+        
+        // Apply GPT analysis if available
+        if(S.gptAnalysis?.scores){
+            raw.ideas = Math.round((raw.ideas + S.gptAnalysis.scores.ideas) / 2);
+            raw.personality = Math.round((raw.personality + S.gptAnalysis.scores.personality) / 2);
+            raw.execution = Math.round((raw.execution + S.gptAnalysis.scores.execution) / 2);
+        }
+        
+        // Apply score skewing (lower the weakest score)
+        const skewed = skewScores(raw);
+        
+        // Handle free quiz vs onboarding quiz
+        if(S.freeQuizMode || S.screen === 'freeQuiz') {
+            S.freeQuizScores = skewed;
+            S.freeQuizMode = false;
+            S.screen = 'freeResults';
+        } else {
+            S.scores = skewed;
+            S.screen = 'results';
+        }
+        render();
+    }
+}
+
+async function startApp(){
+    // Include onboarding data in user object
+    S.user.onboarded = true;
+    S.user.baseline_scores = {...S.scores};
+    S.user.scores = S.scores;
+    S.user.diff = S.diff;
+    S.user.occupation = S.onboardData.occupation;
+    S.user.industry = S.onboardData.industry;
+    S.user.experience = S.onboardData.experience;
+    S.user.goals = S.onboardData.goals;
+    S.user.forecast_interests = S.onboardData.forecastInterests;
+    
+    S.quests = genQuests();
+    const res = await db('users','POST',S.user);
+    if(res?.length){
+        S.user = res[0];
+        localStorage.setItem('t1p_session',JSON.stringify(S.user));
+        localStorage.removeItem('t1p_pending');
+        // Send welcome email (don't await - fire and forget)
+        sendWelcomeEmail(S.user.name, S.user.email);
+    }
+    S.screen = 'dashboard';
+    render();
+}
+
+function openModal(id){S.selectedQuest=S.quests.find(q=>q.id==id);S.modal='complete';render();}
+function closeModal(){S.modal=null;S.selectedQuest=null;render();}
+
+async function confirmDone(){
+    const q=S.selectedQuest,ref=document.getElementById('reflection')?.value||'';
+    q.done=true;
+    S.receipts.push({id:Date.now(),title:q.t,mode:q.mode,xp:q.xp,reflection:ref,ts:new Date().toISOString()});
+    S.scores[q.mode]=Math.min(100,S.scores[q.mode]+Math.floor(q.xp/20));
+    updateStreakData(); // Track streak locally
+    closeModal();await save();render();
+}
+
+function skipQuest(id){S.quests=S.quests.filter(q=>q.id!=id);save();render();}
+
+async function sendChat(){
+    const inp=document.getElementById('chat-input'),msg=inp.value.trim();if(!msg)return;
+    const mode = S.coachMode;
+    S.chat.push({t:msg,u:true,mode:mode});inp.value='';S.loading=true;render();
+    
+    const mode = S.coachMode;
+    const modeChats = S.chat.filter(m => m.mode === mode);
+    const coachType = 'coach-' + mode;
+    const reply=await ai(modeChats.map(m=>({role:m.u?'user':'assistant',content:m.t})),500,coachType);
+    S.chat.push({t:reply||'Error. Try again.',u:false,mode:mode});S.loading=false;render();
+    document.getElementById('chat-msgs')?.scrollTo(0,999999);
+}
+
+async function genReview(){
+    S.loading=true;render();
+    const week=S.receipts.filter(r=>(Date.now()-new Date(r.ts))<7*86400000);
+    if(week.length<3){S.loading=false;render();return;}
+    const sum=week.map(r=>`- ${r.title} (${r.mode}) ${r.reflection||''}`).join('\n');
+    S.weeklyReview=await ai([{role:'user',content:`This week:\n${sum}`}],400,'review');
+    S.loading=false;render();
+}
+
+function logout(){S.user=null;S.screen='login';S.scores={ideas:50,personality:50,execution:50};S.quests=[];S.receipts=[];S.chat=[];localStorage.removeItem('t1p_session');render();}
+
+// ==================== EMAIL SYSTEM ====================
+// Note: Requires Resend API key in environment variable RESEND_API_KEY
+// Set up at: https://resend.com
+// Verify domain: trainto1percent.com
+
+const EMAIL_API = '/.netlify/functions/send-email';
+
+async function sendEmail(type, data) {
+    try {
+        const response = await fetch(EMAIL_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, data })
+        });
+        return response.ok;
+    } catch (e) {
+        console.error('Email send failed:', e);
+        return false;
+    }
+}
+
+// Welcome email - sent after successful signup
+async function sendWelcomeEmail(name, email) {
+    return sendEmail('welcome', { name, email });
+}
+
+// Password reset email
+async function resetPassword(){
+    const email = document.getElementById('reset-email').value;
+    const btn = document.querySelector('#forgot-form button');
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+    
+    const users = await db('users','GET',null,`?email=eq.${encodeURIComponent(email)}`);
+    
+    if(users?.length){
+        // Generate reset token
+        const resetToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+        const resetExpiry = new Date(Date.now() + 3600000).toISOString(); // 1 hour
+        
+        // Store token in database
+        await db('users','PATCH',{ reset_token: resetToken, reset_expiry: resetExpiry },`?email=eq.${encodeURIComponent(email)}`);
+        
+        // Send email
+        await sendEmail('password-reset', { 
+            name: users[0].name, 
+            email, 
+            token: resetToken 
+        });
+    }
+    
+    // Always show same message for security
+    alert('If an account exists with that email, a reset link has been sent. Check your inbox.');
+    S.screen='login';render();
+}
+
+// Change password (from settings when logged in)
+async function changePassword(){
+    const currentPass = document.getElementById('current-pass').value;
+    const newPass = document.getElementById('new-pass').value;
+    const confirmPass = document.getElementById('confirm-pass').value;
+    
+    if(newPass !== confirmPass) {
+        alert('New passwords do not match.');
+        return;
+    }
+    
+    if(newPass.length < 6) {
+        alert('Password must be at least 6 characters.');
+        return;
+    }
+    
+    // Verify current password
+    if(S.user.password !== currentPass) {
+        alert('Current password is incorrect.');
+        return;
+    }
+    
+    // Update password
+    await db('users','PATCH',{ password: newPass },`?email=eq.${encodeURIComponent(S.user.email)}`);
+    S.user.password = newPass;
+    localStorage.setItem('t1p_session',JSON.stringify(S.user));
+    
+    alert('Password updated successfully!');
+    document.getElementById('change-password-form').reset();
+}
+
+// Support form submission
+async function submitSupport(){
+    const subject = document.getElementById('support-subject').value;
+    const message = document.getElementById('support-message').value;
+    const btn = document.querySelector('#support-form button');
+    
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+    
+    const success = await sendEmail('support', {
+        name: S.user?.name || 'Unknown',
+        email: S.user?.email || 'No email',
+        userId: S.user?.id,
+        subject,
+        message,
+        userStats: {
+            dayNum: dayNum(),
+            totalXP: totalXP(),
+            streak: streak(),
+            scores: S.scores
+        }
+    });
+    
+    if(success) {
+        alert('Message sent! We\'ll get back to you within 24-48 hours.');
+        document.getElementById('support-form').reset();
+    } else {
+        alert('Failed to send message. Please try again or email directly at support@trainto1percent.com');
+    }
+    
+    btn.textContent = 'Send Message';
+    btn.disabled = false;
+}
+
+// Handle password reset from email link
+async function handleResetToken() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    
+    if(token && window.location.hash.includes('reset')) {
+        // Show reset password modal
+        S.modal = 'resetPassword';
+        S.resetToken = token;
+        render();
+    }
+}
+
+async function completePasswordReset() {
+    const newPass = document.getElementById('reset-new-pass').value;
+    const confirmPass = document.getElementById('reset-confirm-pass').value;
+    
+    if(newPass !== confirmPass) {
+        alert('Passwords do not match.');
+        return;
+    }
+    
+    if(newPass.length < 6) {
+        alert('Password must be at least 6 characters.');
+        return;
+    }
+    
+    // Find user with this token
+    const users = await db('users','GET',null,`?reset_token=eq.${S.resetToken}`);
+    
+    if(!users?.length) {
+        alert('Invalid or expired reset link. Please request a new one.');
+        S.modal = null;
+        S.screen = 'forgot';
+        render();
+        return;
+    }
+    
+    const user = users[0];
+    
+    // Check if token expired
+    if(new Date(user.reset_expiry) < new Date()) {
+        alert('Reset link has expired. Please request a new one.');
+        S.modal = null;
+        S.screen = 'forgot';
+        render();
+        return;
+    }
+    
+    // Update password and clear token
+    await db('users','PATCH',{ 
+        password: newPass, 
+        reset_token: null, 
+        reset_expiry: null 
+    },`?email=eq.${encodeURIComponent(user.email)}`);
+    
+    alert('Password reset successfully! You can now log in.');
+    S.modal = null;
+    S.resetToken = null;
+    S.screen = 'login';
+    history.replaceState({}, '', location.pathname);
+    render();
+}
+
+async function save(){
+    if(!S.user?.email)return;
+    await db('users','PATCH',{scores:S.scores,receipts:S.receipts,quests:S.quests,diff:S.diff},`?email=eq.${encodeURIComponent(S.user.email)}`);
+    localStorage.setItem('t1p_session',JSON.stringify({...S.user,scores:S.scores,receipts:S.receipts,quests:S.quests}));
+}
+
+// ==================== FORECASTS ====================
+const CATEGORIES = {
+    'ai': {name: 'AI & Technology', icon: '🤖'},
+    'tech': {name: 'Tech & Business', icon: '💻'},
+    'crypto': {name: 'Crypto', icon: '₿'},
+    'finance': {name: 'Finance', icon: '📈'},
+    'work': {name: 'Future of Work', icon: '💼'},
+    'media': {name: 'Media & Content', icon: '🎬'}
+};
+
+// Curated forecasts with mode threat analysis and REAL business opportunities
+const FORECAST_DATABASE = [
+    // ========== AUTONOMOUS VEHICLES & TRANSPORTATION ==========
+    {
+        id: 'av-trillion-industry',
+        title: '"Autonomous vehicles will be the first multi-trillion-dollar robotics industry"',
+        source: 'Jensen Huang',
+        sourceUrl: 'https://blogs.nvidia.com/blog/ces-2025-jensen-huang/',
+        sourceDate: 'Jan 2025',
+        probability: 75,
+        timeframe: '3-5 years',
+        category: 'tech',
+        threatMode: 'execution',
+        threatReason: 'When driving disappears, the car becomes a ROOM. Trillion-dollar opportunity in what happens INSIDE that room.',
+        atRisk: 'People waiting for the market to mature before entering',
+        opportunities: [
+            {
+                title: '🛏️ Sleep pod vehicle conversions (HIGH CAPITAL)',
+                mode: 'execution',
+                description: 'Convert vehicles into luxury sleep pods. LA to SF while you sleep. Compete with hotels AND flights.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Design sleep pod interior: flat bed, blackout, climate, white noise. What\'s the MVP?', xp: 50},
+                    {mode: 'execution', task: 'Get quotes from 3 vehicle conversion companies. Understand real costs.', xp: 45},
+                    {mode: 'personality', task: 'Survey 30 frequent travelers: pay $400 to sleep during 6hr drive vs fly?', xp: 50},
+                    {mode: 'execution', task: 'Create landing page, collect 100 email signups before building.', xp: 55}
+                ]
+            },
+            {
+                title: '🌙 Premium AV bedding/comfort brand (PRODUCT)',
+                mode: 'ideas',
+                description: 'Every sleep pod needs bedding. Build the "Casper for AVs" — blankets, pillows, sleep masks designed for vehicle travel.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'ideas', task: 'Research what makes vehicle sleep different: vibration, temp, space constraints.', xp: 40},
+                    {mode: 'execution', task: 'Source samples from manufacturers. Test 5 different materials.', xp: 50},
+                    {mode: 'execution', task: 'Create product prototype. Even just a branded travel blanket to start.', xp: 55},
+                    {mode: 'personality', task: 'Partner with one AV company as their "official bedding provider."', xp: 60}
+                ]
+            },
+            {
+                title: '🔊 In-vehicle experience design (CREATIVE)',
+                mode: 'ideas',
+                description: 'Design soundscapes, lighting, scents for AV experiences: party mode, meditation, productivity, date night.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'ideas', task: 'Map 10 different "ride experiences" people might want. What defines each?', xp: 45},
+                    {mode: 'execution', task: 'Create prototype experience: playlist + lighting script + scent recommendation.', xp: 50},
+                    {mode: 'personality', task: 'Test your experience design with 10 real passengers. Get feedback.', xp: 50},
+                    {mode: 'execution', task: 'Pitch experience design service to 3 AV companies.', xp: 55}
+                ]
+            },
+            {
+                title: '🧹 AV fleet cleaning/reset services (SERVICE)',
+                mode: 'execution',
+                description: 'Millions of robotaxis need cleaning between rides. Build "hotel housekeeping" for AVs. Low capital, recurring revenue.',
+                difficulty: 'medium',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'ideas', task: 'Research Waymo/Cruise operations. What do they outsource? What\'s broken?', xp: 40},
+                    {mode: 'execution', task: 'Create detailed service proposal with pricing. Specific turnaround times.', xp: 50},
+                    {mode: 'personality', task: 'Reach out to 5 AV fleet managers. Understand their pain points.', xp: 55},
+                    {mode: 'execution', task: 'Pilot with ANY fleet (rental cars, rideshare) to build track record NOW.', xp: 60}
+                ]
+            },
+            {
+                title: '🔌 AV charging + rest amenities (REAL ESTATE)',
+                mode: 'execution',
+                description: 'Build the "truck stop" for AVs: charging, cleaning, restocking, passenger amenities along major routes.',
+                difficulty: 'hard',
+                timeframe: '24-36 months',
+                quests: [
+                    {mode: 'ideas', task: 'Map likely AV corridors. Where will high-volume routes be? What\'s land cost?', xp: 50},
+                    {mode: 'execution', task: 'Develop site requirements: power capacity, space, amenities, traffic flow.', xp: 50},
+                    {mode: 'personality', task: 'Meet with 3 commercial real estate developers. Explore partnerships.', xp: 55},
+                    {mode: 'execution', task: 'Secure letter of intent on one property along probable AV route.', xp: 65}
+                ]
+            },
+            {
+                title: '📱 AV experience reviewer/influencer (CONTENT)',
+                mode: 'personality',
+                description: 'Become Yelp/TripAdvisor for AV experiences. Review vehicles, routes, experiences. Build audience before market explodes.',
+                difficulty: 'easy',
+                timeframe: '1-3 months',
+                quests: [
+                    {mode: 'execution', task: 'Ride in every available AV service (Waymo, Cruise, etc). Document everything.', xp: 35},
+                    {mode: 'execution', task: 'Create content reviewing experiences. Video, blog, social.', xp: 45},
+                    {mode: 'personality', task: 'Build audience of 1000 followers interested in AV experiences.', xp: 55},
+                    {mode: 'execution', task: 'Monetize through affiliate, sponsored content, consulting.', xp: 50}
+                ]
+            },
+            {
+                title: '⚖️ AV hospitality regulations specialist (LEGAL)',
+                mode: 'ideas',
+                description: 'AV + hospitality crosses multiple regulatory frameworks. Become THE expert on this intersection.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'ideas', task: 'Research regulatory gaps: vehicle codes, hospitality, food service, insurance.', xp: 50},
+                    {mode: 'execution', task: 'Write definitive guide to AV hospitality regulations. Publish it.', xp: 55},
+                    {mode: 'personality', task: 'Speak at 3 industry events on regulatory challenges.', xp: 55},
+                    {mode: 'execution', task: 'Land 3 consulting clients needing regulatory guidance.', xp: 60}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'av-sleep-economy',
+        title: 'Autonomous vehicles enable "sleep while traveling" — creates new hospitality category',
+        source: 'Industry Analysis',
+        sourceUrl: '',
+        sourceDate: '2026',
+        probability: 65,
+        timeframe: '3-5 years',
+        category: 'tech',
+        threatMode: 'ideas',
+        threatReason: 'Red-eye flights exist because people will pay to travel while sleeping. AVs make this accessible for road trips.',
+        atRisk: 'Hospitality industry ignoring this shift',
+        opportunities: [
+            {
+                title: 'Premium sleep pod vehicle conversions',
+                mode: 'execution',
+                description: 'Convert vans/SUVs into luxury sleep pods for overnight AV travel. LA to SF while you sleep. Compete with hotels AND flights.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Design a sleep pod vehicle interior. What features matter? Blackout, temperature, white noise, flat bed.', xp: 50},
+                    {mode: 'execution', task: 'Get quotes from vehicle conversion companies. Understand the costs.', xp: 45},
+                    {mode: 'personality', task: 'Survey 20 frequent travelers: would they pay $300 to sleep during a 6-hour drive vs. fly?', xp: 50},
+                    {mode: 'execution', task: 'Create a landing page for the concept. Test demand before building.', xp: 55}
+                ]
+            }
+        ]
+    },
+    // ========== AI CUSTOMER SERVICE & HUMAN CONNECTION ==========
+    {
+        id: 'ai-customer-service',
+        title: 'AI handles 80% of customer service interactions by 2027',
+        source: 'Industry Consensus',
+        sourceUrl: '',
+        sourceDate: '2025',
+        probability: 75,
+        timeframe: '18-24 months',
+        category: 'work',
+        threatMode: 'personality',
+        threatReason: 'Routine interactions automated = humans CRAVE real connection. The inverse opportunity is massive.',
+        atRisk: 'Customer service workers who don\'t move to high-touch roles',
+        opportunities: [
+            {
+                title: '👑 Premium "human-guaranteed" concierge (SERVICE)',
+                mode: 'personality',
+                description: 'Wealthy customers pay 10x for GUARANTEED human interaction. Build the anti-AI service tier.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'ideas', task: 'Identify 10 industries where customers pay premium for human service.', xp: 45},
+                    {mode: 'execution', task: 'Create "human-guaranteed" offering in one niche. Price at 3x market.', xp: 55},
+                    {mode: 'personality', task: 'Develop your unique touch. What makes YOUR interaction valuable?', xp: 45},
+                    {mode: 'execution', task: 'Land 10 clients for premium human service. Document testimonials.', xp: 60}
+                ]
+            },
+            {
+                title: '🏢 IRL community spaces (REAL ESTATE)',
+                mode: 'execution',
+                description: 'People isolated by AI need places to gather. Build co-working, social clubs, community centers.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Research Soho House, WeWork. What makes community spaces work?', xp: 45},
+                    {mode: 'execution', task: 'Host pilot IRL event series. Test demand, willingness to pay.', xp: 55},
+                    {mode: 'personality', task: 'Build 50 relationships who could be founding members.', xp: 55},
+                    {mode: 'execution', task: 'Launch membership community space. Get 100 paying members.', xp: 65}
+                ]
+            },
+            {
+                title: '🤝 Face-to-face meeting arranger (CONNECTOR)',
+                mode: 'personality',
+                description: 'As phone/digital becomes AI territory, in-person becomes premium. Be the person who sets up IRL meetings.',
+                difficulty: 'easy',
+                timeframe: '1-3 months',
+                quests: [
+                    {mode: 'personality', task: 'Host dinner bringing together 8 people who should know each other.', xp: 50},
+                    {mode: 'personality', task: 'Make 10 introductions between network people this week.', xp: 45},
+                    {mode: 'execution', task: 'Create "connector" service. Charge for curated introductions.', xp: 50},
+                    {mode: 'personality', task: 'Build reputation as person who "knows everyone."', xp: 55}
+                ]
+            },
+            {
+                title: '🔇 Human-only meeting spaces (VENUE)',
+                mode: 'execution',
+                description: 'Create spaces where AI is BANNED. For deals, negotiations, sensitive conversations. Faraday cages, phone lockers.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Design "AI-free zone" concept. What signals true privacy?', xp: 50},
+                    {mode: 'execution', task: 'Partner with venue for "AI-free hours" pilot.', xp: 55},
+                    {mode: 'personality', task: 'Survey 30 executives: pay $1000/hour for guaranteed private space?', xp: 50},
+                    {mode: 'execution', task: 'Book first 10 paid reservations.', xp: 60}
+                ]
+            },
+            {
+                title: '💆 High-touch personal services (PROVIDER)',
+                mode: 'personality',
+                description: 'Services requiring physical presence + emotional intelligence: personal styling, life coaching, health coaching.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'ideas', task: 'Identify service you could provide requiring physical + emotional presence.', xp: 40},
+                    {mode: 'execution', task: 'Get certified/trained in your chosen service area.', xp: 50},
+                    {mode: 'personality', task: 'Serve 20 clients. Build skills and testimonials.', xp: 55},
+                    {mode: 'execution', task: 'Build premium positioning. Charge 2x market rate.', xp: 55}
+                ]
+            },
+            {
+                title: '📞 "Human verification" certification (BUILDER)',
+                mode: 'execution',
+                description: 'Build system certifying services use real humans. Trust badge for companies.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Design verification methodology. How do you PROVE human service?', xp: 50},
+                    {mode: 'execution', task: 'Create certification process and badge assets.', xp: 50},
+                    {mode: 'personality', task: 'Get 10 companies to pilot your certification.', xp: 55},
+                    {mode: 'execution', task: 'Launch publicly. Get 50 certified companies.', xp: 60}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'voice-ai-relationships',
+        title: '"Voice AI will manage full customer relationships" — not just answer questions',
+        source: 'Olivia Moore (a16z)',
+        sourceUrl: 'https://a16z.com/newsletter/big-ideas-2026-part-2/',
+        sourceDate: 'Dec 2025',
+        probability: 70,
+        timeframe: '12-24 months',
+        category: 'ai',
+        threatMode: 'personality',
+        threatReason: 'If AI manages relationships via voice, your edge is IN-PERSON relationship building. Phone becomes AI territory.',
+        atRisk: 'Salespeople, account managers who rely on phone relationships',
+        opportunities: [
+            {
+                title: 'Face-to-face relationship brokering service',
+                mode: 'personality',
+                description: 'Become the person who sets up IRL meetings. As phone becomes AI, in-person becomes premium.',
+                difficulty: 'medium',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'personality', task: 'Host a dinner bringing together 6 people who should know each other.', xp: 55},
+                    {mode: 'personality', task: 'Make 5 introductions this week between people in your network.', xp: 40},
+                    {mode: 'execution', task: 'Create a "connector" service offering. Charge for curated introductions.', xp: 50},
+                    {mode: 'personality', task: 'Become known as the person who "knows everyone." Build that reputation.', xp: 60}
+                ]
+            },
+            {
+                title: 'Human-only meeting spaces (no AI, no phones)',
+                mode: 'execution',
+                description: 'Create spaces where AI is explicitly banned. For deals, negotiations, sensitive conversations. Premium pricing.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Design a "human-only" meeting space concept. Faraday cage? Phone lockers? What signals exclusivity?', xp: 45},
+                    {mode: 'execution', task: 'Partner with an existing venue to pilot "AI-free hours" for premium clients.', xp: 55},
+                    {mode: 'personality', task: 'Survey executives: would they pay $500/hour for a guaranteed private, AI-free meeting space?', xp: 50},
+                    {mode: 'execution', task: 'Book your first paid reservation for a human-only meeting.', xp: 60}
+                ]
+            }
+        ]
+    },
+    // ========== AI-GENERATED CONTENT & ENTERTAINMENT ==========
+    {
+        id: 'ai-movies-prompt',
+        title: '"AI will generate full movies from prompts by 2027"',
+        source: 'Elon Musk / Industry Trend',
+        sourceUrl: 'https://www.cryptotimes.io/2025/04/02/ai-will-make-short-movies-by-the-end-of-2025-elon-musk/',
+        sourceDate: '2024-2025',
+        probability: 65,
+        timeframe: '18-24 months',
+        category: 'media',
+        threatMode: 'ideas',
+        threatReason: 'Content CREATION becomes free. Value shifts to: story IP ownership, curation, shared experiences, human relationships.',
+        atRisk: 'Content creators competing on production quality rather than ideas/relationships',
+        opportunities: [
+            {
+                title: '📚 Story IP library — copyright before AI generates (IP OWNER)',
+                mode: 'ideas',
+                description: 'AI can generate but can\'t own copyright. Register story concepts, characters, worlds NOW. License them when production is free.',
+                difficulty: 'medium',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'ideas', task: 'Write 20 one-page story concepts. Unique worlds, characters, premises.', xp: 45},
+                    {mode: 'execution', task: 'Register copyright on your best 5. Establish ownership date.', xp: 50},
+                    {mode: 'ideas', task: 'Research what makes stories AI-proof: lived experience, cultural specificity.', xp: 40},
+                    {mode: 'execution', task: 'Create website showcasing your IP. Position for licensing.', xp: 50}
+                ]
+            },
+            {
+                title: '⚖️ AI entertainment copyright lawyer (LEGAL)',
+                mode: 'ideas',
+                description: 'Who owns AI-generated content? What\'s licensable? Become THE legal expert in AI entertainment IP.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Research every AI copyright case and ruling. Know the landscape.', xp: 50},
+                    {mode: 'execution', task: 'Write definitive guide to AI entertainment copyright. Publish widely.', xp: 55},
+                    {mode: 'personality', task: 'Speak at entertainment industry events on AI IP issues.', xp: 55},
+                    {mode: 'execution', task: 'Land 5 clients needing AI entertainment legal guidance.', xp: 60}
+                ]
+            },
+            {
+                title: '🤖 Licensable AI actor/actress (CREATIVE + TECH)',
+                mode: 'execution',
+                description: 'Create synthetic actor with consistent look, voice, personality. License to productions. The first AI movie stars.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Design your AI actor: backstory, personality, visual style, voice.', xp: 50},
+                    {mode: 'execution', task: 'Create consistent visual assets: headshots, motion, expressions using AI tools.', xp: 55},
+                    {mode: 'execution', task: 'Build demo reel showing your AI actor in different scenarios.', xp: 55},
+                    {mode: 'personality', task: 'Pitch to 5 production companies. Get first licensing deal.', xp: 65}
+                ]
+            },
+            {
+                title: '🤝 Producer/studio relationship broker (CONNECTOR)',
+                mode: 'personality',
+                description: 'When anyone can make movies, knowing the RIGHT people matters more. Build relationships with producers, distributors, talent NOW.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'personality', task: 'Attend 5 film industry events. Meet 50 people. Follow up with all.', xp: 50},
+                    {mode: 'personality', task: 'Have coffee with 10 producers/executives. Understand their needs.', xp: 55},
+                    {mode: 'personality', task: 'Make 20 valuable introductions between industry people.', xp: 55},
+                    {mode: 'execution', task: 'Formalize your connector role. Charge for curated introductions.', xp: 60}
+                ]
+            },
+            {
+                title: '🎬 Human-curated film platform (TASTEMAKER)',
+                mode: 'personality',
+                description: 'When AI floods platforms, human curation = value. Build platform where YOUR taste determines what\'s worth watching.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Define your curatorial lens. What do YOU think is worth watching? Be specific.', xp: 45},
+                    {mode: 'execution', task: 'Start newsletter/social sharing curated picks with your POV.', xp: 50},
+                    {mode: 'personality', task: 'Build audience of 5000 who trust your taste.', xp: 60},
+                    {mode: 'execution', task: 'Monetize: premium access, sponsored picks, consulting for platforms.', xp: 55}
+                ]
+            },
+            {
+                title: '🎭 Theater as social club (EXPERIENCE)',
+                mode: 'execution',
+                description: 'When anyone watches AI movies at home, theaters become about COMMUNITY. Build theaters as membership social clubs.',
+                difficulty: 'hard',
+                timeframe: '24-36 months',
+                quests: [
+                    {mode: 'ideas', task: 'Design theater-club concept: events, community, exclusivity, F&B.', xp: 50},
+                    {mode: 'execution', task: 'Partner with theater for pilot: curated screening + mixer.', xp: 55},
+                    {mode: 'personality', task: 'Build community of 200 film lovers who attend regularly.', xp: 55},
+                    {mode: 'execution', task: 'Launch membership model. Prove recurring revenue.', xp: 60}
+                ]
+            },
+            {
+                title: '🎓 AI filmmaking educator (EDUCATOR)',
+                mode: 'personality',
+                description: 'Teach others to use AI filmmaking tools. Courses, workshops, consulting. First movers capture the market.',
+                difficulty: 'medium',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'execution', task: 'Master 5 AI video tools. Create sample work with each.', xp: 45},
+                    {mode: 'execution', task: 'Create pilot course or workshop. Teach 20 people.', xp: 55},
+                    {mode: 'personality', task: 'Build reputation as AI filmmaking expert. Content, speaking, demos.', xp: 55},
+                    {mode: 'execution', task: 'Launch paid course. Get 100 students.', xp: 60}
+                ]
+            },
+            {
+                title: '🛠️ AI movie production workflow tools (BUILDER)',
+                mode: 'execution',
+                description: 'Build tools making AI filmmaking easier: project management, asset libraries, collaboration, quality control.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Map AI filmmaking workflow. Where are the gaps and pain points?', xp: 50},
+                    {mode: 'execution', task: 'Build MVP tool solving one specific pain point.', xp: 60},
+                    {mode: 'personality', task: 'Get 50 AI filmmakers using your tool. Collect feedback.', xp: 55},
+                    {mode: 'execution', task: 'Launch paid version. Get 100 paying users.', xp: 65}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'content-flood',
+        title: 'AI floods content platforms — creator middle class collapses',
+        source: 'Industry Analysis',
+        sourceUrl: '',
+        sourceDate: '2025-2026',
+        probability: 70,
+        timeframe: '12-18 months',
+        category: 'media',
+        threatMode: 'personality',
+        threatReason: 'Commodity content dies. What survives: genuine personality, parasocial connection, trust, unique lived experience.',
+        atRisk: 'Creators making informational content without distinctive voice',
+        opportunities: [
+            {
+                title: 'Become un-replicable through lived experience content',
+                mode: 'personality',
+                description: 'AI can\'t live your life. Document YOUR unique experiences, perspectives, relationships. That\'s your moat.',
+                difficulty: 'hard',
+                timeframe: 'ongoing',
+                quests: [
+                    {mode: 'personality', task: 'Identify 3 experiences you\'ve had that AI couldn\'t replicate. Build content around them.', xp: 50},
+                    {mode: 'personality', task: 'Share a vulnerable personal story publicly. Real connection requires risk.', xp: 60},
+                    {mode: 'ideas', task: 'Define your unique perspective. What do you see that others miss?', xp: 45},
+                    {mode: 'execution', task: 'Create a content series based on YOUR lived experience. Ship weekly for 4 weeks.', xp: 55}
+                ]
+            },
+            {
+                title: 'Direct audience relationships (own your distribution)',
+                mode: 'execution',
+                description: 'Platforms will be flooded. Email lists, paid communities, direct relationships are the moat AI can\'t breach.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'execution', task: 'Start an email newsletter. Send issue #1 this week.', xp: 45},
+                    {mode: 'execution', task: 'Personally email 20 engaged followers. Build real relationships.', xp: 50},
+                    {mode: 'personality', task: 'Host a live event (virtual or IRL) for your community.', xp: 55},
+                    {mode: 'execution', task: 'Create a paid tier. Even $5/month proves people value YOU.', xp: 60}
+                ]
+            }
+        ]
+    },
+    // ========== AI CODING & SOFTWARE ==========
+    {
+        id: 'ai-coding-majority',
+        title: '"Most code will be written by AI within 12-18 months"',
+        source: 'Mark Zuckerberg',
+        sourceUrl: 'https://www.lesswrong.com/posts/69qnNx8S7wkSKXJFY/2025-in-ai-predictions',
+        sourceDate: '2025',
+        probability: 70,
+        timeframe: '12-18 months',
+        category: 'work',
+        threatMode: 'execution',
+        threatReason: 'If AI writes code, developers who only code become commodity. Winners are those who SPECIFY, EVALUATE, and SHIP.',
+        atRisk: 'Developers who see themselves as "code writers" not "problem solvers"',
+        opportunities: [
+            {
+                title: 'Product strategy consulting (what to build, not how)',
+                mode: 'ideas',
+                description: 'When code is free, deciding WHAT to build becomes the bottleneck. Build a consulting practice around product strategy.',
+                difficulty: 'medium',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'ideas', task: 'Develop a framework for evaluating product ideas. What makes something worth building?', xp: 50},
+                    {mode: 'execution', task: 'Offer free product strategy sessions to 5 startups. Build case studies.', xp: 55},
+                    {mode: 'personality', task: 'Build reputation as "the person who knows what to build." Write about product decisions.', xp: 50},
+                    {mode: 'execution', task: 'Land your first paid product strategy client.', xp: 60}
+                ]
+            },
+            {
+                title: 'AI code review and quality assurance service',
+                mode: 'execution',
+                description: 'AI writes code but someone needs to verify it works, is secure, is maintainable. Build the QA layer for AI-generated code.',
+                difficulty: 'medium',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'execution', task: 'Review AI-generated code for 5 projects. Document common issues and patterns.', xp: 45},
+                    {mode: 'ideas', task: 'Create a checklist/framework for reviewing AI code. Productize your expertise.', xp: 50},
+                    {mode: 'execution', task: 'Offer AI code review as a service. Start with your network.', xp: 55},
+                    {mode: 'execution', task: 'Build a tool that automates parts of your review process. Scale yourself.', xp: 60}
+                ]
+            },
+            {
+                title: 'User research and customer empathy services',
+                mode: 'personality',
+                description: 'AI can\'t talk to customers with empathy. Become the bridge between users and AI-built products.',
+                difficulty: 'medium',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'personality', task: 'Conduct 10 user interviews for a product. Practice deep empathy.', xp: 50},
+                    {mode: 'ideas', task: 'Develop a user research methodology. What questions reveal true needs?', xp: 45},
+                    {mode: 'execution', task: 'Package user research as a service. Create a clear offering and price.', xp: 50},
+                    {mode: 'personality', task: 'Build reputation as someone who truly understands users.', xp: 55}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'junior-engineer-turmoil',
+        title: 'Junior software engineering job market collapses',
+        source: 'AI 2027 Research',
+        sourceUrl: 'https://ai-2027.com/',
+        sourceDate: '2025',
+        probability: 70,
+        timeframe: '12-24 months',
+        category: 'work',
+        threatMode: 'personality',
+        threatReason: 'Entry-level coding gets automated. Juniors need OTHER skills: communication, product sense, stakeholder management.',
+        atRisk: 'Junior devs relying solely on coding ability',
+        opportunities: [
+            {
+                title: 'Become "AI team lead" — manage AI coding agents',
+                mode: 'execution',
+                description: 'Someone needs to direct, review, and manage AI coding agents. That\'s the new entry-level role.',
+                difficulty: 'medium',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'execution', task: 'Complete a project managing AI to do 80%+ of the coding. Document your process.', xp: 55},
+                    {mode: 'ideas', task: 'Develop a system for prompting, reviewing, and iterating with AI coders.', xp: 50},
+                    {mode: 'personality', task: 'Present your AI management approach to your team. Become the expert.', xp: 50},
+                    {mode: 'execution', task: 'Propose an "AI coding team lead" role at your company. Define the job.', xp: 55}
+                ]
+            }
+        ]
+    },
+    // ========== AGI & INTELLIGENCE ==========
+    {
+        id: 'altman-agi-confidence',
+        title: '"We are now confident we know how to build AGI"',
+        source: 'Sam Altman',
+        sourceUrl: 'https://blog.samaltman.com/',
+        sourceDate: 'Jan 2025',
+        probability: 65,
+        timeframe: '24-36 months',
+        category: 'ai',
+        threatMode: 'ideas',
+        threatReason: 'If AGI arrives, pure analytical thinking becomes commodity. Your edge: TASTE, JUDGMENT, knowing WHAT matters.',
+        atRisk: 'Knowledge workers whose value is "being smart" without unique perspective',
+        opportunities: [
+            {
+                title: 'Develop and document your unique judgment framework',
+                mode: 'ideas',
+                description: 'AGI will think. It won\'t have YOUR taste, YOUR values, YOUR judgment. Make your decision-making framework explicit and valuable.',
+                difficulty: 'hard',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'ideas', task: 'Write out how you make decisions in your domain. What do you weigh? What do others miss?', xp: 55},
+                    {mode: 'execution', task: 'Apply your framework to 10 decisions. Document results. Refine.', xp: 50},
+                    {mode: 'personality', task: 'Share your framework publicly. Build reputation for your judgment.', xp: 55},
+                    {mode: 'execution', task: 'Offer "decision consulting" — charge for your judgment, not your time.', xp: 60}
+                ]
+            },
+            {
+                title: 'Build relationships that transfer trust (AGI can\'t do this)',
+                mode: 'personality',
+                description: 'AGI might be smarter, but it can\'t have lunch with a client, attend a wedding, or build 20-year relationships.',
+                difficulty: 'medium',
+                timeframe: 'ongoing',
+                quests: [
+                    {mode: 'personality', task: 'Identify 10 relationships that could be life-changing. Invest in them.', xp: 50},
+                    {mode: 'personality', task: 'Do something for a key relationship that AI never could. Personal, thoughtful.', xp: 55},
+                    {mode: 'personality', task: 'Become someone people trust with important decisions. Build that reputation.', xp: 60},
+                    {mode: 'execution', task: 'Track your relationship investments like a portfolio. Be systematic about people.', xp: 45}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'amodei-agi-2027',
+        title: '"AGI will be achieved by 2026 or 2027"',
+        source: 'Dario Amodei',
+        sourceUrl: 'https://www.windowscentral.com/software-apps/sam-altman-claims-agi-will-whoosh-by-in-5-years-with-surprisingly-little-societal-change-while-anthropic-ceo-predicts-a-2026-or-2027-breakthrough-theres-no-ceiling-below-the-level-of-humans-theres-a-lot-of-room-at-the-top-for-ais',
+        sourceDate: 'Nov 2024',
+        probability: 50,
+        timeframe: '12-24 months',
+        category: 'ai',
+        threatMode: 'ideas',
+        threatReason: 'Even conservative AI leaders predict AGI soon. Prepare for a world where AI matches human cognition broadly.',
+        atRisk: 'Those who assume AGI is decades away',
+        opportunities: [
+            {
+                title: 'Position in physical/embodied economy (AGI is digital first)',
+                mode: 'execution',
+                description: 'AGI will dominate digital. Physical world — real estate, experiences, logistics, craftsmanship — harder to automate.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'List 10 businesses that require physical presence AGI can\'t replicate.', xp: 45},
+                    {mode: 'execution', task: 'Start or invest in a physical-world business. Real estate, hospitality, crafts.', xp: 60},
+                    {mode: 'ideas', task: 'Identify physical skills you could develop. Carpentry, cooking, massage, repair.', xp: 40},
+                    {mode: 'execution', task: 'Acquire a physical-world skill. Take a class. Get certifications.', xp: 50}
+                ]
+            }
+        ]
+    },
+    // ========== AGENCY & HUMAN CAPITAL ==========
+    {
+        id: 'altman-agency-value',
+        title: '"Agency, willfulness, and determination will be extremely valuable"',
+        source: 'Sam Altman',
+        sourceUrl: 'https://blog.samaltman.com/the-gentle-singularity',
+        sourceDate: 'Jan 2025',
+        probability: 90,
+        timeframe: 'Now - 5 years',
+        category: 'work',
+        threatMode: 'execution',
+        threatReason: 'AI is a force multiplier. 10x leverage with 0 agency = 0 output. Agency becomes THE bottleneck.',
+        atRisk: 'People waiting for permission, certainty, or instructions',
+        opportunities: [
+            {
+                title: 'Become an "agency trainer" — help others take action',
+                mode: 'personality',
+                description: 'If agency is the bottleneck, people will pay to develop it. Build coaching/training around action-taking.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'execution', task: 'Make a decision you\'ve been postponing. Act today. Prove agency to yourself.', xp: 50},
+                    {mode: 'personality', task: 'Help 3 people take action on something they\'ve been stuck on.', xp: 50},
+                    {mode: 'execution', task: 'Create a framework for overcoming inaction. Document what works.', xp: 55},
+                    {mode: 'execution', task: 'Offer "agency coaching" to 5 clients. Test pricing and format.', xp: 60}
+                ]
+            },
+            {
+                title: 'Build a personal track record of SHIPPING',
+                mode: 'execution',
+                description: 'In a world of AI leverage, people who SHIP win. Build an undeniable record of completed projects.',
+                difficulty: 'hard',
+                timeframe: 'ongoing',
+                quests: [
+                    {mode: 'execution', task: 'Ship something this week. Anything. Blog post, product, video. DONE > perfect.', xp: 45},
+                    {mode: 'execution', task: 'Create a public log of everything you ship. Make your output visible.', xp: 50},
+                    {mode: 'execution', task: 'Ship something every week for 12 weeks. Build the habit.', xp: 70},
+                    {mode: 'personality', task: 'Become known as someone who ships. Build that reputation explicitly.', xp: 55}
+                ]
+            }
+        ]
+    },
+    // ========== ROBOTICS & PHYSICAL AI ==========
+    {
+        id: 'huang-robots-2026',
+        title: '"Human-like robots will match human-level ability this year"',
+        source: 'Jensen Huang',
+        sourceUrl: 'https://www.techspot.com/news/110852-jensen-huang-calling-human-like-robots-arrive-2026.html',
+        sourceDate: 'Jan 2026',
+        probability: 55,
+        timeframe: '12-24 months',
+        category: 'tech',
+        threatMode: 'execution',
+        threatReason: 'Physical tasks automated. Value shifts to: DIRECTING robots, MAINTAINING robots, DESIGNING for robots.',
+        atRisk: 'Workers whose value is purely physical execution',
+        opportunities: [
+            {
+                title: '🔧 Robot repair technician (TECHNICIAN)',
+                mode: 'execution',
+                description: 'Billions of robots will need repair. Learn to fix them. The new electrician/plumber.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'execution', task: 'Take course on robotics/ROS. Understand the systems.', xp: 50},
+                    {mode: 'execution', task: 'Practice on available robots: drones, Roombas, hobby robots.', xp: 45},
+                    {mode: 'personality', task: 'Connect with robotics companies. Understand their service needs.', xp: 50},
+                    {mode: 'execution', task: 'Offer repair services. Start with available robots, scale up.', xp: 55}
+                ]
+            },
+            {
+                title: '🎓 Robot repair trade school (EDUCATOR)',
+                mode: 'ideas',
+                description: 'Train the robot technicians. Build the trade school for the robot age. First mover captures market.',
+                difficulty: 'hard',
+                timeframe: '24-36 months',
+                quests: [
+                    {mode: 'ideas', task: 'Map skills needed to repair humanoid robots. What\'s the curriculum?', xp: 50},
+                    {mode: 'execution', task: 'Create pilot training module. Test with 20 students.', xp: 55},
+                    {mode: 'personality', task: 'Partner with robotics company for certification credibility.', xp: 60},
+                    {mode: 'execution', task: 'Launch certification program. Graduate first cohort.', xp: 65}
+                ]
+            },
+            {
+                title: '🏢 Robot fleet management services (MANAGER)',
+                mode: 'execution',
+                description: 'Companies will have robot fleets. Someone manages deployment, monitoring, optimization. IT department for robots.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Research robot fleet challenges. What breaks? What needs monitoring?', xp: 45},
+                    {mode: 'execution', task: 'Create fleet management service proposal. Price for enterprise.', xp: 55},
+                    {mode: 'personality', task: 'Connect with 10 companies planning robot deployments.', xp: 55},
+                    {mode: 'execution', task: 'Land first fleet management contract.', xp: 65}
+                ]
+            },
+            {
+                title: '🏠 Robot-friendly space design (DESIGNER)',
+                mode: 'ideas',
+                description: 'Homes, offices, factories need redesign for robots. Charging stations, pathways, storage. Architecture for robot cohabitation.',
+                difficulty: 'medium',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Research what robots need in spaces. Charging, clearance, surfaces.', xp: 45},
+                    {mode: 'execution', task: 'Create "robot-ready" design guidelines for one space type.', xp: 50},
+                    {mode: 'personality', task: 'Partner with architects/designers. Become their robot specialist.', xp: 55},
+                    {mode: 'execution', task: 'Consult on 5 robot-friendly space designs.', xp: 55}
+                ]
+            },
+            {
+                title: '📦 Robot accessories and gear (PRODUCT)',
+                mode: 'execution',
+                description: 'Robots need accessories: carrying attachments, protective gear, branded wraps. The "iPhone case" market for robots.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'ideas', task: 'Identify robot accessory opportunities. What\'s missing in market?', xp: 45},
+                    {mode: 'execution', task: 'Design and prototype one robot accessory.', xp: 50},
+                    {mode: 'execution', task: 'Find manufacturer. Get samples made.', xp: 50},
+                    {mode: 'execution', task: 'Sell first 100 units. Prove market exists.', xp: 60}
+                ]
+            },
+            {
+                title: '🤖 Robot-human interaction training (TRAINER)',
+                mode: 'personality',
+                description: 'Teach people to work alongside robots. Onboarding, safety, collaboration. New corporate training category.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'ideas', task: 'Research human-robot workplace dynamics. What training is needed?', xp: 45},
+                    {mode: 'execution', task: 'Create pilot training workshop. Test with 20 workers.', xp: 55},
+                    {mode: 'personality', task: 'Build relationships with HR at companies deploying robots.', xp: 55},
+                    {mode: 'execution', task: 'Land first corporate training contract.', xp: 60}
+                ]
+            },
+            {
+                title: '📊 Robot performance analytics (BUILDER)',
+                mode: 'execution',
+                description: 'Build software tracking robot performance, efficiency, maintenance needs. The Datadog for robots.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Research what metrics matter for robot fleet operators.', xp: 50},
+                    {mode: 'execution', task: 'Build MVP analytics dashboard for one robot type.', xp: 60},
+                    {mode: 'personality', task: 'Get 10 beta customers. Collect feedback.', xp: 55},
+                    {mode: 'execution', task: 'Launch paid product. Get 50 paying customers.', xp: 65}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'huang-agentic-workforce',
+        title: '"The IT department of every company will be the HR department of AI agents"',
+        source: 'Jensen Huang',
+        sourceUrl: 'https://finance.yahoo.com/news/nvidia-jensen-huang-says-ai-044815659.html',
+        sourceDate: 'Jan 2025',
+        probability: 80,
+        timeframe: '24-36 months',
+        category: 'work',
+        threatMode: 'personality',
+        threatReason: 'AI agents become the workforce. Humans who can MANAGE, COORDINATE, and DIRECT agents become invaluable.',
+        atRisk: 'Individual contributors who can\'t manage AI teammates',
+        opportunities: [
+            {
+                title: '"AI Agent Manager" career path',
+                mode: 'execution',
+                description: 'Just like managing human teams is a skill, managing AI agent teams will be. Get ahead of this career path.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'execution', task: 'Deploy and manage 3+ AI agents for a real project. Document the process.', xp: 55},
+                    {mode: 'ideas', task: 'Develop frameworks for: which tasks to assign agents, how to review their work, when to intervene.', xp: 50},
+                    {mode: 'execution', task: 'Create an "AI agent management" portfolio showing your projects.', xp: 50},
+                    {mode: 'personality', task: 'Position yourself as "AI team lead" in your current role.', xp: 55}
+                ]
+            }
+        ]
+    },
+    // ========== WORK & ENTERPRISE ==========
+    {
+        id: 'nadella-2026-pivotal',
+        title: '"2026 will be a pivotal year — AI moves from discovery to diffusion"',
+        source: 'Satya Nadella',
+        sourceUrl: 'https://www.businesstoday.in/technology/news/story/from-ai-slop-to-substance-satya-nadella-says-2026-will-be-a-pivotal-point-for-artificial-intelligence-509335-2026-01-04',
+        sourceDate: 'Jan 2026',
+        probability: 85,
+        timeframe: '12 months',
+        category: 'work',
+        threatMode: 'execution',
+        threatReason: 'Diffusion means AI goes from "cool" to "table stakes." If you\'re not fluent by end of 2026, you\'re behind.',
+        atRisk: 'Professionals who haven\'t deeply integrated AI into workflows',
+        opportunities: [
+            {
+                title: 'AI implementation consulting for laggard industries',
+                mode: 'execution',
+                description: 'Tech moves fast, other industries don\'t. Help healthcare, legal, construction, government adopt AI.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'ideas', task: 'Identify 3 industries behind on AI adoption. What are their specific blockers?', xp: 45},
+                    {mode: 'execution', task: 'Create an AI implementation playbook for one industry.', xp: 55},
+                    {mode: 'personality', task: 'Build relationships in a laggard industry. Become their trusted AI guide.', xp: 55},
+                    {mode: 'execution', task: 'Land your first AI implementation consulting client.', xp: 60}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'nadella-flat-headcount',
+        title: '"Scale revenue and profits with flat headcount through AI automation"',
+        source: 'Satya Nadella',
+        sourceUrl: 'https://fortune.com/2026/01/20/is-ai-a-bubble-satya-nadella-microsoft-ceo-new-knowledge-worker-davos-fink/',
+        sourceDate: 'Jan 2026 (Davos)',
+        probability: 80,
+        timeframe: '12-24 months',
+        category: 'work',
+        threatMode: 'execution',
+        threatReason: 'Companies grow without adding headcount. Your job security = your output per hour × AI leverage.',
+        atRisk: 'Average performers who don\'t multiply output with AI',
+        opportunities: [
+            {
+                title: 'Become measurably 3-5x more productive than peers',
+                mode: 'execution',
+                description: 'When companies can do more with fewer people, be the person who does more. Make your leverage visible.',
+                difficulty: 'hard',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'execution', task: 'Track your output this week. Measure something concrete.', xp: 40},
+                    {mode: 'execution', task: 'Use AI to 2x your output next week. Same hours, double results.', xp: 55},
+                    {mode: 'personality', task: 'Make your increased output visible to decision-makers. Document and share.', xp: 50},
+                    {mode: 'execution', task: 'Take on scope that would normally require 2 people. Prove you can handle it.', xp: 60}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'enterprise-llm-75-growth',
+        title: 'Enterprise LLM budgets expected to grow 75% in 2026',
+        source: 'a16z CIO Survey',
+        sourceUrl: 'https://www.saastr.com/can-you-really-grow-in-2026-if-you-arent-tapping-into-ai-budget/',
+        sourceDate: 'Dec 2025',
+        probability: 75,
+        timeframe: '12 months',
+        category: 'work',
+        threatMode: 'execution',
+        threatReason: 'Money is flowing to AI. Be where the budget goes — building, implementing, or selling AI solutions.',
+        atRisk: 'Professionals not positioned to capture AI investment',
+        opportunities: [
+            {
+                title: 'Become your company\'s AI budget owner',
+                mode: 'execution',
+                description: 'Someone will spend that 75% increase. Position yourself to propose and own AI initiatives.',
+                difficulty: 'medium',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'ideas', task: 'Research your company\'s AI budget and plans. Who controls it?', xp: 40},
+                    {mode: 'execution', task: 'Propose an AI project with clear ROI. Make it easy to fund.', xp: 55},
+                    {mode: 'execution', task: 'Deliver results on a small AI project. Build a track record.', xp: 55},
+                    {mode: 'personality', task: 'Become the go-to person for AI initiatives in your org.', xp: 50}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'remote-return',
+        title: 'Major tech companies require 4+ days in-office by end of 2026',
+        source: 'Industry Trend',
+        sourceUrl: '',
+        sourceDate: '2025-2026',
+        probability: 75,
+        timeframe: '12 months',
+        category: 'work',
+        threatMode: 'personality',
+        threatReason: 'In-person rewards relationship builders and visible contributors. Remote anonymity ends.',
+        atRisk: 'Those who thrived hiding in remote work',
+        opportunities: [
+            {
+                title: 'Become indispensable through in-person relationship building',
+                mode: 'personality',
+                description: 'As everyone returns to office, those who build strongest in-person relationships win.',
+                difficulty: 'medium',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'personality', task: 'Have coffee/lunch with 5 colleagues you don\'t usually talk to.', xp: 40},
+                    {mode: 'personality', task: 'Volunteer for in-person meetings even when remote option exists.', xp: 35},
+                    {mode: 'personality', task: 'Organize an in-person team event. Be the connector.', xp: 50},
+                    {mode: 'execution', task: 'Present in person when others present remotely. Be visible.', xp: 45}
+                ]
+            }
+        ]
+    },
+    // ========== TECH LANDSCAPE & COMPETITION ==========
+    {
+        id: 'a16z-prompt-death',
+        title: '"2026 marks the death of the prompt box — AI becomes invisible scaffolding"',
+        source: 'Marc Andrusko (a16z)',
+        sourceUrl: 'https://a16z.com/newsletter/big-ideas-2026-part-2/',
+        sourceDate: 'Dec 2025',
+        probability: 70,
+        timeframe: '12 months',
+        category: 'ai',
+        threatMode: 'execution',
+        threatReason: 'AI will anticipate and act proactively. Those who can\'t collaborate with proactive AI will feel like they\'re fighting their tools.',
+        atRisk: 'People who resist AI assistance or insist on full manual control',
+        opportunities: [
+            {
+                title: 'Build proactive AI products (not reactive chatbots)',
+                mode: 'execution',
+                description: 'The next wave of AI products anticipate needs, not just respond. Build products that act before users ask.',
+                difficulty: 'hard',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'ideas', task: 'List 10 tasks where AI could anticipate your needs before you ask.', xp: 45},
+                    {mode: 'execution', task: 'Build a prototype proactive AI tool. Even simple automation counts.', xp: 55},
+                    {mode: 'ideas', task: 'Study products with great proactive UX (autocomplete, suggestions). What makes them work?', xp: 40},
+                    {mode: 'execution', task: 'Ship a proactive AI feature or product. Get user feedback.', xp: 60}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'andreessen-biggest-shift',
+        title: '"This is the largest technology shift I have experienced — bigger than the Internet"',
+        source: 'Marc Andreessen',
+        sourceUrl: 'https://eu.36kr.com/en/p/3635705584387080',
+        sourceDate: 'Jan 2026',
+        probability: 85,
+        timeframe: '5-10 years',
+        category: 'ai',
+        threatMode: 'execution',
+        threatReason: 'Bigger than internet = more disruption, more opportunity, more people left behind. Speed of adaptation is survival.',
+        atRisk: 'Anyone not actively adapting to AI',
+        opportunities: [
+            {
+                title: 'Go all-in like it\'s 1995 internet',
+                mode: 'execution',
+                description: 'People who went all-in on internet in 1995 became billionaires. Same opportunity exists now.',
+                difficulty: 'hard',
+                timeframe: 'ongoing',
+                quests: [
+                    {mode: 'execution', task: 'Dedicate 2 hours daily to AI learning/building. Start today.', xp: 50},
+                    {mode: 'ideas', task: 'Pick one AI vertical to go deep on. Become the expert.', xp: 55},
+                    {mode: 'execution', task: 'Build 3 AI projects in the next 3 months. Ship all of them.', xp: 70},
+                    {mode: 'ideas', task: 'Make a 5-year plan assuming AI continues accelerating. Act on it.', xp: 55}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'andreessen-china-catchup',
+        title: '"Chinese AI companies caught up to industry front-line in 12 months"',
+        source: 'Marc Andreessen',
+        sourceUrl: 'https://eu.36kr.com/en/p/3635705584387080',
+        sourceDate: 'Jan 2026',
+        probability: 90,
+        timeframe: 'Now',
+        category: 'tech',
+        threatMode: 'ideas',
+        threatReason: 'Tech advantage is temporary. Your edge must be APPLICATION and JUDGMENT, not access to latest models.',
+        atRisk: 'Those who assume Western AI will always be ahead',
+        opportunities: [
+            {
+                title: 'Build model-agnostic expertise',
+                mode: 'ideas',
+                description: 'If DeepSeek matches GPT-5, your skills should transfer. Be good at AI, not good at OpenAI.',
+                difficulty: 'medium',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'execution', task: 'Use 3 different AI models for the same task. Understand differences.', xp: 40},
+                    {mode: 'execution', task: 'Build a workflow that can swap AI providers easily.', xp: 50},
+                    {mode: 'ideas', task: 'Research Chinese AI: DeepSeek, Kimi, Qwen. Know the landscape.', xp: 45},
+                    {mode: 'ideas', task: 'Identify skills that matter regardless of which AI is "best."', xp: 50}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'balaji-sv-risk',
+        title: '"Silicon Valley could go to zero in 10 years"',
+        source: 'Balaji Srinivasan',
+        sourceUrl: 'https://www.webpronews.com/balajis-warning-silicon-valleys-zero-hour-and-cryptos-rise/',
+        sourceDate: 'Jan 2026',
+        probability: 30,
+        timeframe: '10 years',
+        category: 'tech',
+        threatMode: 'ideas',
+        threatReason: 'Geographic concentration is risk. Winners operate globally and digitally.',
+        atRisk: 'Tech workers over-reliant on SF/Bay Area ecosystem',
+        opportunities: [
+            {
+                title: 'Build location-independent income streams',
+                mode: 'execution',
+                description: 'If value moves to internet-native businesses, physical location becomes irrelevant. Build accordingly.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'execution', task: 'Create one income stream that works from anywhere.', xp: 60},
+                    {mode: 'personality', task: 'Build 10 meaningful relationships outside your geographic region.', xp: 50},
+                    {mode: 'ideas', task: 'Learn basics of crypto/web3 — permissionless, global value transfer.', xp: 45},
+                    {mode: 'execution', task: 'Work from a different location for 1 month. Test your independence.', xp: 50}
+                ]
+            }
+        ]
+    },
+    // ========== MARKETS & FINANCE ==========
+    {
+        id: 'ai2027-market-30',
+        title: 'Stock market up 30% in 2026, led by AI companies',
+        source: 'AI 2027 Research',
+        sourceUrl: 'https://ai-2027.com/',
+        sourceDate: '2025',
+        probability: 50,
+        timeframe: '12 months',
+        category: 'finance',
+        threatMode: 'execution',
+        threatReason: 'AI captures most of the value. If you\'re not in AI — building, investing, or applying — you\'re on the losing side.',
+        atRisk: 'Professionals in non-AI industries who don\'t adapt',
+        opportunities: [
+            {
+                title: 'Position your career/investments in AI value chain',
+                mode: 'execution',
+                description: 'Be building, investing, or applying AI. Sidelines lose.',
+                difficulty: 'medium',
+                timeframe: '3-6 months',
+                quests: [
+                    {mode: 'ideas', task: 'Map how AI could disrupt your industry. Be honest about the threat.', xp: 45},
+                    {mode: 'execution', task: 'Start using AI daily if you aren\'t. Track productivity gains.', xp: 40},
+                    {mode: 'ideas', task: 'Review your investments. Are they positioned for AI growth?', xp: 45},
+                    {mode: 'execution', task: 'Build something that creates value in the AI economy.', xp: 55}
+                ]
+            }
+        ]
+    },
+    // ========== HUMAN CONNECTION & AUTHENTICITY ==========
+    {
+        id: 'authenticity-premium',
+        title: 'Human authenticity becomes luxury good as AI fakes everything',
+        source: 'Industry Analysis',
+        sourceUrl: '',
+        sourceDate: '2026',
+        probability: 80,
+        timeframe: '12-24 months',
+        category: 'media',
+        threatMode: 'personality',
+        threatReason: 'When AI can fake anything, PROVEN authenticity becomes valuable. Verified human work commands premium.',
+        atRisk: 'Creators who can\'t prove their work is authentically human',
+        opportunities: [
+            {
+                title: 'Build verifiable human authenticity',
+                mode: 'personality',
+                description: 'Document your process, show your face, build relationships that verify you\'re real.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'personality', task: 'Create content showing your process, not just results. Prove human creation.', xp: 45},
+                    {mode: 'execution', task: 'Build a portfolio of work with verifiable human origin.', xp: 50},
+                    {mode: 'personality', task: 'Develop in-person relationships that vouch for your authenticity.', xp: 50},
+                    {mode: 'ideas', task: 'Research authentication methods for human-created content.', xp: 40}
+                ]
+            },
+            {
+                title: '"Certified Human" services and products',
+                mode: 'execution',
+                description: 'Create products/services that are verifiably human-made. Charge premium for authenticity.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'ideas', task: 'Identify 5 products/services where "human-made" commands premium.', xp: 40},
+                    {mode: 'execution', task: 'Create a "certified human" offering in your domain.', xp: 55},
+                    {mode: 'execution', task: 'Build verification/documentation process for your human work.', xp: 50},
+                    {mode: 'execution', task: 'Charge 2x premium for verified human work. Test the market.', xp: 55}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'loneliness-epidemic',
+        title: 'AI interaction increases loneliness — IRL connection becomes healthcare',
+        source: 'Industry Analysis',
+        sourceUrl: '',
+        sourceDate: '2026',
+        probability: 75,
+        timeframe: '24-36 months',
+        category: 'tech',
+        threatMode: 'personality',
+        threatReason: 'More AI interaction = more isolation. Human connection becomes a health necessity, not luxury.',
+        atRisk: 'People who substitute AI for human relationships',
+        opportunities: [
+            {
+                title: 'Build "human connection as a service" businesses',
+                mode: 'execution',
+                description: 'Loneliness will be an epidemic. Build businesses that create genuine human connection.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'ideas', task: 'Research the loneliness economy. What services exist? What gaps?', xp: 45},
+                    {mode: 'execution', task: 'Host an IRL connection event for a specific community. Test demand.', xp: 55},
+                    {mode: 'personality', task: 'Become a connector in your community. Build reputation for bringing people together.', xp: 50},
+                    {mode: 'execution', task: 'Create a paid membership community focused on real human connection.', xp: 60}
+                ]
+            }
+        ]
+    },
+    // ========== PHYSICAL WORLD & CRAFT ==========
+    {
+        id: 'craft-renaissance',
+        title: 'Handmade and artisanal goods see renaissance as AI dominates digital',
+        source: 'Market Analysis',
+        sourceUrl: '',
+        sourceDate: '2026',
+        probability: 70,
+        timeframe: '24-36 months',
+        category: 'tech',
+        threatMode: 'execution',
+        threatReason: 'As digital becomes AI-generated, physical handmade becomes rare and valuable.',
+        atRisk: 'Digital-only workers with no physical skills',
+        opportunities: [
+            {
+                title: 'Develop and monetize physical craft skills',
+                mode: 'execution',
+                description: 'Learn carpentry, pottery, cooking, tailoring — skills AI can\'t do. Premium market awaits.',
+                difficulty: 'hard',
+                timeframe: '12-24 months',
+                quests: [
+                    {mode: 'execution', task: 'Pick a physical craft. Take a class. Start learning.', xp: 40},
+                    {mode: 'execution', task: 'Make something with your hands. Complete a project.', xp: 50},
+                    {mode: 'execution', task: 'Sell a handmade item, even for $10. Prove market exists.', xp: 55},
+                    {mode: 'personality', task: 'Document your craft journey. Authenticity + skill = premium.', xp: 45}
+                ]
+            }
+        ]
+    },
+    // ========== EDUCATION & SKILLS ==========
+    {
+        id: 'education-disruption',
+        title: 'Traditional education disrupted — AI tutors outperform human teachers at basics',
+        source: 'Industry Analysis',
+        sourceUrl: '',
+        sourceDate: '2026',
+        probability: 70,
+        timeframe: '24-36 months',
+        category: 'work',
+        threatMode: 'ideas',
+        threatReason: 'Basic education gets automated. Value shifts to: mentorship, motivation, character development, network.',
+        atRisk: 'Educators focused on information transfer rather than human development',
+        opportunities: [
+            {
+                title: 'High-touch mentorship and coaching services',
+                mode: 'personality',
+                description: 'AI teaches facts. Humans teach wisdom, motivation, character. Build mentorship services.',
+                difficulty: 'medium',
+                timeframe: '6-12 months',
+                quests: [
+                    {mode: 'personality', task: 'Mentor 3 people in your domain. Build skills and testimonials.', xp: 50},
+                    {mode: 'ideas', task: 'Define what you teach that AI can\'t: judgment, motivation, network, character.', xp: 45},
+                    {mode: 'execution', task: 'Create a mentorship offering with clear outcomes and pricing.', xp: 55},
+                    {mode: 'personality', task: 'Build reputation as a mentor who delivers results.', xp: 55}
+                ]
+            }
+        ]
+    }
+];
+
+function getRiskLevel(forecast, userScores) {
+    const threatScore = userScores[forecast.threatMode];
+    if (threatScore < 40) return {level: 'critical', label: 'CRITICAL', color: 'var(--danger)'};
+    if (threatScore < 55) return {level: 'high', label: 'HIGH', color: 'var(--warning)'};
+    if (threatScore < 70) return {level: 'moderate', label: 'MODERATE', color: 'var(--accent)'};
+    return {level: 'low', label: 'LOW', color: 'var(--success)'};
+}
+
+function getUrgency(forecast) {
+    const prob = forecast.probability;
+    if (forecast.timeframe.includes('month') && prob > 60) return {label: 'URGENT', color: 'var(--danger)'};
+    if (prob > 70) return {label: 'HIGH PROBABILITY', color: 'var(--warning)'};
+    if (prob > 50) return {label: 'LIKELY', color: 'var(--accent)'};
+    return {label: 'EMERGING', color: 'var(--text-secondary)'};
+}
+
+function forecastsH() {
+    const forecasts = FORECAST_DATABASE;
+    const filtered = S.forecastFilter === 'all' ? forecasts : forecasts.filter(f => f.category === S.forecastFilter);
+    
+    return `
+        <div class="page-header">
+            <h1 class="page-title">Forecasts</h1>
+            <p class="page-subtitle">What's coming. What mode is threatened. How to prepare.</p>
+        </div>
+        
+        <div class="card mb-20" style="padding:15px;background:var(--bg-primary);border-color:var(--danger)">
+            <div style="font-size:11px;color:var(--danger);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">⚠️ Your Vulnerability</div>
+            <p style="font-size:13px;line-height:1.5">Your weakest mode is <strong style="color:var(--${weakest()})">${weakest().toUpperCase()}</strong> at <strong>${S.scores[weakest()]}%</strong>. 
+            Forecasts that threaten this mode put you at highest risk. Prepare now or lose leverage later.</p>
+        </div>
+        
+        <div class="card mb-20" style="padding:15px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-small ${S.forecastFilter==='all'?'btn-primary':'btn-secondary'}" data-filter="all">All</button>
+                ${Object.entries(CATEGORIES).map(([k,v]) => 
+                    `<button class="btn btn-small ${S.forecastFilter===k?'btn-primary':'btn-secondary'}" data-filter="${k}">${v.icon} ${v.name}</button>`
+                ).join('')}
+            </div>
+        </div>
+        
+        <div class="forecast-list">
+            ${filtered.map(f => {
+                const risk = getRiskLevel(f, S.scores);
+                const urgency = getUrgency(f);
+                const isThreatToWeakest = f.threatMode === weakest();
+                
+                return `
+                <div class="card mb-15 forecast-item ${isThreatToWeakest ? 'threat-to-weakest' : ''}" style="${isThreatToWeakest ? 'border-color:var(--danger);' : ''}">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                            <span style="font-size:10px;padding:3px 8px;background:var(--bg-tertiary);color:var(--text-secondary)">${CATEGORIES[f.category]?.icon} ${CATEGORIES[f.category]?.name}</span>
+                            <span style="font-size:10px;padding:3px 8px;background:rgba(255,68,68,0.2);color:${risk.color}">YOUR RISK: ${risk.label}</span>
+                            ${isThreatToWeakest ? '<span style="font-size:10px;padding:3px 8px;background:var(--danger);color:white">⚠️ TARGETS YOUR WEAKNESS</span>' : ''}
+                        </div>
+                        <span style="font-size:10px;color:var(--text-muted)">${f.source}</span>
+                    </div>
+                    
+                    <h3 style="font-size:16px;line-height:1.4;margin-bottom:12px">${f.title}</h3>
+                    
+                    <div style="display:flex;gap:20px;margin-bottom:15px;flex-wrap:wrap">
+                        <div>
+                            <div style="font-size:28px;font-weight:700;color:${f.probability > 60 ? 'var(--warning)' : 'var(--text-secondary)'}">${f.probability}%</div>
+                            <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Probability</div>
+                        </div>
+                        <div>
+                            <div style="font-size:16px;font-weight:700;color:var(--text-primary)">${f.timeframe}</div>
+                            <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Timeframe</div>
+                        </div>
+                        <div>
+                            <div style="font-size:16px;font-weight:700;color:var(--${f.threatMode})">${f.threatMode.toUpperCase()}</div>
+                            <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Mode Threatened</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background:var(--bg-primary);border-left:3px solid var(--${f.threatMode});padding:12px;margin-bottom:15px">
+                        <div style="font-size:10px;color:var(--${f.threatMode});text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Why ${f.threatMode} is threatened</div>
+                        <p style="font-size:12px;line-height:1.5;color:var(--text-secondary)">${f.threatReason}</p>
+                        <p style="font-size:11px;color:var(--text-muted);margin-top:8px"><strong>At risk:</strong> ${f.atRisk}</p>
+                    </div>
+                    
+                    <button class="btn btn-small btn-primary view-forecast-detail" data-id="${f.id}">See Opportunities & Quests →</button>
+                </div>
+                `;
+            }).join('')}
+        </div>
+        
+        <style>
+            .forecast-item { transition: all 0.2s; }
+            .forecast-item:hover { border-color: var(--text-secondary); }
+            .threat-to-weakest { background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255,68,68,0.05) 100%); }
+        </style>
+    `;
+}
+
+function forecastDetailModalH() {
+    const f = S.selectedForecast;
+    if (!f) return '';
+    const risk = getRiskLevel(f, S.scores);
+    
+    return `
+        <div class="modal-overlay" id="modal-bg">
+            <div class="modal" style="max-width:650px;max-height:90vh;overflow-y:auto">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:15px">
+                    <span style="font-size:10px;padding:3px 8px;background:rgba(255,68,68,0.2);color:${risk.color}">YOUR RISK: ${risk.label}</span>
+                    <button style="background:none;border:none;color:var(--text-secondary);font-size:20px;cursor:pointer" id="close-forecast-modal">×</button>
+                </div>
+                
+                <h3 style="font-size:18px;line-height:1.4;margin-bottom:15px">${f.title}</h3>
+                
+                <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap">
+                    <div style="background:var(--bg-primary);padding:12px 16px;text-align:center">
+                        <div style="font-size:24px;font-weight:700">${f.probability}%</div>
+                        <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Probability</div>
+                    </div>
+                    <div style="background:var(--bg-primary);padding:12px 16px;text-align:center">
+                        <div style="font-size:16px;font-weight:700">${f.timeframe}</div>
+                        <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Timeframe</div>
+                    </div>
+                    <div style="background:var(--bg-primary);padding:12px 16px;text-align:center">
+                        <div style="font-size:16px;font-weight:700;color:var(--${f.threatMode})">${f.threatMode.toUpperCase()}</div>
+                        <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Threatened</div>
+                    </div>
+                    <div style="background:var(--bg-primary);padding:12px 16px;text-align:center">
+                        <div style="font-size:16px;font-weight:700">${S.scores[f.threatMode]}%</div>
+                        <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Your ${f.threatMode}</div>
+                    </div>
+                </div>
+                
+                ${S.scores[f.threatMode] < 50 ? `
+                <div style="background:var(--danger);padding:15px;margin-bottom:20px">
+                    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;color:white">⚠️ WARNING</div>
+                    <p style="font-size:13px;color:white">Your ${f.threatMode} score (${S.scores[f.threatMode]}%) puts you at HIGH RISK if this forecast materializes. Start preparing NOW.</p>
+                </div>
+                ` : ''}
+                
+                <div style="margin-bottom:20px">
+                    <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Opportunities to Prepare</div>
+                    
+                    ${f.opportunities.map((opp, i) => `
+                        <div style="background:var(--bg-primary);border:1px solid var(--bg-tertiary);padding:15px;margin-bottom:12px">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                <h4 style="font-size:14px">${opp.title}</h4>
+                                <span style="font-size:10px;padding:2px 8px;background:var(--bg-tertiary);color:var(--${opp.mode})">+${opp.mode.toUpperCase()}</span>
+                            </div>
+                            <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:12px">${opp.description}</p>
+                            <div style="font-size:10px;color:var(--text-muted);margin-bottom:12px">Difficulty: ${opp.difficulty} · Timeframe: ${opp.timeframe}</div>
+                            
+                            <div style="background:var(--bg-secondary);padding:12px;border-left:2px solid var(--accent)">
+                                <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Quest Path (${opp.quests.length} quests)</div>
+                                ${opp.quests.map((q, j) => `
+                                    <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;padding-bottom:8px;${j < opp.quests.length - 1 ? 'border-bottom:1px solid var(--bg-tertiary)' : ''}">
+                                        <span style="font-size:9px;padding:2px 6px;background:var(--bg-tertiary);color:var(--${q.mode})">${q.mode.substring(0,3).toUpperCase()}</span>
+                                        <span style="font-size:11px;flex:1">${q.task}</span>
+                                        <span style="font-size:10px;color:var(--accent)">+${q.xp}</span>
+                                    </div>
+                                `).join('')}
+                                <button class="btn btn-small btn-primary btn-full mt-10 add-quest-path" data-forecast="${f.id}" data-opp="${i}">Add These Quests to My Queue →</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                ${f.sourceUrl ? `<a href="${f.sourceUrl}" target="_blank" class="btn btn-small btn-secondary">View Source →</a>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function addQuestPathToQueue(forecastId, oppIndex) {
+    const forecast = FORECAST_DATABASE.find(f => f.id === forecastId);
+    if (!forecast) return;
+    
+    const opp = forecast.opportunities[oppIndex];
+    if (!opp) return;
+    
+    // Add quests to user's queue
+    opp.quests.forEach(q => {
+        S.quests.push({
+            t: q.task,
+            xp: q.xp,
+            mode: q.mode,
+            diff: 'forecast',
+            tip: `From: ${forecast.title.substring(0, 50)}...`,
+            id: Date.now() + Math.random(),
+            done: false,
+            fromForecast: forecastId
+        });
+    });
+    
+    save();
+    S.modal = null;
+    S.selectedForecast = null;
+    S.screen = 'quests';
+    render();
+}
+
+async function loadForecasts() {
+    // For now using static database
+    // Later: fetch from Supabase or API
+    render();
+}
+
+// Update modalH to include forecast detail modal
+function modalH() {
+    if (S.modal === 'forecastDetail') return forecastDetailModalH();
+    if (S.modal === 'complete') {
+        const q = S.selectedQuest;
+        return `<div class="modal-overlay" id="modal-bg"><div class="modal"><h3 class="modal-title">Quest Complete! 🎯</h3><p class="text-secondary text-small mb-20">${q.t}</p><div class="form-group"><label class="form-label">Reflection (optional)</label><textarea class="form-textarea" id="reflection" placeholder="What happened? What did you learn?"></textarea></div><div class="flex gap-10"><button class="btn btn-primary btn-full" id="confirm-done">Log Receipt (+${q.xp} XP)</button><button class="btn btn-secondary" id="cancel-modal">Cancel</button></div></div></div>`;
+    }
+    return '';
+}
+
+async function init(){
+    const params=new URLSearchParams(location.search);
+    const hash=location.hash.replace('#','');
+    
+    // Check for password reset token
+    const resetToken = params.get('token');
+    if(resetToken && hash === 'reset') {
+        S.modal = 'resetPassword';
+        S.resetToken = resetToken;
+        S.screen = 'login';
+        render();
+        return;
+    }
+    
+    // Handle hash routes
+    const validScreens = ['signin','signup','login','forgot','pricing','onboarding','upload','quiz','results','dashboard','quests','coach','receipts','capsules','review','settings','forecasts'];
+    
+    if(params.get('success')==='true'){
+        history.replaceState({},'',location.pathname);
+        const pending=localStorage.getItem('t1p_pending');
+        if(pending){S.user=JSON.parse(pending);S.user.plan='paid';S.screen='onboarding';updateHash();render();return;}
+    }
+    
+    const session=localStorage.getItem('t1p_session');
+    if(session){
+        const data=JSON.parse(session);
+        const users=await db('users','GET',null,`?email=eq.${encodeURIComponent(data.email)}`);
+        if(users?.length){
+            S.user=users[0];S.scores=users[0].scores||{ideas:50,personality:50,execution:50};
+            S.receipts=users[0].receipts||[];S.quests=users[0].quests?.length?users[0].quests:genQuests();S.diff=users[0].diff||'standard';
+            
+            // Merge any local receipts that might not have synced (edge case recovery)
+            const localSession = JSON.parse(session);
+            if(localSession.receipts && localSession.receipts.length > S.receipts.length) {
+                // Local has more receipts - merge them
+                const serverIds = new Set(S.receipts.map(r => r.id));
+                const missingReceipts = localSession.receipts.filter(r => !serverIds.has(r.id));
+                if(missingReceipts.length) {
+                    S.receipts = [...S.receipts, ...missingReceipts];
+                    save(); // Sync merged receipts back to server
+                }
+            }
+            
+            // If logged in and hash is a valid app screen, go there
+            if(hash && ['dashboard','quests','coach','receipts','capsules','review','settings','forecasts'].includes(hash)){
+                S.screen = hash;
+            } else {
+                S.screen=S.user.onboarded?'dashboard':'onboarding';
+            }
+            checkWeeklyProgress();
+            updateHash();
+            render();return;
+        }
+    }
+    
+    // Not logged in - handle auth screens
+    if(hash === 'signup' || hash === 'signin' || hash === 'login'){
+        S.screen = hash === 'signin' ? 'login' : hash;
+    } else if(hash === 'forgot'){
+        S.screen = 'forgot';
+    } else {
+        S.screen = 'login';
+    }
+    updateHash();
+    render();
+}
+
+function updateHash(){
+    const screenToHash = {
+        'login': 'signin',
+        'signup': 'signup',
+        'forgot': 'forgot',
+        'pricing': 'pricing',
+        'onboarding': 'onboarding',
+        'upload': 'upload',
+        'quiz': 'quiz',
+        'results': 'results',
+        'dashboard': 'dashboard',
+        'quests': 'quests',
+        'coach': 'coach',
+        'receipts': 'receipts',
+        'capsules': 'capsules',
+        'review': 'review',
+        'settings': 'settings',
+        'forecasts': 'forecasts'
+    };
+    const newHash = screenToHash[S.screen] || S.screen;
+    if(location.hash !== '#' + newHash){
+        history.pushState(null, '', '#' + newHash);
+    }
+}
+
+// Handle browser back/forward
+window.addEventListener('popstate', () => {
+    const hash = location.hash.replace('#','');
+    if(hash && S.user){
+        if(['dashboard','quests','coach','receipts','capsules','review','settings','forecasts'].includes(hash)){
+            S.screen = hash;
+            render();
+        }
+    } else if(['signin','login','signup','forgot'].includes(hash)){
+        S.screen = hash === 'signin' ? 'login' : hash;
+        render();
+    }
+});
+init();
+</script>
+</body>
+</html>
