@@ -1412,7 +1412,6 @@ async function sendChat(){
     const mode = S.coachMode;
     S.chat.push({t:msg,u:true,mode:mode});inp.value='';S.loading=true;render();
     
-    const mode = S.coachMode;
     const modeChats = S.chat.filter(m => m.mode === mode);
     const coachType = 'coach-' + mode;
     const reply=await ai(modeChats.map(m=>({role:m.u?'user':'assistant',content:m.t})),500,coachType);
