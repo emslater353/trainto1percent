@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Top 1% OS — Train to the Top 1% in the AI Era</title>
     <meta name="description" content="Build the skills AI can't replace — with adaptive technology that tracks your growth, locks in your progress, and proves how far you've come.">
     
@@ -226,9 +228,97 @@
         }
         @media (max-width: 700px) {
             .sidebar { display: none; }
-            .main { margin-left: 0; }
+            .main { margin-left: 0; padding: 15px; padding-bottom: 80px; }
             .results-meters { flex-wrap: wrap; }
+            
+            /* Mobile bottom nav */
+            .mobile-nav { display: flex !important; }
+            
+            /* Fix login/signup screens */
+            .screen-center { padding: 20px 15px; min-height: 100vh; }
+            .container-sm, .container-md { padding: 0 10px; }
+            .logo { font-size: 14px; margin-bottom: 30px; }
+            .card-title { font-size: 20px; }
+            .form-input, .form-textarea, select.form-input { font-size: 16px !important; } /* Prevents zoom on iOS */
+            .btn { padding: 14px 20px; font-size: 12px; }
+            .btn-full { width: 100%; }
+            
+            /* Quiz mobile */
+            .quiz-option { padding: 14px; font-size: 13px; }
+            
+            /* Results mobile */
+            .result-meter { min-width: 100%; }
+            
+            /* Dashboard mobile */
+            .page-header { padding: 15px 0; }
+            .page-title { font-size: 22px; }
+            .stat-value { font-size: 28px; }
+            
+            /* Quests mobile */
+            .quest { padding: 15px; }
+            .quest-title { font-size: 13px; }
+            .quest-actions { flex-direction: column; gap: 8px; }
+            .quest-actions .btn { width: 100%; }
+            
+            /* Chat mobile */
+            .chat-container { height: calc(100vh - 200px); }
+            .chat-input { font-size: 16px !important; }
+            
+            /* Cards mobile */
+            .card { padding: 15px; }
+            .card-header { flex-wrap: wrap; gap: 10px; }
+            
+            /* Modal mobile */
+            .modal { margin: 15px; padding: 20px; max-height: 90vh; overflow-y: auto; }
+            
+            /* Tabs mobile */
+            .tabs { flex-wrap: wrap; gap: 5px; }
+            .tab { padding: 8px 12px; font-size: 11px; flex: 1; text-align: center; min-width: 80px; }
+            
+            /* Onboarding mobile */
+            .onboard-progress { padding: 15px 0; }
+            .goals-grid, .interests-grid { grid-template-columns: 1fr; }
+            .goal-option, .interest-option { padding: 12px; }
+            
+            /* Settings mobile */
+            .form-group { margin-bottom: 15px; }
+            
+            /* Forecasts mobile */
+            .forecast-card { padding: 15px; }
+            .opp-card { padding: 12px; }
+            
+            /* Hide desktop elements */
+            .desktop-only { display: none !important; }
         }
+        
+        /* Mobile bottom navigation */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--bg-tertiary);
+            padding: 8px 0;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+            z-index: 1000;
+            justify-content: space-around;
+        }
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+        }
+        .mobile-nav-item.active { color: var(--accent); }
+        .mobile-nav-item span { font-size: 18px; }
     </style>
 </head>
 <body>
@@ -1011,7 +1101,7 @@ function resultsH(){
     </div></div></div>`;
 }
 
-function appH(c){return `<div class="app-layout"><aside class="sidebar"><div class="sidebar-logo">TOP <span>1%</span> OS</div><div class="sidebar-streak"><div class="streak-value">🔥 ${streak()}</div><div class="streak-label">Day Streak</div></div><ul class="sidebar-nav"><li><a href="#" data-screen="dashboard" class="${S.screen==='dashboard'?'active':''}">◉ Dashboard</a></li><li><a href="#" data-screen="quests" class="${S.screen==='quests'?'active':''}">⚔ Quests</a></li><li><a href="#" data-screen="coach" class="${S.screen==='coach'?'active':''}">◎ AI Coach</a></li><li><a href="#" data-screen="forecasts" class="${S.screen==='forecasts'?'active':''}">🔮 Forecasts</a></li><li><a href="#" data-screen="receipts" class="${S.screen==='receipts'?'active':''}">◈ Receipts</a></li><li><a href="#" data-screen="capsules" class="${S.screen==='capsules'?'active':''}">📦 Capsules</a></li><li><a href="#" data-screen="review" class="${S.screen==='review'?'active':''}">📊 Review</a></li><li><a href="#" data-screen="settings" class="${S.screen==='settings'?'active':''}">⚙ Settings</a></li></ul><div class="sidebar-user"><div class="sidebar-name">${S.user?.name||'User'}</div><div class="sidebar-email">${S.user?.email||''}</div><span class="sidebar-logout" id="logout">Sign out</span></div></aside><main class="main">${c}</main></div>`;}
+function appH(c){return `<div class="app-layout"><aside class="sidebar"><div class="sidebar-logo">TOP <span>1%</span> OS</div><div class="sidebar-streak"><div class="streak-value">🔥 ${streak()}</div><div class="streak-label">Day Streak</div></div><ul class="sidebar-nav"><li><a href="#" data-screen="dashboard" class="${S.screen==='dashboard'?'active':''}">◉ Dashboard</a></li><li><a href="#" data-screen="quests" class="${S.screen==='quests'?'active':''}">⚔ Quests</a></li><li><a href="#" data-screen="coach" class="${S.screen==='coach'?'active':''}">◎ AI Coach</a></li><li><a href="#" data-screen="forecasts" class="${S.screen==='forecasts'?'active':''}">🔮 Forecasts</a></li><li><a href="#" data-screen="receipts" class="${S.screen==='receipts'?'active':''}">◈ Receipts</a></li><li><a href="#" data-screen="capsules" class="${S.screen==='capsules'?'active':''}">📦 Capsules</a></li><li><a href="#" data-screen="review" class="${S.screen==='review'?'active':''}">📊 Review</a></li><li><a href="#" data-screen="settings" class="${S.screen==='settings'?'active':''}">⚙ Settings</a></li></ul><div class="sidebar-user"><div class="sidebar-name">${S.user?.name||'User'}</div><div class="sidebar-email">${S.user?.email||''}</div><span class="sidebar-logout" id="logout">Sign out</span></div></aside><main class="main">${c}</main><nav class="mobile-nav"><div class="mobile-nav-item ${S.screen==='dashboard'?'active':''}" data-screen="dashboard"><span>◉</span>Home</div><div class="mobile-nav-item ${S.screen==='quests'?'active':''}" data-screen="quests"><span>⚔</span>Quests</div><div class="mobile-nav-item ${S.screen==='coach'?'active':''}" data-screen="coach"><span>◎</span>Coach</div><div class="mobile-nav-item ${S.screen==='forecasts'?'active':''}" data-screen="forecasts"><span>🔮</span>Forecasts</div><div class="mobile-nav-item ${S.screen==='settings'?'active':''}" data-screen="settings"><span>⚙</span>More</div></nav></div>`;}
 
 function dashH(){const active=S.quests.filter(q=>!q.done).slice(0,3),recent=S.receipts.slice(-3).reverse();return `<div class="page-header"><h1 class="page-title">Dashboard</h1><p class="page-subtitle">Day ${dayNum()}</p></div><div class="stats"><div class="stat"><div class="stat-value">${totalXP()}</div><div class="stat-label">XP</div></div><div class="stat"><div class="stat-value">${S.receipts.length}</div><div class="stat-label">Receipts</div></div><div class="stat"><div class="stat-value">${streak()}</div><div class="stat-label">Streak</div></div><div class="stat"><div class="stat-value">${dayNum()}</div><div class="stat-label">Day</div></div></div><div class="grid-2"><div><div class="card"><div class="card-header"><span class="card-header-title">Mode Levels</span></div><div class="mode-bars"><div class="mode-bar"><span class="mode-name ideas">Ideas</span><div class="mode-track"><div class="mode-fill ideas" style="width:${S.scores.ideas}%"></div></div><span class="mode-value">${S.scores.ideas}%</span></div><div class="mode-bar"><span class="mode-name personality">Personality</span><div class="mode-track"><div class="mode-fill personality" style="width:${S.scores.personality}%"></div></div><span class="mode-value">${S.scores.personality}%</span></div><div class="mode-bar"><span class="mode-name execution">Execution</span><div class="mode-track"><div class="mode-fill execution" style="width:${S.scores.execution}%"></div></div><span class="mode-value">${S.scores.execution}%</span></div></div></div><div class="card"><div class="card-header"><span class="card-header-title">Today's Quests</span><a href="#" data-screen="quests" class="text-link">All →</a></div>${active.length?active.map(q=>`<div class="quest ${q.boss?'boss':''}"><div class="quest-header"><span class="quest-mode ${q.mode}">${q.mode}</span><span class="quest-diff ${q.diff}">${q.boss?'👑 BOSS':q.diff}</span></div><div class="quest-title">${q.t}</div><div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span></div><div class="quest-actions"><button class="btn btn-small btn-success complete-q" data-id="${q.id}">✓ Done</button></div></div>`).join(''):'<p class="text-secondary text-small">All done!</p>'}</div></div><div><div class="card"><div class="card-header"><span class="card-header-title">Recent Receipts</span></div>${recent.length?recent.map(r=>`<div class="receipt"><div class="receipt-check">✓</div><div class="receipt-content"><div class="receipt-title">${r.title}</div><div class="receipt-meta">${r.mode} · +${r.xp} XP</div></div></div>`).join(''):'<p class="text-secondary text-small">Complete quests to earn receipts.</p>'}</div></div></div>`;}
 
