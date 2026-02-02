@@ -319,6 +319,35 @@
         }
         .mobile-nav-item.active { color: var(--accent); }
         .mobile-nav-item span { font-size: 18px; }
+        
+        /* More menu popup */
+        .more-menu {
+            display: none;
+            position: fixed;
+            bottom: 70px;
+            right: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 160px;
+            z-index: 1001;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+        }
+        .more-menu.show { display: block; }
+        .more-menu-item {
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .more-menu-item:hover, .more-menu-item:active {
+            background: var(--bg-tertiary);
+        }
+        .more-menu-item span { font-size: 14px; opacity: 0.7; }
     </style>
 </head>
 <body>
@@ -335,6 +364,7 @@ const S = {
     quests: [], receipts: [], chat: [], loading: false, modal: null, selectedQuest: null,
     quizStep: 0, quizAnswers: [], uploadedFile: null, diff: 'standard', gptAnalysis: null, weeklyReview: null,
     coachMode: 'ideas', // which coach is active
+    showMoreMenu: false, // mobile more menu state
     // Onboarding data
     onboardStep: 1, // 1=account, 2=occupation, 3=goals, 4=interests, 5=commitment, 6=upload
     onboardData: {
@@ -1101,7 +1131,7 @@ function resultsH(){
     </div></div></div>`;
 }
 
-function appH(c){return `<div class="app-layout"><aside class="sidebar"><div class="sidebar-logo">TOP <span>1%</span> OS</div><div class="sidebar-streak"><div class="streak-value">🔥 ${streak()}</div><div class="streak-label">Day Streak</div></div><ul class="sidebar-nav"><li><a href="#" data-screen="dashboard" class="${S.screen==='dashboard'?'active':''}">◉ Dashboard</a></li><li><a href="#" data-screen="quests" class="${S.screen==='quests'?'active':''}">⚔ Quests</a></li><li><a href="#" data-screen="coach" class="${S.screen==='coach'?'active':''}">◎ AI Coach</a></li><li><a href="#" data-screen="forecasts" class="${S.screen==='forecasts'?'active':''}">🔮 Forecasts</a></li><li><a href="#" data-screen="receipts" class="${S.screen==='receipts'?'active':''}">◈ Receipts</a></li><li><a href="#" data-screen="capsules" class="${S.screen==='capsules'?'active':''}">📦 Capsules</a></li><li><a href="#" data-screen="review" class="${S.screen==='review'?'active':''}">📊 Review</a></li><li><a href="#" data-screen="settings" class="${S.screen==='settings'?'active':''}">⚙ Settings</a></li></ul><div class="sidebar-user"><div class="sidebar-name">${S.user?.name||'User'}</div><div class="sidebar-email">${S.user?.email||''}</div><span class="sidebar-logout" id="logout">Sign out</span></div></aside><main class="main">${c}</main><nav class="mobile-nav"><div class="mobile-nav-item ${S.screen==='dashboard'?'active':''}" data-screen="dashboard"><span>◉</span>Home</div><div class="mobile-nav-item ${S.screen==='quests'?'active':''}" data-screen="quests"><span>⚔</span>Quests</div><div class="mobile-nav-item ${S.screen==='coach'?'active':''}" data-screen="coach"><span>◎</span>Coach</div><div class="mobile-nav-item ${S.screen==='forecasts'?'active':''}" data-screen="forecasts"><span>🔮</span>Forecasts</div><div class="mobile-nav-item ${S.screen==='settings'?'active':''}" data-screen="settings"><span>⚙</span>More</div></nav></div>`;}
+function appH(c){return `<div class="app-layout"><aside class="sidebar"><div class="sidebar-logo">TOP <span>1%</span> OS</div><div class="sidebar-streak"><div class="streak-value">🔥 ${streak()}</div><div class="streak-label">Day Streak</div></div><ul class="sidebar-nav"><li><a href="#" data-screen="dashboard" class="${S.screen==='dashboard'?'active':''}">◉ Dashboard</a></li><li><a href="#" data-screen="quests" class="${S.screen==='quests'?'active':''}">⚔ Quests</a></li><li><a href="#" data-screen="coach" class="${S.screen==='coach'?'active':''}">◎ AI Coach</a></li><li><a href="#" data-screen="forecasts" class="${S.screen==='forecasts'?'active':''}">🔮 Forecasts</a></li><li><a href="#" data-screen="receipts" class="${S.screen==='receipts'?'active':''}">◈ Receipts</a></li><li><a href="#" data-screen="capsules" class="${S.screen==='capsules'?'active':''}">📦 Capsules</a></li><li><a href="#" data-screen="review" class="${S.screen==='review'?'active':''}">📊 Review</a></li><li><a href="#" data-screen="settings" class="${S.screen==='settings'?'active':''}">⚙ Settings</a></li></ul><div class="sidebar-user"><div class="sidebar-name">${S.user?.name||'User'}</div><div class="sidebar-email">${S.user?.email||''}</div><span class="sidebar-logout" id="logout">Sign out</span></div></aside><main class="main">${c}</main><nav class="mobile-nav"><div class="mobile-nav-item ${S.screen==='dashboard'?'active':''}" data-screen="dashboard"><span>◉</span>Home</div><div class="mobile-nav-item ${S.screen==='quests'?'active':''}" data-screen="quests"><span>⚔</span>Quests</div><div class="mobile-nav-item ${S.screen==='coach'?'active':''}" data-screen="coach"><span>◎</span>Coach</div><div class="mobile-nav-item ${S.screen==='forecasts'?'active':''}" data-screen="forecasts"><span>🔮</span>Forecasts</div><div class="mobile-nav-item ${['receipts','capsules','review','settings'].includes(S.screen)?'active':''}" id="more-menu-toggle"><span>☰</span>More</div></nav><div class="more-menu ${S.showMoreMenu?'show':''}" id="more-menu"><div class="more-menu-item" data-screen="receipts"><span>◈</span> Receipts</div><div class="more-menu-item" data-screen="capsules"><span>📦</span> Capsules</div><div class="more-menu-item" data-screen="review"><span>📊</span> Review</div><div class="more-menu-item" data-screen="settings"><span>⚙</span> Settings</div><div class="more-menu-item" id="mobile-logout"><span>↩</span> Sign Out</div></div></div>`;}
 
 function dashH(){const active=S.quests.filter(q=>!q.done).slice(0,3),recent=S.receipts.slice(-3).reverse();return `<div class="page-header"><h1 class="page-title">Dashboard</h1><p class="page-subtitle">Day ${dayNum()}</p></div><div class="stats"><div class="stat"><div class="stat-value">${totalXP()}</div><div class="stat-label">XP</div></div><div class="stat"><div class="stat-value">${S.receipts.length}</div><div class="stat-label">Receipts</div></div><div class="stat"><div class="stat-value">${streak()}</div><div class="stat-label">Streak</div></div><div class="stat"><div class="stat-value">${dayNum()}</div><div class="stat-label">Day</div></div></div><div class="grid-2"><div><div class="card"><div class="card-header"><span class="card-header-title">Mode Levels</span></div><div class="mode-bars"><div class="mode-bar"><span class="mode-name ideas">Ideas</span><div class="mode-track"><div class="mode-fill ideas" style="width:${S.scores.ideas}%"></div></div><span class="mode-value">${S.scores.ideas}%</span></div><div class="mode-bar"><span class="mode-name personality">Personality</span><div class="mode-track"><div class="mode-fill personality" style="width:${S.scores.personality}%"></div></div><span class="mode-value">${S.scores.personality}%</span></div><div class="mode-bar"><span class="mode-name execution">Execution</span><div class="mode-track"><div class="mode-fill execution" style="width:${S.scores.execution}%"></div></div><span class="mode-value">${S.scores.execution}%</span></div></div></div><div class="card"><div class="card-header"><span class="card-header-title">Today's Quests</span><a href="#" data-screen="quests" class="text-link">All →</a></div>${active.length?active.map(q=>`<div class="quest ${q.boss?'boss':''}"><div class="quest-header"><span class="quest-mode ${q.mode}">${q.mode}</span><span class="quest-diff ${q.diff}">${q.boss?'👑 BOSS':q.diff}</span></div><div class="quest-title">${q.t}</div><div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span></div><div class="quest-actions"><button class="btn btn-small btn-success complete-q" data-id="${q.id}">✓ Done</button></div></div>`).join(''):'<p class="text-secondary text-small">All done!</p>'}</div></div><div><div class="card"><div class="card-header"><span class="card-header-title">Recent Receipts</span></div>${recent.length?recent.map(r=>`<div class="receipt"><div class="receipt-check">✓</div><div class="receipt-content"><div class="receipt-title">${r.title}</div><div class="receipt-meta">${r.mode} · +${r.xp} XP</div></div></div>`).join(''):'<p class="text-secondary text-small">Complete quests to earn receipts.</p>'}</div></div></div>`;}
 
@@ -1315,8 +1345,13 @@ function bindEvents(){
     document.getElementById('start-app')?.addEventListener('click',startApp);
     
     // App navigation
-    document.querySelectorAll('[data-screen]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();S.screen=a.dataset.screen;render();}));
+    document.querySelectorAll('[data-screen]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();S.showMoreMenu=false;S.screen=a.dataset.screen;render();}));
     document.getElementById('logout')?.addEventListener('click',logout);
+    document.getElementById('mobile-logout')?.addEventListener('click',logout);
+    
+    // More menu toggle
+    document.getElementById('more-menu-toggle')?.addEventListener('click',e=>{e.stopPropagation();S.showMoreMenu=!S.showMoreMenu;render();});
+    document.addEventListener('click',e=>{if(S.showMoreMenu && !e.target.closest('.more-menu') && !e.target.closest('#more-menu-toggle')){S.showMoreMenu=false;render();}});
     
     // Quests
     document.querySelectorAll('.complete-q').forEach(b=>b.addEventListener('click',()=>openModal(b.dataset.id)));
