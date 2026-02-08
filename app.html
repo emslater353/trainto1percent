@@ -1784,6 +1784,7 @@ function settingsH(){return `<div class="page-header"><h1 class="page-title">Set
 
 
 function modalH(){
+    if(S.modal==='forecastDetail') return forecastDetailModalH();
     if(S.modal==='complete'){
         const q=S.selectedQuest;
         return `<div class="modal-overlay" id="modal-bg"><div class="modal"><h3 class="modal-title">Quest Complete! 🎯</h3><p class="text-secondary text-small mb-20">${q.t}</p><div class="form-group"><label class="form-label">Reflection (optional)</label><textarea class="form-textarea" id="reflection" placeholder="What happened? What did you learn?"></textarea></div><div class="flex gap-10"><button class="btn btn-primary btn-full" id="confirm-done">Log Receipt (+${q.xp} XP)</button><button class="btn btn-secondary" id="cancel-modal">Cancel</button></div></div></div>`;
@@ -2468,7 +2469,8 @@ async function save(){
         hiddenQuests: S.hiddenQuests,
         customQuests: S.customQuests,
         followedForecasts: S.followedForecasts,
-        forecastProgress: S.forecastProgress
+        forecastProgress: S.forecastProgress,
+        lastQuestWeek: S.user.lastQuestWeek
     };
     await db('users','PATCH',data,`?email=eq.${encodeURIComponent(S.user.email)}`);
     localStorage.setItem('apc_session',JSON.stringify({...S.user,...data}));
@@ -6048,18 +6050,20 @@ async function loadForecasts() {
 }
 
 // Update modalH to include forecast detail modal
-function modalH() {
-    if (S.modal === 'forecastDetail') return forecastDetailModalH();
-    if (S.modal === 'complete') {
-        const q = S.selectedQuest;
-        return `<div class="modal-overlay" id="modal-bg"><div class="modal"><h3 class="modal-title">Quest Complete! 🎯</h3><p class="text-secondary text-small mb-20">${q.t}</p><div class="form-group"><label class="form-label">Reflection (optional)</label><textarea class="form-textarea" id="reflection" placeholder="What happened? What did you learn?"></textarea></div><div class="flex gap-10"><button class="btn btn-primary btn-full" id="confirm-done">Log Receipt (+${q.xp} XP)</button><button class="btn btn-secondary" id="cancel-modal">Cancel</button></div></div></div>`;
-    }
-    return '';
-}
-
 async function init(){
     const params=new URLSearchParams(location.search);
     const hash=location.hash.replace('#','');
+    
+    // Check for diagnostic mode from landing page
+    if(params.get('mode') === 'diagnostic') {
+        history.replaceState({}, '', location.pathname + '#quiz');
+        S.freeQuizMode = true;
+        S.quizStep = 0;
+        S.answers = [];
+        S.screen = 'freeQuiz';
+        render();
+        return;
+    }
     
     // Check for password reset token
     const resetToken = params.get('token');
@@ -6086,12 +6090,26 @@ async function init(){
         const users=await db('users','GET',null,`?email=eq.${encodeURIComponent(data.email)}`);
         if(users?.length){
             S.user=users[0];S.scores=users[0].scores||{ideas:50,personality:50,execution:50};
-            S.receipts=users[0].receipts||[];S.quests=users[0].quests?.length?users[0].quests:genQuests();S.diff=users[0].diff||'standard';
+            S.receipts=users[0].receipts||[];S.diff=users[0].diff||'standard';
+            
+            // Load quests - ONLY generate new ones if truly empty
+            if(users[0].quests && users[0].quests.length > 0) {
+                S.quests = users[0].quests;
+            } else {
+                S.quests = genQuests();
+            }
+            
             // Load quest customization data
             S.hiddenQuests=users[0].hiddenQuests||[];
             S.customQuests=users[0].customQuests||[];
             S.followedForecasts=users[0].followedForecasts||[];
             S.forecastProgress=users[0].forecastProgress||{};
+            
+            // Ensure lastQuestWeek is set if user has quests
+            if(!S.user.lastQuestWeek && S.quests.length > 0) {
+                S.user.lastQuestWeek = getWeekNumber();
+                save();
+            }
             
             // Merge any local receipts that might not have synced (edge case recovery)
             const localSession = JSON.parse(session);
