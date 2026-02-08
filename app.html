@@ -728,6 +728,7 @@ const S = {
     forecastFilter: 'all', // all, ai, tech, crypto, politics, science
     forecastPerson: 'all',
     selectedForecast: null,
+    expandedOpp: null, // which opportunity is expanded in modal
     opportunities: {}
 };
 
@@ -2003,10 +2004,16 @@ function bindEvents(){
     document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{S.forecastFilter=b.dataset.filter;render();}));
     document.querySelectorAll('.view-forecast-detail').forEach(b=>b.addEventListener('click',()=>{
         S.selectedForecast = FORECAST_DATABASE.find(f => f.id === b.dataset.id);
+        S.expandedOpp = null; // Reset expanded opportunity
         S.modal = 'forecastDetail';
         render();
     }));
-    document.getElementById('close-forecast-modal')?.addEventListener('click',()=>{S.modal=null;S.selectedForecast=null;render();});
+    document.getElementById('close-forecast-modal')?.addEventListener('click',()=>{S.modal=null;S.selectedForecast=null;S.expandedOpp=null;render();});
+    document.querySelectorAll('.opp-header').forEach(h=>h.addEventListener('click',()=>{
+        const oppIndex = parseInt(h.dataset.opp);
+        S.expandedOpp = S.expandedOpp === oppIndex ? null : oppIndex;
+        render();
+    }));
     document.querySelectorAll('.add-quest-path').forEach(b=>b.addEventListener('click',()=>{
         addQuestPathToQueue(b.dataset.forecast, parseInt(b.dataset.opp));
     }));
@@ -6247,33 +6254,47 @@ function forecastDetailModalH() {
                 ` : ''}
                 
                 <div style="margin-bottom:20px">
-                    <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Opportunities to Prepare</div>
+                    <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Opportunities to Prepare (${f.opportunities.length})</div>
                     
                     ${f.opportunities.map((opp, i) => `
-                        <div style="background:var(--bg-primary);border:1px solid var(--bg-tertiary);padding:15px;margin-bottom:12px">
-                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                                <h4 style="font-size:14px">${opp.title}</h4>
-                                <span style="font-size:10px;padding:2px 8px;background:var(--bg-tertiary);color:var(--${opp.mode})">+${opp.mode.toUpperCase()}</span>
-                            </div>
-                            <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:12px">${opp.description}</p>
-                            <div style="font-size:10px;color:var(--text-muted);margin-bottom:12px">Difficulty: ${opp.difficulty} · Timeframe: ${opp.timeframe}</div>
-                            
-                            <div style="background:var(--bg-secondary);padding:12px;border-left:2px solid var(--accent)">
-                                <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Quest Path (${opp.quests.length} quests)</div>
-                                ${opp.quests.map((q, j) => `
-                                    <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;padding-bottom:8px;${j < opp.quests.length - 1 ? 'border-bottom:1px solid var(--bg-tertiary)' : ''}">
-                                        <span style="font-size:9px;padding:2px 6px;background:var(--bg-tertiary);color:var(--${q.mode})">${q.mode.substring(0,3).toUpperCase()}</span>
-                                        <span style="font-size:11px;flex:1">${q.task}</span>
-                                        <span style="font-size:10px;color:var(--accent)">+${q.xp}</span>
+                        <div style="background:var(--bg-primary);border:1px solid ${S.expandedOpp === i ? 'var(--accent)' : 'var(--bg-tertiary)'};margin-bottom:12px;transition:all 0.2s">
+                            <div class="opp-header" data-opp="${i}" style="padding:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start">
+                                <div style="flex:1">
+                                    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+                                        <h4 style="font-size:14px;margin:0">${opp.title}</h4>
+                                        <span style="font-size:10px;padding:2px 8px;background:var(--bg-tertiary);color:var(--${opp.mode})">+${opp.mode.toUpperCase()}</span>
                                     </div>
-                                `).join('')}
-                                <button class="btn btn-small btn-primary btn-full mt-10 add-quest-path" data-forecast="${f.id}" data-opp="${i}">Add These Quests to My Queue →</button>
+                                    <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin:0">${opp.description}</p>
+                                    <div style="font-size:10px;color:var(--text-muted);margin-top:8px">Difficulty: ${opp.difficulty} · Timeframe: ${opp.timeframe} · ${opp.quests.length} quests</div>
+                                </div>
+                                <span style="color:var(--accent);font-size:18px;margin-left:10px">${S.expandedOpp === i ? '−' : '+'}</span>
                             </div>
+                            
+                            ${S.expandedOpp === i ? `
+                            <div style="padding:0 15px 15px 15px;border-top:1px solid var(--bg-tertiary)">
+                                <div style="background:var(--bg-secondary);padding:12px;border-left:2px solid var(--accent);margin-top:15px">
+                                    <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Quest Path</div>
+                                    ${opp.quests.map((q, j) => `
+                                        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;padding-bottom:10px;${j < opp.quests.length - 1 ? 'border-bottom:1px solid var(--bg-tertiary)' : ''}">
+                                            <span style="font-size:9px;padding:2px 6px;background:var(--bg-tertiary);color:var(--${q.mode});flex-shrink:0">${q.mode.substring(0,3).toUpperCase()}</span>
+                                            <span style="font-size:11px;flex:1;line-height:1.4">${q.task}</span>
+                                            <span style="font-size:10px;color:var(--accent);flex-shrink:0">+${q.xp}</span>
+                                        </div>
+                                    `).join('')}
+                                    <button class="btn btn-small btn-primary btn-full mt-10 add-quest-path" data-forecast="${f.id}" data-opp="${i}">Add These Quests to My Queue →</button>
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
                     `).join('')}
                 </div>
                 
-                ${f.sourceUrl ? `<a href="${f.sourceUrl}" target="_blank" class="btn btn-small btn-secondary">View Source →</a>` : ''}
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                    <button class="btn btn-small ${S.followedForecasts.includes(f.id)?'btn-success':'btn-secondary'} follow-forecast" data-id="${f.id}">
+                        ${S.followedForecasts.includes(f.id)?'✓ Following':'+ Follow This Forecast'}
+                    </button>
+                    ${f.sourceUrl ? `<a href="${f.sourceUrl}" target="_blank" class="btn btn-small btn-secondary">View Source →</a>` : ''}
+                </div>
             </div>
         </div>
     `;
