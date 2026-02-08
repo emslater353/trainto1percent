@@ -3,7 +3,7 @@
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const SUPPORT_EMAIL = 'erica.m.slater@gmail.com';
-const FROM_EMAIL = 'Top 1% OS <noreply@trainto1percent.com>';
+const FROM_EMAIL = 'AI Proof Club <noreply@aiproof.club>';
 
 exports.handler = async (event) => {
     // Only allow POST
@@ -29,7 +29,7 @@ exports.handler = async (event) => {
                 emailPayload = {
                     from: FROM_EMAIL,
                     to: data.email,
-                    subject: 'Welcome to Top 1% OS — Your Training Begins 🎯',
+                    subject: 'Welcome to AI Proof Club',
                     html: generateWelcomeEmail(data.name)
                 };
                 break;
@@ -40,7 +40,7 @@ exports.handler = async (event) => {
                 emailPayload = {
                     from: FROM_EMAIL,
                     to: data.email,
-                    subject: 'Reset Your Top 1% OS Password',
+                    subject: 'Reset Your AI Proof Club Password',
                     html: generatePasswordResetEmail(data.name, resetToken)
                 };
                 // Return the token so we can store it
@@ -51,7 +51,7 @@ exports.handler = async (event) => {
                 emailPayload = {
                     from: FROM_EMAIL,
                     to: data.email,
-                    subject: `Week ${data.weekNum}: Your Top 1% Training Awaits 💪`,
+                    subject: `Week ${data.weekNum}: Your AI Proof Quests Are Ready`,
                     html: generateWeeklyEmail(data.name, data.weekNum, data.tasks, data.stats)
                 };
                 break;
@@ -61,7 +61,7 @@ exports.handler = async (event) => {
                 emailPayload = {
                     from: FROM_EMAIL,
                     to: SUPPORT_EMAIL,
-                    subject: `[Top 1% OS Support] ${data.subject}`,
+                    subject: `[AI Proof Club] ${data.subject}`,
                     html: generateSupportEmail(data),
                     reply_to: data.email
                 };
@@ -69,7 +69,7 @@ exports.handler = async (event) => {
                 await sendEmail({
                     from: FROM_EMAIL,
                     to: data.email,
-                    subject: 'We received your message — Top 1% OS',
+                    subject: 'We received your message — AI Proof Club',
                     html: generateSupportConfirmation(data.name)
                 });
                 break;
@@ -132,45 +132,54 @@ function generateWelcomeEmail(name) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: 'Courier New', monospace; background: #0a0a0a; color: #f5f5f5; padding: 40px 20px; margin: 0;">
+<body style="font-family: 'Courier New', monospace; background: #050508; color: #e8e8ec; padding: 40px 20px; margin: 0;">
     <div style="max-width: 600px; margin: 0 auto;">
         <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="font-size: 18px; letter-spacing: 3px; margin: 0;">TOP <span style="color: #c9ff2f;">1%</span> OS</h1>
+            <h1 style="font-size: 18px; letter-spacing: 3px; margin: 0;">AI PROOF <span style="color: #00f0ff;">CLUB</span></h1>
         </div>
         
-        <div style="background: #111; border: 1px solid #222; padding: 30px;">
-            <h2 style="font-size: 24px; margin: 0 0 20px 0; font-weight: normal;">Welcome, ${name} 👋</h2>
+        <div style="background: #0d0d12; border: 1px solid #1a1a24; padding: 30px;">
+            <h2 style="font-size: 24px; margin: 0 0 25px 0; font-weight: normal;">Welcome to AI Proof Club.</h2>
             
-            <p style="color: #888; line-height: 1.7; margin: 0 0 20px 0;">
-                You've taken the first step toward joining the Top 1%. Most people never do.
+            <p style="color: #e8e8ec; line-height: 1.8; margin: 0 0 20px 0;">
+                I'm Erica. I built AI Proof Club because I kept hearing fear when people talked about AI and I didn't think fear was the right response.
             </p>
             
-            <p style="line-height: 1.7; margin: 0 0 20px 0;">
-                Here's how Top 1% OS works:
+            <p style="color: #e8e8ec; line-height: 1.8; margin: 0 0 20px 0;">
+                The people who stay ahead don't panic because they're the ones who stay ahead of the curve.
             </p>
             
-            <div style="background: #0a0a0a; border-left: 3px solid #c9ff2f; padding: 15px; margin: 20px 0;">
-                <p style="margin: 0 0 10px 0;"><strong style="color: #6b8afd;">IDEAS</strong> — Strategic thinking, frameworks, taste</p>
-                <p style="margin: 0 0 10px 0;"><strong style="color: #fd6b8a;">PERSONALITY</strong> — Communication, influence, presence</p>
-                <p style="margin: 0;"><strong style="color: #8afd6b;">EXECUTION</strong> — Action, shipping, follow-through</p>
+            <p style="color: #e8e8ec; line-height: 1.8; margin: 0 0 20px 0;">
+                My background is in luxury fashion, where forecasting trends far in advance is built into day-to-day operations, and in an AI startup where I interact with how fast technology actually moves. When my worlds collided, I realized becoming AI proof is about anticipating better.
+            </p>
+            
+            <div style="background: #050508; border-left: 3px solid #00f0ff; padding: 20px; margin: 25px 0;">
+                <p style="margin: 0; color: #e8e8ec; line-height: 1.8;">
+                    <strong style="color: #00f0ff;">Here is how it works:</strong> Each week, you'll get quests intentionally designed from projections around AI capabilities, focusing on skills AI can't easily replace: <strong style="color: #7b68ee;">ideas</strong>, <strong style="color: #ff6b9d;">personality</strong>, and <strong style="color: #00ff88;">execution</strong>.
+                </p>
             </div>
             
-            <p style="color: #888; line-height: 1.7; margin: 0 0 20px 0;">
-                Each day, you'll get IRL quests targeting your weakest mode. Complete them, earn XP, build your streak.
+            <p style="color: #e8e8ec; line-height: 1.8; margin: 0 0 20px 0;">
+                Your quests are shaped by your interests and what you choose to follow so that you're preparing deliberately.
             </p>
             
-            <p style="line-height: 1.7; margin: 0 0 30px 0;">
-                <strong>Your first task:</strong> Complete today's quests before midnight.
+            <p style="color: #e8e8ec; line-height: 1.8; margin: 0 0 20px 0;">
+                You don't need to outrun AI. But you need to strengthen the parts of yourself that it can't copy and position those strengths where opportunity is likely to emerge. That way, when technology changes the game, whether it's generating full-length films from a single prompt or something we haven't named yet, you're not scrambling. You're already ahead of it.
             </p>
             
-            <a href="https://trainto1percent.com/app.html#dashboard" 
-               style="display: inline-block; background: #c9ff2f; color: #0a0a0a; padding: 14px 28px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 1px;">
-                START TRAINING →
+            <p style="color: #e8e8ec; line-height: 1.8; margin: 0 0 30px 0;">
+                Let's stay AI-proof together.<br>
+                <strong>— Erica</strong>
+            </p>
+            
+            <a href="https://aiproof.club/app.html#dashboard" 
+               style="display: inline-block; background: #00f0ff; color: #050508; padding: 14px 28px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 2px;">
+                START YOUR QUESTS →
             </a>
         </div>
         
-        <p style="color: #555; font-size: 12px; text-align: center; margin-top: 30px;">
-            Questions? Reply to this email or use the Support form in the app.
+        <p style="color: #6e7087; font-size: 12px; text-align: center; margin-top: 30px;">
+            Questions? Reply to this email anytime.
         </p>
     </div>
 </body>
@@ -179,7 +188,7 @@ function generateWelcomeEmail(name) {
 }
 
 function generatePasswordResetEmail(name, token) {
-    const resetLink = `https://trainto1percent.com/app.html?token=${token}#reset`;
+    const resetLink = `https://aiproof.club/app.html?token=${token}#reset`;
     
     return `
 <!DOCTYPE html>
@@ -188,16 +197,16 @@ function generatePasswordResetEmail(name, token) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: 'Courier New', monospace; background: #0a0a0a; color: #f5f5f5; padding: 40px 20px; margin: 0;">
+<body style="font-family: 'Courier New', monospace; background: #050508; color: #e8e8ec; padding: 40px 20px; margin: 0;">
     <div style="max-width: 600px; margin: 0 auto;">
         <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="font-size: 18px; letter-spacing: 3px; margin: 0;">TOP <span style="color: #c9ff2f;">1%</span> OS</h1>
+            <h1 style="font-size: 18px; letter-spacing: 3px; margin: 0;">AI PROOF <span style="color: #00f0ff;">CLUB</span></h1>
         </div>
         
-        <div style="background: #111; border: 1px solid #222; padding: 30px;">
+        <div style="background: #0d0d12; border: 1px solid #1a1a24; padding: 30px;">
             <h2 style="font-size: 24px; margin: 0 0 20px 0; font-weight: normal;">Reset Your Password</h2>
             
-            <p style="color: #888; line-height: 1.7; margin: 0 0 20px 0;">
+            <p style="color: #6e7087; line-height: 1.7; margin: 0 0 20px 0;">
                 Hi ${name || 'there'},
             </p>
             
@@ -206,16 +215,16 @@ function generatePasswordResetEmail(name, token) {
             </p>
             
             <a href="${resetLink}" 
-               style="display: inline-block; background: #c9ff2f; color: #0a0a0a; padding: 14px 28px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 1px; margin: 20px 0;">
+               style="display: inline-block; background: #00f0ff; color: #050508; padding: 14px 28px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 2px; margin: 20px 0;">
                 RESET PASSWORD →
             </a>
             
-            <p style="color: #555; font-size: 12px; line-height: 1.7; margin: 20px 0 0 0;">
+            <p style="color: #6e7087; font-size: 12px; line-height: 1.7; margin: 20px 0 0 0;">
                 This link expires in 1 hour. If you didn't request this, you can safely ignore this email.
             </p>
         </div>
         
-        <p style="color: #555; font-size: 12px; text-align: center; margin-top: 30px;">
+        <p style="color: #6e7087; font-size: 12px; text-align: center; margin-top: 30px;">
             Can't click the button? Copy this link: ${resetLink}
         </p>
     </div>
@@ -226,14 +235,14 @@ function generatePasswordResetEmail(name, token) {
 
 function generateWeeklyEmail(name, weekNum, tasks, stats) {
     const taskList = tasks.map(t => `
-        <div style="background: #0a0a0a; padding: 15px; margin: 10px 0; border-left: 3px solid ${
-            t.mode === 'ideas' ? '#6b8afd' : t.mode === 'personality' ? '#fd6b8a' : '#8afd6b'
+        <div style="background: #050508; padding: 15px; margin: 10px 0; border-left: 3px solid ${
+            t.mode === 'ideas' ? '#7b68ee' : t.mode === 'personality' ? '#ff6b9d' : '#00ff88'
         };">
             <p style="margin: 0 0 5px 0; color: ${
-                t.mode === 'ideas' ? '#6b8afd' : t.mode === 'personality' ? '#fd6b8a' : '#8afd6b'
+                t.mode === 'ideas' ? '#7b68ee' : t.mode === 'personality' ? '#ff6b9d' : '#00ff88'
             }; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">${t.mode}</p>
             <p style="margin: 0;">${t.task}</p>
-            <p style="margin: 5px 0 0 0; color: #c9ff2f; font-size: 12px;">+${t.xp} XP</p>
+            <p style="margin: 5px 0 0 0; color: #00f0ff; font-size: 12px;">+${t.xp} XP</p>
         </div>
     `).join('');
 
@@ -244,45 +253,45 @@ function generateWeeklyEmail(name, weekNum, tasks, stats) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: 'Courier New', monospace; background: #0a0a0a; color: #f5f5f5; padding: 40px 20px; margin: 0;">
+<body style="font-family: 'Courier New', monospace; background: #050508; color: #e8e8ec; padding: 40px 20px; margin: 0;">
     <div style="max-width: 600px; margin: 0 auto;">
         <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="font-size: 18px; letter-spacing: 3px; margin: 0;">TOP <span style="color: #c9ff2f;">1%</span> OS</h1>
+            <h1 style="font-size: 18px; letter-spacing: 3px; margin: 0;">AI PROOF <span style="color: #00f0ff;">CLUB</span></h1>
         </div>
         
-        <div style="background: #111; border: 1px solid #222; padding: 30px;">
-            <h2 style="font-size: 24px; margin: 0 0 10px 0; font-weight: normal;">Week ${weekNum} Training</h2>
-            <p style="color: #888; margin: 0 0 25px 0;">Hey ${name}, here's what's on deck:</p>
+        <div style="background: #0d0d12; border: 1px solid #1a1a24; padding: 30px;">
+            <h2 style="font-size: 24px; margin: 0 0 10px 0; font-weight: normal;">Week ${weekNum} Quests</h2>
+            <p style="color: #6e7087; margin: 0 0 25px 0;">Hey ${name}, here's what's on deck:</p>
             
             ${stats ? `
             <div style="display: flex; gap: 20px; margin-bottom: 25px; text-align: center;">
-                <div style="flex: 1; background: #0a0a0a; padding: 15px;">
-                    <div style="font-size: 24px; color: #c9ff2f; font-weight: bold;">${stats.streak}</div>
-                    <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Day Streak</div>
+                <div style="flex: 1; background: #050508; padding: 15px;">
+                    <div style="font-size: 24px; color: #00f0ff; font-weight: bold;">${stats.streak}</div>
+                    <div style="font-size: 10px; color: #6e7087; text-transform: uppercase; letter-spacing: 1px;">Day Streak</div>
                 </div>
-                <div style="flex: 1; background: #0a0a0a; padding: 15px;">
+                <div style="flex: 1; background: #050508; padding: 15px;">
                     <div style="font-size: 24px; font-weight: bold;">${stats.totalXP}</div>
-                    <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Total XP</div>
+                    <div style="font-size: 10px; color: #6e7087; text-transform: uppercase; letter-spacing: 1px;">Total XP</div>
                 </div>
-                <div style="flex: 1; background: #0a0a0a; padding: 15px;">
+                <div style="flex: 1; background: #050508; padding: 15px;">
                     <div style="font-size: 24px; font-weight: bold;">${stats.receipts}</div>
-                    <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Receipts</div>
+                    <div style="font-size: 10px; color: #6e7087; text-transform: uppercase; letter-spacing: 1px;">Receipts</div>
                 </div>
             </div>
             ` : ''}
             
-            <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #888; margin: 0 0 15px 0;">This Week's Quests</h3>
+            <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #6e7087; margin: 0 0 15px 0;">This Week's Quests</h3>
             
             ${taskList}
             
-            <a href="https://trainto1percent.com/app.html#quests" 
-               style="display: inline-block; background: #c9ff2f; color: #0a0a0a; padding: 14px 28px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 1px; margin-top: 25px;">
+            <a href="https://aiproof.club/app.html#quests" 
+               style="display: inline-block; background: #00f0ff; color: #050508; padding: 14px 28px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 2px; margin-top: 25px;">
                 VIEW ALL QUESTS →
             </a>
         </div>
         
-        <p style="color: #555; font-size: 12px; text-align: center; margin-top: 30px;">
-            Keep the streak alive. Every day counts.
+        <p style="color: #6e7087; font-size: 12px; text-align: center; margin-top: 30px;">
+            Stay AI-proof. Every quest counts.
         </p>
     </div>
 </body>
@@ -325,16 +334,16 @@ function generateSupportConfirmation(name) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: 'Courier New', monospace; background: #0a0a0a; color: #f5f5f5; padding: 40px 20px; margin: 0;">
+<body style="font-family: 'Courier New', monospace; background: #050508; color: #e8e8ec; padding: 40px 20px; margin: 0;">
     <div style="max-width: 600px; margin: 0 auto;">
         <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="font-size: 18px; letter-spacing: 3px; margin: 0;">TOP <span style="color: #c9ff2f;">1%</span> OS</h1>
+            <h1 style="font-size: 18px; letter-spacing: 3px; margin: 0;">AI PROOF <span style="color: #00f0ff;">CLUB</span></h1>
         </div>
         
-        <div style="background: #111; border: 1px solid #222; padding: 30px;">
+        <div style="background: #0d0d12; border: 1px solid #1a1a24; padding: 30px;">
             <h2 style="font-size: 24px; margin: 0 0 20px 0; font-weight: normal;">Got it! ✓</h2>
             
-            <p style="color: #888; line-height: 1.7; margin: 0 0 20px 0;">
+            <p style="color: #6e7087; line-height: 1.7; margin: 0 0 20px 0;">
                 Hi ${name || 'there'},
             </p>
             
@@ -342,8 +351,8 @@ function generateSupportConfirmation(name) {
                 We've received your message and will get back to you within 24-48 hours.
             </p>
             
-            <p style="color: #888; line-height: 1.7; margin: 0;">
-                In the meantime, keep training. 💪
+            <p style="color: #6e7087; line-height: 1.7; margin: 0;">
+                In the meantime, stay AI-proof. 🛡️
             </p>
         </div>
     </div>
