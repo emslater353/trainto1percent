@@ -3,42 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top 1% OS — Train the Skills AI Can't Replace</title>
+    <title>AI Proof Club — Train the Skills AI Can't Replace</title>
     <meta name="description" content="Build the skills AI can't replace — with adaptive technology that tracks your growth, locks in your progress, and proves how far you've come.">
     
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://trainto1percent.com/">
-    <meta property="og:title" content="Top 1% OS — Train to the Top 1% in the AI Era">
+    <meta property="og:url" content="https://aiproof.club/">
+    <meta property="og:title" content="AI Proof Club — Build Skills AI Can't Replace">
     <meta property="og:description" content="Build the skills AI can't replace — with adaptive technology that tracks your growth, locks in your progress, and proves how far you've come.">
-    <meta property="og:image" content="https://trainto1percent.com/og-image.png">
+    <meta property="og:image" content="https://aiproof.club/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://trainto1percent.com/">
-    <meta name="twitter:title" content="Top 1% OS — Train to the Top 1% in the AI Era">
+    <meta name="twitter:url" content="https://aiproof.club/">
+    <meta name="twitter:title" content="AI Proof Club — Build Skills AI Can't Replace">
     <meta name="twitter:description" content="Build the skills AI can't replace — with adaptive technology that tracks your growth, locks in your progress, and proves how far you've come.">
-    <meta name="twitter:image" content="https://trainto1percent.com/og-image.png">
+    <meta name="twitter:image" content="https://aiproof.club/og-image.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #111111;
-            --bg-tertiary: #1a1a1a;
-            --text-primary: #f5f5f5;
-            --text-secondary: #888888;
-            --accent: #c9ff2f;
-            --accent-dim: #a3cc26;
-            --danger: #ff4444;
-            --ideas-color: #6b8afd;
-            --personality-color: #fd6b8a;
-            --execution-color: #8afd6b;
-            --font-display: 'Instrument Serif', Georgia, serif;
+            /* METALLIC ROBOTIC THEME */
+            --bg-primary: #050508;
+            --bg-secondary: #0d0d12;
+            --bg-tertiary: #1a1a24;
+            --text-primary: #e8e8ec;
+            --text-secondary: #6e7087;
+            --accent: #00f0ff;
+            --accent-dim: #00c4d4;
+            --accent-glow: rgba(0, 240, 255, 0.15);
+            --danger: #ff3366;
+            --ideas-color: #7b68ee;
+            --personality-color: #ff6b9d;
+            --execution-color: #00ff88;
+            --metal-shine: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+            --font-display: 'Space Mono', monospace;
             --font-mono: 'Space Mono', monospace;
         }
 
@@ -59,6 +62,9 @@
             line-height: 1.6;
             font-size: 14px;
             overflow-x: hidden;
+            background-image: 
+                radial-gradient(ellipse at top, rgba(0, 240, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom, rgba(123, 104, 238, 0.03) 0%, transparent 50%);
         }
 
         body::before {
@@ -97,6 +103,7 @@
 
         .logo span {
             color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
         }
 
         .nav-cta {
@@ -115,6 +122,7 @@
             background: var(--accent);
             border-color: var(--accent);
             color: var(--bg-primary);
+            box-shadow: 0 0 20px var(--accent-glow);
         }
 
         .nav-links {
@@ -133,7 +141,7 @@
         }
 
         .nav-link:hover {
-            color: var(--text-primary);
+            color: var(--accent);
         }
 
         /* Hero */
@@ -156,6 +164,7 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             margin-bottom: 30px;
+            text-shadow: 0 0 10px var(--accent-glow);
         }
 
         .hero-proof-small {
@@ -168,6 +177,7 @@
         .problem-section {
             padding: 100px 40px;
             background: var(--bg-secondary);
+            background-image: var(--metal-shine);
         }
 
         .problem-container {
@@ -721,11 +731,13 @@
 
         .hero h1 {
             font-family: var(--font-display);
-            font-size: clamp(42px, 8vw, 100px);
-            font-weight: 400;
-            line-height: 1.05;
-            margin-bottom: 25px;
+            font-size: clamp(56px, 12vw, 140px);
+            font-weight: 700;
+            line-height: 1.0;
+            margin-bottom: 20px;
             max-width: 900px;
+            text-shadow: 0 0 60px var(--accent-glow);
+            letter-spacing: -2px;
         }
 
         .hero h1 em {
@@ -733,11 +745,21 @@
             color: var(--accent);
         }
 
-        .hero-tagline {
-            font-size: 16px;
-            color: var(--text-primary);
-            margin-bottom: 20px;
+        .hero-subhead {
+            font-family: var(--font-mono);
+            font-size: clamp(18px, 3vw, 28px);
+            color: var(--text-secondary);
+            margin-bottom: 30px;
             max-width: 600px;
+            letter-spacing: 1px;
+        }
+
+        .hero-tagline {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            max-width: 550px;
+            line-height: 1.7;
         }
 
         .hero-emotional {
@@ -786,14 +808,33 @@
             text-decoration: none;
             font-size: 12px;
             font-weight: 700;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             text-transform: uppercase;
             transition: all 0.3s ease;
+            box-shadow: 0 0 20px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
         }
 
         .btn-primary:hover {
             background: var(--text-primary);
             transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(255,255,255,0.2);
         }
 
         .btn-primary::after {
@@ -818,11 +859,13 @@
             letter-spacing: 1px;
             text-transform: uppercase;
             transition: all 0.3s ease;
+            background-image: var(--metal-shine);
         }
 
         .btn-secondary:hover {
-            border-color: var(--text-secondary);
-            color: var(--text-primary);
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
         }
 
         .hero-proof {
@@ -832,7 +875,7 @@
         }
 
         .hero-proof span {
-            color: var(--text-primary);
+            color: var(--accent);
         }
 
         .hero-stats {
@@ -1661,10 +1704,25 @@
             background: var(--bg-secondary);
             padding: 45px 35px;
             transition: all 0.3s ease;
+            background-image: var(--metal-shine);
+            position: relative;
+            border: 1px solid var(--bg-tertiary);
+        }
+
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,240,255,0.3), transparent);
         }
 
         .mode-card:hover {
             background: var(--bg-primary);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
         }
 
         .mode-card.personality-focus {
@@ -1704,15 +1762,30 @@
             background: var(--bg-primary);
             border-left: 3px solid var(--accent);
             max-width: 700px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modes-bottom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-glow) 0%, transparent 50%);
+            pointer-events: none;
         }
 
         .modes-bottom p {
             font-size: 15px;
             line-height: 1.7;
+            position: relative;
         }
 
         .modes-bottom strong {
             color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
         }
 
         /* Pricing */
@@ -1760,11 +1833,19 @@
         .pricing-card {
             background: var(--bg-primary);
             padding: 50px 40px;
+            background-image: var(--metal-shine);
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            box-shadow: 0 0 30px var(--accent-glow);
         }
 
         .pricing-card.featured {
             background: var(--bg-secondary);
             position: relative;
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 30px var(--accent-glow);
         }
 
         .pricing-card.featured::before {
@@ -1775,11 +1856,12 @@
             font-size: 9px;
             letter-spacing: 1px;
             color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
         }
 
         .pricing-card h3 {
             font-size: 11px;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             text-transform: uppercase;
             color: var(--text-secondary);
             margin-bottom: 20px;
@@ -1789,12 +1871,15 @@
             font-size: 42px;
             font-weight: 700;
             margin-bottom: 10px;
+            color: var(--accent);
+            text-shadow: 0 0 20px var(--accent-glow);
         }
 
         .pricing-price span {
             font-size: 14px;
             font-weight: 400;
             color: var(--text-secondary);
+            text-shadow: none;
         }
 
         .pricing-description {
@@ -2017,7 +2102,7 @@
 <body>
 
     <header>
-        <div class="logo">TOP <span>1%</span> OS</div>
+        <div class="logo">AI PROOF <span>CLUB</span></div>
         <div class="nav-links">
             <a href="#forecasts" class="nav-link">Forecasts</a>
             <a href="#framework" class="nav-link">Framework</a>
@@ -2027,21 +2112,20 @@
     </header>
 
     <section class="hero">
-        <div class="hero-warning">Most people react. The top 1% prepare.</div>
-        <h1>Train to the Top 1% <em>in the AI Era</em></h1>
-        <p class="hero-subhead">The future satisfies the prepared mind.</p>
-        <p class="hero-tagline">AI is rewriting the rules. Most people will adapt too late. This system trains you to see what's coming, decide faster, and position yourself before the window closes.</p>
+        <h1>Become AI Proof</h1>
+        <p class="hero-subhead">Get weekly quests to survive AGI</p>
+        <p class="hero-tagline">"To be forewarned is to be forearmed." AI is projected to take 80% of jobs. The question now becomes how can you adapt faster than AI and reshape before you become erased.</p>
         <div class="hero-cta-group">
             <a href="app.html" class="btn-primary">Take Free Diagnostic →</a>
             <a href="#framework" class="btn-secondary">See the Framework</a>
         </div>
         <div class="hero-stats">
             <div class="stat">
-                <span class="stat-number">30+</span>
+                <span class="stat-number">99</span>
                 <span class="stat-label">Future Forecasts</span>
             </div>
             <div class="stat">
-                <span class="stat-number">80+</span>
+                <span class="stat-number">150+</span>
                 <span class="stat-label">Business Opportunities</span>
             </div>
             <div class="stat">
@@ -2198,7 +2282,7 @@
             <div class="diagnostic-verdict">
                 <div class="verdict-label">Sample Verdict</div>
                 <div class="verdict-text">
-                    You're in the <strong>34th percentile</strong>. Top 1% operates at 85%+ across all modes. Your <em>Personality</em> gap is costing you deals, promotions, and influence you've already earned.
+                    You're in the <strong>34th percentile</strong>. AI Proof Club operates at 85%+ across all modes. Your <em>Personality</em> gap is costing you deals, promotions, and influence you've already earned.
                 </div>
             </div>
             <div class="diagnostic-cta">
@@ -2420,7 +2504,7 @@
             </div>
         </div>
         <div class="modes-bottom">
-            <p><strong>Top 1% operators aren't stuck in one mode.</strong> They read the room, switch modes, and deploy the right skill at the right moment. This is trainable.</p>
+            <p><strong>AI Proof Club operators aren't stuck in one mode.</strong> They read the room, switch modes, and deploy the right skill at the right moment. This is trainable.</p>
         </div>
     </section>
 
@@ -2514,7 +2598,7 @@
             </div>
             <div class="faq-item">
                 <h3>What are the three modes?</h3>
-                <p><strong>Ideas</strong> = strategic thinking, frameworks, decision-making. <strong>Personality</strong> = influence, communication, social calibration. <strong>Execution</strong> = shipping, follow-through, action-taking. Top 1% can switch between all three.</p>
+                <p><strong>Ideas</strong> = strategic thinking, frameworks, decision-making. <strong>Personality</strong> = influence, communication, social calibration. <strong>Execution</strong> = shipping, follow-through, action-taking. AI Proof Club can switch between all three.</p>
             </div>
             <div class="faq-item">
                 <h3>How much time does this take?</h3>
@@ -2543,6 +2627,6 @@
     </section>
 
     <footer>
-        <div class="logo">TOP <span>1%</span> OS</div>
+        <div class="logo">AI PROOF <span>CLUB</span></div>
         <div>
             <a href="#">Terms</a> · <a href="#">Privacy</a> · <a href="/cdn-cgi/l/email-protection#05767075756a7771457177646c6b716a34756077666
