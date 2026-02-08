@@ -1,25 +1,18 @@
-// Netlify function to send weekly task emails
-// Triggered by cron service (e.g., cron-job.org) every Sunday
+// Netlify Scheduled Function - runs every Monday at 6am EST
+// https://docs.netlify.com/functions/scheduled-functions/
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gkesirspzpbreqsvrcuh.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrZXNpcnNwenBicmVxc3ZyY3VoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNzI2MDEsImV4cCI6MjA2Mzk0ODYwMX0.dlayW_tHhpFzIDBwmhHFr1R2Ks0GDjGCbmz6j-6s46g';
 
-const FROM_EMAIL = 'Top 1% OS <noreply@trainto1percent.com>';
+const FROM_EMAIL = 'AI Proof Club <noreply@aiproof.club>';
 
-exports.handler = async (event) => {
-    // Only allow POST or scheduled triggers
-    if (event.httpMethod !== 'POST' && event.httpMethod !== 'GET') {
-        return { statusCode: 405, body: 'Method Not Allowed' };
-    }
+// Schedule: Every Monday at 6am EST (11:00 UTC)
+export const config = {
+    schedule: "0 11 * * 1"
+};
 
-    // Optional: Add a secret key check for security
-    const authHeader = event.headers['x-cron-secret'];
-    const cronSecret = process.env.CRON_SECRET;
-    if (cronSecret && authHeader !== cronSecret) {
-        return { statusCode: 401, body: 'Unauthorized' };
-    }
-
+export default async (req) => {
     try {
         // Get all users who have onboarded
         const usersResponse = await fetch(`${SUPABASE_URL}/rest/v1/users?onboarded=eq.true`, {
@@ -32,7 +25,8 @@ exports.handler = async (event) => {
         const users = await usersResponse.json();
         
         if (!users || !users.length) {
-            return { statusCode: 200, body: JSON.stringify({ message: 'No users to email' }) };
+            console.log('No users to email');
+            return;
         }
 
         let sent = 0;
@@ -66,7 +60,7 @@ exports.handler = async (event) => {
                 await sendEmail({
                     from: FROM_EMAIL,
                     to: user.email,
-                    subject: `Week ${weekNum}: Your Top 1% Training Awaits 💪`,
+                    subject: `Week ${weekNum}: Your AI Proof Quests Are Ready`,
                     html: generateWeeklyEmail(user.name, weekNum, tasks, stats)
                 });
 
@@ -77,22 +71,10 @@ exports.handler = async (event) => {
             }
         }
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ 
-                message: `Weekly emails sent`,
-                sent,
-                failed,
-                total: users.length
-            })
-        };
+        console.log(`Weekly emails sent: ${sent} success, ${failed} failed, ${users.length} total`);
 
     } catch (error) {
         console.error('Weekly email error:', error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: 'Failed to send weekly emails' })
-        };
     }
 };
 
@@ -151,16 +133,16 @@ function calculateStreak(receipts) {
 
 function generateWeeklyEmail(name, weekNum, tasks, stats) {
     const taskList = tasks.length ? tasks.map(t => `
-        <div style="background: #0a0a0a; padding: 15px; margin: 10px 0; border-left: 3px solid ${
-            t.mode === 'ideas' ? '#6b8afd' : t.mode === 'personality' ? '#fd6b8a' : '#8afd6b'
+        <div style="background: #050508; padding: 15px; margin: 10px 0; border-left: 3px solid ${
+            t.mode === 'ideas' ? '#7b68ee' : t.mode === 'personality' ? '#ff6b9d' : '#00ff88'
         };">
             <p style="margin: 0 0 5px 0; color: ${
-                t.mode === 'ideas' ? '#6b8afd' : t.mode === 'personality' ? '#fd6b8a' : '#8afd6b'
+                t.mode === 'ideas' ? '#7b68ee' : t.mode === 'personality' ? '#ff6b9d' : '#00ff88'
             }; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">${t.mode}</p>
             <p style="margin: 0;">${t.task}</p>
-            <p style="margin: 5px 0 0 0; color: #c9ff2f; font-size: 12px;">+${t.xp} XP</p>
+            <p style="margin: 5px 0 0 0; color: #00f0ff; font-size: 12px;">+${t.xp} XP</p>
         </div>
-    `).join('') : '<p style="color: #888;">All quests completed! Refresh your quest list in the app.</p>';
+    `).join('') : '<p style="color: #6e7087;">All quests completed! Refresh your quest list in the app.</p>';
 
     return `
 <!DOCTYPE html>
@@ -169,49 +151,49 @@ function generateWeeklyEmail(name, weekNum, tasks, stats) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: 'Courier New', monospace; background: #0a0a0a; color: #f5f5f5; padding: 40px 20px; margin: 0;">
+<body style="font-family: 'Courier New', monospace; background: #050508; color: #e8e8ec; padding: 40px 20px; margin: 0;">
     <div style="max-width: 600px; margin: 0 auto;">
         <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="font-size: 18px; letter-spacing: 3px; margin: 0;">TOP <span style="color: #c9ff2f;">1%</span> OS</h1>
+            <h1 style="font-size: 18px; letter-spacing: 3px; margin: 0;">AI PROOF <span style="color: #00f0ff;">CLUB</span></h1>
         </div>
         
-        <div style="background: #111; border: 1px solid #222; padding: 30px;">
-            <h2 style="font-size: 24px; margin: 0 0 10px 0; font-weight: normal;">Week ${weekNum} Training</h2>
-            <p style="color: #888; margin: 0 0 25px 0;">Hey ${name}, here's what's on deck:</p>
+        <div style="background: #0d0d12; border: 1px solid #1a1a24; padding: 30px;">
+            <h2 style="font-size: 24px; margin: 0 0 10px 0; font-weight: normal;">Week ${weekNum} Quests</h2>
+            <p style="color: #6e7087; margin: 0 0 25px 0;">Hey ${name}, here's what's on deck this week:</p>
             
-            <table style="width: 100%; margin-bottom: 25px; text-align: center;">
+            <table style="width: 100%; margin-bottom: 25px; text-align: center; border-spacing: 10px;">
                 <tr>
-                    <td style="background: #0a0a0a; padding: 15px;">
-                        <div style="font-size: 24px; color: #c9ff2f; font-weight: bold;">${stats.streak}</div>
-                        <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Day Streak</div>
+                    <td style="background: #050508; padding: 15px;">
+                        <div style="font-size: 24px; color: #00f0ff; font-weight: bold;">${stats.streak}</div>
+                        <div style="font-size: 10px; color: #6e7087; text-transform: uppercase; letter-spacing: 1px;">Day Streak</div>
                     </td>
-                    <td style="background: #0a0a0a; padding: 15px;">
+                    <td style="background: #050508; padding: 15px;">
                         <div style="font-size: 24px; font-weight: bold;">${stats.totalXP}</div>
-                        <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Total XP</div>
+                        <div style="font-size: 10px; color: #6e7087; text-transform: uppercase; letter-spacing: 1px;">Total XP</div>
                     </td>
-                    <td style="background: #0a0a0a; padding: 15px;">
+                    <td style="background: #050508; padding: 15px;">
                         <div style="font-size: 24px; font-weight: bold;">${stats.receipts}</div>
-                        <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Receipts</div>
+                        <div style="font-size: 10px; color: #6e7087; text-transform: uppercase; letter-spacing: 1px;">Receipts</div>
                     </td>
                 </tr>
             </table>
             
-            <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #888; margin: 0 0 15px 0;">This Week's Quests</h3>
+            <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #6e7087; margin: 0 0 15px 0;">This Week's Quests</h3>
             
             ${taskList}
             
-            <a href="https://trainto1percent.com/app.html#quests" 
-               style="display: inline-block; background: #c9ff2f; color: #0a0a0a; padding: 14px 28px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 1px; margin-top: 25px;">
+            <a href="https://aiproof.club/app.html#quests" 
+               style="display: inline-block; background: #00f0ff; color: #050508; padding: 14px 28px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 2px; margin-top: 25px;">
                 VIEW ALL QUESTS →
             </a>
         </div>
         
-        <p style="color: #555; font-size: 12px; text-align: center; margin-top: 30px;">
-            Keep the streak alive. Every day counts.
+        <p style="color: #6e7087; font-size: 12px; text-align: center; margin-top: 30px;">
+            Stay AI-proof. Every quest satisfies the prepared mind.
         </p>
         
-        <p style="color: #333; font-size: 10px; text-align: center; margin-top: 20px;">
-            <a href="https://trainto1percent.com/app.html#settings" style="color: #555;">Manage email preferences</a>
+        <p style="color: #3d3d4a; font-size: 10px; text-align: center; margin-top: 20px;">
+            <a href="https://aiproof.club/app.html#settings" style="color: #6e7087;">Manage email preferences</a>
         </p>
     </div>
 </body>
