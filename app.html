@@ -2480,6 +2480,7 @@ async function save(){
 const CATEGORIES = {
     'ai': {name: 'AI & Technology', icon: '🤖'},
     'tech': {name: 'Tech & Business', icon: '💻'},
+    'transportation': {name: 'Transportation', icon: '🚗'},
     'crypto': {name: 'Crypto', icon: '₿'},
     'finance': {name: 'Finance', icon: '📈'},
     'work': {name: 'Future of Work', icon: '💼'},
@@ -4040,6 +4041,151 @@ const FORECAST_DATABASE = [
                 {mode: 'execution', task: 'Build prototype or mockup of one experience.', xp: 55},
                 {mode: 'personality', task: 'Connect with automotive interior designers.', xp: 50},
                 {mode: 'execution', task: 'Pitch to AV companies or automotive suppliers.', xp: 60}
+            ]
+        }
+    ]
+},
+
+// ============================================================================
+// 🚗 AUTONOMOUS VEHICLES MASS ADOPTION - COMPREHENSIVE FORECAST
+// ============================================================================
+
+{
+    id: 'autonomous-mass-adoption-2030',
+    title: 'Fully autonomous vehicles reach mass adoption by 2030',
+    source: 'Waymo, Tesla FSD trajectory',
+    probability: 72,
+    timeframe: '2028-2030',
+    category: 'transportation',
+    threatMode: 'execution',
+    threatReason: 'Driving becomes obsolete, but the commute doesn\'t disappear — it transforms. Winners design the experience inside the vehicle, not the vehicle itself.',
+    atRisk: 'Professional drivers, driving instructors, auto insurance agents, parking lot operators, car dealership sales, traffic enforcement, body shops dependent on human error accidents',
+    opportunities: [
+        // OPPORTUNITY 1: INSURANCE
+        {
+            title: '🛡️ Autonomous Insurance Innovation',
+            mode: 'ideas',
+            description: 'Insurance shifts from driver risk to system risk. Entirely new categories of coverage will emerge for AI failures, software updates, and fleet operations.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Map the New Liability Stack: Take a single autonomous trip (real or hypothetical). Write down every system involved: vehicle hardware, perception software, decision-making AI, mapping provider, cloud infrastructure, update pipeline. Identify who gets blamed if something goes wrong at each layer.', xp: 45},
+                {mode: 'ideas', task: 'Replace "Accident" With "Failure Mode": Take 5 historical car accident scenarios. Rewrite them as system failure reports: sensor misclassification, latency issue, edge-case data gap, model confidence error. Categorize each by predictability and repeatability.', xp: 50},
+                {mode: 'execution', task: 'Design a Synthetic Risk Dataset: Invent a fictional autonomous fleet. Define miles driven, software update frequency, incident rate per update, severity tiers. Build a simple risk table that an insurer could price.', xp: 55},
+                {mode: 'execution', task: 'Audit an AI Like an Insurer Would: Pick any AI system (navigation, scheduling, recommender). Answer: How often does it fail? How detectable are failures? How fast can it be rolled back? Score it like a credit report for AI.', xp: 50},
+                {mode: 'ideas', task: 'Find the New Policyholder: List 10 companies involved in autonomy (sensor manufacturers, AI model providers, mapping services, OTA update vendors). For each: What could go wrong? Who sues them? What coverage doesn\'t exist yet?', xp: 55},
+                {mode: 'execution', task: 'Write a One-Page Policy That Doesn\'t Exist: Create a fictional policy like "Model Update Liability Insurance" or "AI Perception Error Indemnity". Define what\'s covered, what\'s excluded, trigger conditions.', xp: 50},
+                {mode: 'ideas', task: 'Pick a Single Failure Mode to Insure: Choose one risk (software update regressions, edge-case geography failures, sensor degradation). Write why this risk is growing, why incumbents ignore it, who would pay to transfer it.', xp: 55},
+                {mode: 'execution', task: 'Build the "Insurance Adjacent" MVP: Design one of these: AI audit tool, risk dashboard, compliance reporting layer, incident classification system. Rule: You are NOT allowed to sell insurance yet.', xp: 60},
+                {mode: 'personality', task: 'Predict the First Autonomous Insurance Scandal: Invent a plausible headline from 2028. Explain what failed, why insurance coverage was unclear, who lost billions. Propose the company that could have prevented it. Share publicly.', xp: 55}
+            ]
+        },
+        // OPPORTUNITY 2: FASHION & LIFESTYLE
+        {
+            title: '👜 Fashion & Lifestyle for Transit',
+            mode: 'personality',
+            description: 'Interiors become status symbols. Clothing categories will be invented for postures that didn\'t matter before. The Labubu and Stanley Cup accessory phenomenon will repeat inside vehicles.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Redefine the Use-Case of Clothing: Take one clothing category (blazer, dress, pants, shoes). Rewrite its purpose for a 2-4 hour autonomous commute: What fails? What becomes uncomfortable? What becomes unnecessary? Redefine the garment\'s job.', xp: 40},
+                {mode: 'ideas', task: 'Map the New Postures: List and sketch outfits for these postures: reclining + laptop, fully asleep, one-leg-up lounging, camera-on Zoom call, quick exit → dinner-ready.', xp: 45},
+                {mode: 'execution', task: 'Design an Outfit That Never Stands Up: Design a head-to-toe look that never needs to walk more than 30 steps but still signals taste, status, or identity. Choose fabrics, closures, silhouettes accordingly.', xp: 50},
+                {mode: 'ideas', task: 'Invent a New Clothing Category: Create a category that only makes sense in driverless cars: transit robes, modular sleep suits, convertible work-lounge skins, privacy-enhancing garments. Define when it\'s worn, why it didn\'t exist before, why it feels inevitable.', xp: 55},
+                {mode: 'execution', task: 'Dress for Always-On Cameras: Design a look optimized for sitting camera angles, mixed lighting, long wear without adjustment. Eliminate wrinkles, glare, awkward folds.', xp: 45},
+                {mode: 'execution', task: 'Design the First "In-Car Capsule Drop": Create a 5-piece capsule meant to be sold inside the vehicle ecosystem through ride-hailing upgrades, subscription wardrobes, or autonomous fleet partnerships.', xp: 55},
+                {mode: 'ideas', task: 'Design the Autonomous Travel Aesthetic: Design a cohesive in-car lifestyle kit: clothing, blanket/wrap, slippers, scent, eye mask. Name the aesthetic ("Night Transit", "Soft Arrival", "Moving Residence").', xp: 50},
+                {mode: 'ideas', task: 'Who Loses When Cars Become Lounges? List fashion categories that decline (heels, stiff tailoring, hard bags) vs explode (knits, wraps, transformables). List retail formats that die vs emerge.', xp: 45},
+                {mode: 'execution', task: 'Pick a Single In-Transit Pain Point: Choose one (wrinkling during long recline, temperature regulation while asleep, looking polished after sleep, privacy in glass-walled vehicles). Write who experiences this daily, why current fashion ignores it, what a premium solution looks like.', xp: 50},
+                {mode: 'execution', task: 'Prototype Without Fabric: Create a digital lookbook, narrative campaign, and product description. No samples allowed. Test taste before manufacturing.', xp: 55},
+                {mode: 'personality', task: 'Predict the First Driverless Fashion Status Symbol: Write a 2029 headline about the garment everyone wears in autonomous cars. Explain what it signals, who adopts first, why it becomes inevitable. Share publicly.', xp: 50}
+            ]
+        },
+        // OPPORTUNITY 3: CAR INTERIORS
+        {
+            title: '🪑 Car Interior Revolution',
+            mode: 'execution',
+            description: 'Car interiors transform from driver-centric to room-like spaces. Sleep zones, work zones, social zones, and privacy zones become standard. The steering wheel deletion creates new square footage for value.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Delete the Driver: Take a current luxury car interior. Remove steering wheel, pedals, driver-oriented dashboard. Redesign the space as if no one ever faces forward. Every removed component creates new square footage for value.', xp: 50},
+                {mode: 'ideas', task: 'Name the New Zones: Define interior zones for Sleep, Work, Social, Privacy, and Transition (wake-up/arrival). Name them like rooms in a home or hotel suite.', xp: 45},
+                {mode: 'execution', task: 'Design for the 3-Hour Recline: Design seating for 3-hour sleep, 90-minute work session, 30-minute decompression. Specify angle, materials, pressure points, sensory controls.', xp: 55},
+                {mode: 'ideas', task: 'Invent a Seat That Isn\'t a Seat: Create a new object that replaces traditional car seats, airline seats, and office chairs. Define what posture it supports, how it transforms, why it couldn\'t exist before autonomy.', xp: 55},
+                {mode: 'execution', task: 'Design a Mood Engine: Create 3 interior modes: Sleep Mode, Focus Mode, Arrival Mode. Define lighting, sound, temperature, scent, screen behavior for each.', xp: 50},
+                {mode: 'execution', task: 'Design the Zoom-Ready Interior: Design an interior optimized for video calls, content creation, private conversations. Specify camera placement, background surfaces, lighting angles, acoustic treatment.', xp: 50},
+                {mode: 'ideas', task: 'Design an Interior That Never Shows Speed: Design an interior where speed is invisible, acceleration is imperceptible, distance feels irrelevant. Explain why this increases trust and who wants it most.', xp: 50},
+                {mode: 'execution', task: 'Design a Mobile Hotel Room: Design a one-night autonomous suite with sleep, bathroom workaround, storage, wake-up ritual. Define who pays, when it\'s used, why hotels lose.', xp: 55},
+                {mode: 'ideas', task: 'Create an Interior Subscription: Design a subscription for seasonal interiors, mood-based swaps, or brand-collab interiors. Define update cadence, price logic, target customer.', xp: 50},
+                {mode: 'execution', task: 'Build the Interior MVP Without a Car: Prototype a seat module, lighting system, privacy solution, or digital interior OS. Must work in a room first, no vehicle required.', xp: 60},
+                {mode: 'personality', task: 'Predict the First Interior Status Symbol: Write a 2028 headline about the autonomous interior feature everyone now expects. Explain what it signals, who adopts first, why it becomes non-negotiable. Share publicly.', xp: 50}
+            ]
+        },
+        // OPPORTUNITY 4: SLEEP THERAPY & SOUNDPROOFING
+        {
+            title: '😴 Sleep Therapy & Soundproof Systems',
+            mode: 'execution',
+            description: 'Driverless cars turn sleep from "recovery at home" into "programmable therapy in motion." Silence, darkness, temperature, vibration, and sound become products, not amenities.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Redefine Sleep as an Input-Output System: Break sleep into controllable variables: Sound, Light, Temperature, Motion, Pressure, Timing. For each: What helps sleep? What disrupts it in cars specifically?', xp: 45},
+                {mode: 'ideas', task: 'Map Sleep Debt by Lifestyle: Pick 3 personas (founder/exec, parent, shift worker). For each: When are they sleep deprived? Where are they already traveling while exhausted? What would they pay for guaranteed rest?', xp: 50},
+                {mode: 'execution', task: 'Audit Noise Like a Sleep Engineer: List all sound sources inside an autonomous vehicle (road noise, wind, mechanical hum, notifications, other passengers). Classify each by frequency, predictability, sleep disruption severity.', xp: 45},
+                {mode: 'execution', task: 'Design a Silence Stack: Design a layered silence system: physical insulation, active noise cancellation, sound masking, personalized audio profiles. Explain what each layer solves, why no single solution is enough.', xp: 55},
+                {mode: 'execution', task: 'Design a Sleep Therapy Session in Motion: Design a 90-minute mobile sleep protocol with wind-down, sleep induction, maintenance, and wake-up phases. Specify sound, lighting, temperature shifts, timing cues.', xp: 55},
+                {mode: 'execution', task: 'Solve the Wake-Up Problem: Design a wake-up system that prevents sleep inertia, syncs with destination arrival, leaves the user functional. Consider light ramps, sound gradients, gentle motion cues.', xp: 50},
+                {mode: 'execution', task: 'Design a Mattress for Motion: Design a sleep surface that adapts to vibration, redistributes pressure while reclining, works seated or flat. Explain why existing mattresses don\'t work, what must be invented.', xp: 55},
+                {mode: 'execution', task: 'Invent a Personal Sleep Pod: Design a modular pod for shared fleets that provides privacy, sound isolation, hygiene, emotional safety. Define how it\'s cleaned, swapped, and who pays for it.', xp: 60},
+                {mode: 'ideas', task: 'Replace the One-Night Hotel: Compare $250 airport hotel stay vs $300 overnight autonomous sleep ride. Analyze convenience, recovery quality, time saved.', xp: 45},
+                {mode: 'execution', task: 'Design a Sleep Subscription: Design a subscription offering guaranteed rest hours per month, priority sleep vehicles, personalized sleep profiles. Define who it\'s for, why they stay subscribed, why this beats wearables.', xp: 55},
+                {mode: 'execution', task: 'Build a Sleep MVP Without a Car: Prototype one: soundproof panel, sleep sound algorithm, lighting sequence, or portable pod. Must work in a bedroom first, then scale to vehicles.', xp: 55},
+                {mode: 'personality', task: 'Predict the First Autonomous Sleep Prescription: Write a 2029 headline: "Doctors now prescribe autonomous sleep sessions for burnout". Explain why it became medicalized, who pays, which company wins first. Share publicly.', xp: 50}
+            ]
+        },
+        // OPPORTUNITY 5: MOTION SICKNESS SOLUTIONS
+        {
+            title: '🤢 Motion Sickness & Stability Design',
+            mode: 'execution',
+            description: 'Motion sickness isn\'t a medical issue — it\'s a design failure caused by broken sensory trust. Solving this removes a hard adoption ceiling for autonomous vehicles.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Rewrite What Motion Sickness Actually Is: Rewrite motion sickness as a sensory mismatch, a prediction failure, a systems coordination problem. List what the body expects, what autonomy breaks, where design can intervene.', xp: 45},
+                {mode: 'ideas', task: 'Audit Your Own Body: Recall the last time you felt motion sick. Write what you were looking at, your posture, sound environment, airflow, whether motion was predictable.', xp: 40},
+                {mode: 'execution', task: 'Design a Fake Horizon: Design a non-screen-based horizon system using light, lines, peripheral cues. Explain where it lives in the interior, when it activates, why it reduces nausea.', xp: 50},
+                {mode: 'execution', task: 'Remove the Forward View: Assume no windshield view, passenger facing sideways or backward, screens in use. Design a visual system that still keeps people stable.', xp: 55},
+                {mode: 'ideas', task: 'Find the Anti-Nausea Posture: Define the worst posture for nausea and the best posture for nausea. Explain head angle, neck support, body alignment to motion.', xp: 45},
+                {mode: 'execution', task: 'Invent a Seat That Actively Prevents Sickness: Design a seat that micro-adjusts during turns, stabilizes the head, signals upcoming motion. Explain what it senses, how it moves, why this beats recliners.', xp: 60},
+                {mode: 'execution', task: 'Design a Motion-Calming Sound Profile: Design a sound environment that masks disruptive frequencies, reinforces motion cues, reduces anxiety. Specify frequency ranges, volume dynamics, when it changes.', xp: 50},
+                {mode: 'execution', task: 'Engineer Air as Medicine: Design an airflow + scent system that reduces nausea, maintains alertness, avoids sensory overload. Explain vent placement, scent strategy, personalization logic.', xp: 50},
+                {mode: 'execution', task: 'Make Motion Predictable: Design a system that subtly communicates upcoming turns, braking, acceleration using light, haptics, sound. No screens allowed.', xp: 55},
+                {mode: 'ideas', task: 'Design for Children & Elderly First: Redesign your anti-nausea system for a 6-year-old and an 80-year-old. Explain what changes, what stays, why this improves mainstream adoption.', xp: 50},
+                {mode: 'execution', task: 'Build the MVP Without a Car: Prototype one: lighting system, seat add-on, sound profile, or wearable stabilizer. Testable in a room, must show measurable relief.', xp: 55},
+                {mode: 'personality', task: 'Predict the First Autonomy Adoption Stall: Write a 2027 headline: "Autonomous adoption slows due to widespread passenger nausea". Explain what wasn\'t solved, who ignored it, which company fixes it and wins. Share publicly.', xp: 50}
+            ]
+        },
+        // OPPORTUNITY 6: AI CONCIERGE ASSISTANTS
+        {
+            title: '🤖 AI Concierge Trip Assistants',
+            mode: 'ideas',
+            description: 'The AI assistant stops being a chatbot and becomes a trip director + body-aware concierge. It\'s not helping you drive — it\'s helping you arrive well.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Rewrite the Job Description: Rewrite "concierge" for autonomous travel including physical state (tired, nauseous, alert), emotional state (stressed, excited, private), temporal state (early, on time, flexible). List what the assistant controls, what it never asks permission for, what it escalates to the human.', xp: 50},
+                {mode: 'ideas', task: 'Design for Arrival, Not the Ride: Pick one arrival scenario (board meeting, date, overnight flight replacement, family pickup). Define how the passenger should feel upon arrival and what must happen during transit to enable that.', xp: 45},
+                {mode: 'execution', task: 'Build the Context Stack: Design a context model that includes calendar, trip length, time of day, passenger history, weather + traffic smoothness, body signals. Decide what is inferred, what is explicit, what decays over time.', xp: 55},
+                {mode: 'ideas', task: 'Anticipate Before the User Notices: Write 10 things a concierge assistant should do BEFORE the user asks during a 90-minute ride. Examples: adjust lighting before a call, suggest a rest window, silence notifications pre-nausea, prep arrival wardrobe reminder.', xp: 50},
+                {mode: 'execution', task: 'Design a Motion-Safe Mode: Design an assistant mode that activates when reading starts, reclining increases, or turns intensify. Define what the assistant changes (light, sound, posture cues) and what it explains vs does silently.', xp: 55},
+                {mode: 'execution', task: 'Solve the Nausea Moment: Design a 60-second intervention for early nausea. What\'s the first signal? What does the assistant do immediately? What happens if symptoms escalate?', xp: 50},
+                {mode: 'execution', task: 'Design the Meeting-in-Motion Flow: Design how the assistant prepares for a video call: lighting, camera framing, sound isolation, do-not-disturb logic. Include a pre-call checklist the user never sees.', xp: 55},
+                {mode: 'execution', task: 'Privacy as a Concierge Service: Design a system where the assistant detects sensitive moments, manages glass opacity, sound bleed, notifications, and adapts for shared rides vs private.', xp: 50},
+                {mode: 'ideas', task: 'Curate the Journey: Design a curated 2-hour journey with content (audio/visual), food or beverage timing, rest + stimulation cycles. Name the experience ("Soft Arrival", "Night Transit", "Executive Reset").', xp: 50},
+                {mode: 'execution', task: 'Solve the Last 10 Minutes: Design how the assistant handles wake-up, grooming reminders, mental framing, arrival pacing. Explain why the last 10 minutes matter more than the first 50.', xp: 55},
+                {mode: 'execution', task: 'Prototype the Concierge Without a Car: Prototype using calendar + maps + audio, simple rules engine, one arrival scenario. Measure stress reduction, perceived control, arrival readiness.', xp: 60},
+                {mode: 'personality', task: 'Predict the Moment Concierge AI Becomes Mandatory: Write a 2028 headline: "Passengers refuse autonomous rides without concierge AI". Explain what broke without it, what the assistant fixed, who owns the layer. Share publicly.', xp: 50}
             ]
         }
     ]
@@ -5870,18 +6016,18 @@ function forecastsH() {
     
     // Map occupations to relevant categories
     const occupationCategories = {
-        'tech': ['ai', 'tech', 'crypto'],
+        'tech': ['ai', 'tech', 'crypto', 'transportation'],
         'finance': ['finance', 'crypto', 'tech'],
-        'creative': ['media', 'ai', 'work'],
-        'healthcare': ['ai', 'work', 'tech'],
+        'creative': ['media', 'ai', 'work', 'transportation'],
+        'healthcare': ['ai', 'work', 'tech', 'transportation'],
         'education': ['ai', 'work', 'media'],
         'marketing': ['media', 'ai', 'work'],
         'sales': ['work', 'ai', 'tech'],
-        'consulting': ['work', 'finance', 'ai'],
-        'legal': ['ai', 'work', 'finance'],
-        'retail': ['work', 'ai', 'tech'],
-        'manufacturing': ['ai', 'work', 'tech'],
-        'other': ['ai', 'work', 'tech']
+        'consulting': ['work', 'finance', 'ai', 'transportation'],
+        'legal': ['ai', 'work', 'finance', 'transportation'],
+        'retail': ['work', 'ai', 'tech', 'transportation'],
+        'manufacturing': ['ai', 'work', 'tech', 'transportation'],
+        'other': ['ai', 'work', 'tech', 'transportation']
     };
     
     // Map interests to categories
@@ -5890,8 +6036,9 @@ function forecastsH() {
         'crypto': ['crypto', 'finance'],
         'finance': ['finance', 'work'],
         'media': ['media', 'ai'],
-        'health': ['work', 'ai'],
-        'climate': ['tech', 'work']
+        'health': ['work', 'ai', 'transportation'],
+        'climate': ['tech', 'work', 'transportation'],
+        'transportation': ['transportation', 'tech', 'ai']
     };
     
     // Build relevant categories based on profile
