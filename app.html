@@ -2696,6 +2696,200 @@ const FORECAST_DATABASE = [
 },
 
 // ============================================================================
+// 💰 DEFI MASS ADOPTION - COMPREHENSIVE FORECAST
+// ============================================================================
+
+{
+    id: 'defi-100m-users',
+    title: 'DeFi reaches 100M+ users globally',
+    source: 'DeFiLlama growth trajectory, Ethereum roadmap, stablecoin adoption curves',
+    probability: 68,
+    timeframe: '2027-2030',
+    category: 'crypto',
+    threatMode: 'execution',
+    threatReason: 'Traditional finance jobs get automated by smart contracts. The winners build the bridges that make DeFi feel like normal banking — without the jargon, gas fees, or seed phrases.',
+    atRisk: 'Bank tellers, loan officers, compliance staff at traditional institutions, payment processors, remittance companies, anyone whose job is being a trusted middleman',
+    opportunities: [
+        // OPPORTUNITY 1: INVISIBLE DEFI
+        {
+            title: '🧭 "Invisible DeFi" Consumer Apps',
+            mode: 'execution',
+            description: 'The winning DeFi apps won\'t mention crypto, blockchain, or wallets. They\'ll just work — like Venmo, but on-chain. No jargon, no gas fees, no seed phrases.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Audit Current DeFi UX: Use 5 DeFi apps (Uniswap, Aave, Compound, etc.) as a complete beginner. Document every moment of confusion, every piece of jargon, every friction point.', xp: 45},
+                {mode: 'ideas', task: 'Study "Invisible Tech" Precedents: How did email, GPS, and databases become invisible to users? What patterns made complex tech feel simple?', xp: 40},
+                {mode: 'ideas', task: 'Define the "Zero Crypto" Interface: Design a financial app where the user never sees: wallet addresses, gas fees, blockchain names, seed phrases. What\'s left? What\'s hidden?', xp: 50},
+                {mode: 'execution', task: 'Map the Abstraction Stack: What needs to happen behind the scenes to hide complexity? Account abstraction, gas sponsorship, chain abstraction. Create the technical roadmap.', xp: 55},
+                {mode: 'execution', task: 'Design an "Invisible DeFi" Savings App: A user deposits dollars, earns yield, withdraws dollars. They never know it\'s DeFi. Create the full UX flow.', xp: 55},
+                {mode: 'ideas', task: 'Identify the Trust Gap: Why do normal people distrust DeFi? List 10 trust barriers and design solutions for each that don\'t require understanding crypto.', xp: 50},
+                {mode: 'personality', task: 'Test with 5 Non-Crypto Users: Show them your "invisible DeFi" design. Where do they still get confused? What language still feels foreign?', xp: 55},
+                {mode: 'execution', task: 'Create an Onboarding Flow That Builds Trust: Design a 5-minute onboarding that makes someone comfortable depositing $100 without understanding blockchain.', xp: 55},
+                {mode: 'execution', task: 'Prototype the MVP: Build a clickable prototype or simple app that demonstrates invisible DeFi principles. Focus on one use case.', xp: 60},
+                {mode: 'personality', task: 'Share Your Vision Publicly: Write "The Death of Crypto UX" — a manifesto for invisible DeFi. Attract believers and collaborators.', xp: 50},
+                {mode: 'execution', task: 'Pitch to a DeFi Protocol: Present your UX vision to a protocol that needs consumer adoption. Offer to redesign their frontend.', xp: 60},
+                {mode: 'ideas', task: 'Predict the First Invisible DeFi Unicorn: Write a 2029 headline about a $10B company where users don\'t know they\'re using crypto. What did they build?', xp: 50}
+            ]
+        },
+        // OPPORTUNITY 2: SELF-CUSTODY UX
+        {
+            title: '🔐 Self-Custody UX (Seedless, Recovery-First)',
+            mode: 'execution',
+            description: 'Self-custody is DeFi\'s superpower and its biggest adoption blocker. The company that makes self-custody as easy as "Forgot Password?" wins the next billion users.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Map Self-Custody Failure Modes: How do people lose access to wallets? Seed phrase loss, phishing, death, device failure. Quantify each risk.', xp: 45},
+                {mode: 'ideas', task: 'Research Current Recovery Solutions: MPC wallets, social recovery, hardware modules, smart contract wallets. What exists? What are the tradeoffs?', xp: 50},
+                {mode: 'ideas', task: 'Study Password Recovery UX: How do banks, email, and social media handle recovery? What can be adapted for crypto without centralization?', xp: 45},
+                {mode: 'execution', task: 'Design a "Seedless" Wallet Architecture: No 24 words. No single point of failure. How does it work technically? Create the spec.', xp: 55},
+                {mode: 'execution', task: 'Create a Social Recovery Flow: Design UX for setting up guardians, initiating recovery, and preventing fraud. Make it grandma-friendly.', xp: 55},
+                {mode: 'ideas', task: 'Solve the Inheritance Problem: When someone dies, how do heirs access crypto? Design a solution that\'s secure but not stuck forever.', xp: 50},
+                {mode: 'personality', task: 'Interview 5 People Who Lost Crypto: What happened? How did it feel? What would have saved them? Extract design requirements.', xp: 55},
+                {mode: 'execution', task: 'Design Recovery UX for Different Threats: Lost device, phishing attack, death, coercion. Create flows for each scenario.', xp: 55},
+                {mode: 'execution', task: 'Prototype a Recovery Experience: Build a demo showing the full recovery flow — from "I lost access" to "I\'m back in" in under 10 minutes.', xp: 60},
+                {mode: 'personality', task: 'Test with Non-Technical Users: Can your parents set up and recover a wallet? Iterate until the answer is yes.', xp: 55},
+                {mode: 'execution', task: 'Create a "Self-Custody Readiness" Assessment: A tool that scores how well someone is protected and guides them to improve.', xp: 50},
+                {mode: 'ideas', task: 'Predict the "Forgot Password" Moment: Write a 2028 headline about self-custody becoming as easy as centralized accounts. What breakthrough enabled it?', xp: 50}
+            ]
+        },
+        // OPPORTUNITY 3: DEFI FINANCIAL EDUCATION
+        {
+            title: '🎓 DeFi Education for Non-Technical Users',
+            mode: 'personality',
+            description: 'Financial literacy is broken. DeFi literacy doesn\'t exist. The platform that teaches 100M people to manage on-chain money safely will be worth billions.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Audit Current Crypto Education: Review 10 crypto education platforms. What do they assume you already know? Where do beginners actually get lost?', xp: 40},
+                {mode: 'ideas', task: 'Map the Knowledge Gap: What does someone need to understand to safely use DeFi? Create the minimum viable curriculum.', xp: 45},
+                {mode: 'ideas', task: 'Study Successful Financial Education: How do Khan Academy, Duolingo, and Dave Ramsey teach finance? What makes it stick?', xp: 45},
+                {mode: 'execution', task: 'Create a "Risk-First" Curriculum: Start with what can go wrong, not what you can earn. Design education that leads with safety.', xp: 50},
+                {mode: 'execution', task: 'Design a DeFi Simulator: A safe environment to practice swaps, lending, and yield farming with fake money. Learn by doing without risk.', xp: 55},
+                {mode: 'ideas', task: 'Identify Cultural Translation Needs: How do different cultures think about savings, debt, and risk? Design education that adapts.', xp: 50},
+                {mode: 'personality', task: 'Teach 5 Complete Beginners: Walk them through DeFi basics. Document every question, every confusion. Use this to improve your curriculum.', xp: 55},
+                {mode: 'execution', task: 'Create a "DeFi Driving Test": A certification that proves someone understands the risks and basics before they invest real money.', xp: 50},
+                {mode: 'execution', task: 'Build an AI Financial Coach for DeFi: Design a chatbot that answers questions, warns about risks, and guides safe behavior.', xp: 55},
+                {mode: 'personality', task: 'Partner with a Community: Find a non-crypto community (church group, trade union, local club) and offer free DeFi education. Learn from their questions.', xp: 55},
+                {mode: 'execution', task: 'Create a "First $100 in DeFi" Course: A complete guide to getting started safely with a small amount. From fiat to earning yield.', xp: 55},
+                {mode: 'ideas', task: 'Predict the Financial Literacy Mandate: Write a 2030 headline about governments requiring DeFi literacy before participation. Why did this happen?', xp: 45}
+            ]
+        },
+        // OPPORTUNITY 4: STABLECOIN-NATIVE BANKING
+        {
+            title: '💵 Stablecoin-Native Banking Alternatives',
+            mode: 'execution',
+            description: 'Stablecoins are the bridge. A "bank account" that\'s actually USDC on-chain — with direct deposit, bill pay, and a debit card — replaces traditional banking.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Map Traditional Banking Functions: Checking, savings, direct deposit, bill pay, debit card, wire transfers. Which can move on-chain today?', xp: 45},
+                {mode: 'ideas', task: 'Research Stablecoin Infrastructure: USDC, USDT, DAI, PYUSD. What\'s the on/off-ramp situation? What are the regulatory constraints?', xp: 50},
+                {mode: 'execution', task: 'Design "Stablecoin Checking": A product spec for a checking account replacement. Direct deposit, bill pay, debit card, all on stablecoins.', xp: 55},
+                {mode: 'ideas', task: 'Analyze the Yield Opportunity: Traditional checking pays 0%. Stablecoin yield is 3-8%. Calculate the value proposition for different customer segments.', xp: 45},
+                {mode: 'execution', task: 'Map the Regulatory Path: What licenses are needed? What\'s the compliance strategy? Create a go-to-market regulatory plan.', xp: 55},
+                {mode: 'ideas', task: 'Identify the First Customers: Who\'s underserved by traditional banking AND comfortable with digital? Gig workers, remote workers, immigrants?', xp: 50},
+                {mode: 'execution', task: 'Design the Debit Card Experience: A card that spends stablecoins but feels like dollars. Auto-conversion, rewards, merchant experience.', xp: 55},
+                {mode: 'personality', task: 'Interview 10 People Frustrated with Banks: What do they hate? Fees, delays, holds, rejections. Design stablecoin solutions for each pain point.', xp: 50},
+                {mode: 'execution', task: 'Create a Fiat On-Ramp Flow: From paycheck direct deposit to stablecoin balance in the smoothest possible experience. Design it.', xp: 55},
+                {mode: 'execution', task: 'Build a Bill Pay Integration: Design how users pay rent, utilities, and subscriptions from stablecoin balances.', xp: 55},
+                {mode: 'personality', task: 'Pitch to a Fintech or Crypto Company: Present your stablecoin banking vision. Offer to help them build it.', xp: 60},
+                {mode: 'ideas', task: 'Predict Bank Displacement: Write a 2031 headline about the first major bank losing 10% of deposits to stablecoin alternatives. What triggered the shift?', xp: 50}
+            ]
+        },
+        // OPPORTUNITY 5: SMART CONTRACT INSURANCE
+        {
+            title: '🛡️ Smart Contract Insurance & Risk Products',
+            mode: 'ideas',
+            description: 'DeFi has billions locked in code that could be exploited. Insurance against hacks, exploits, and failures is the unlock for institutional and mainstream adoption.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Map DeFi Risk Categories: Smart contract bugs, oracle failures, governance attacks, economic exploits, rug pulls. Create a comprehensive taxonomy.', xp: 50},
+                {mode: 'ideas', task: 'Research Existing DeFi Insurance: Nexus Mutual, InsurAce, Risk Harbor. How do they work? What do they cover? What are the gaps?', xp: 50},
+                {mode: 'execution', task: 'Design a Consumer-Friendly Insurance Product: "Protect Your Deposit" — one click, clear coverage, simple claims. Create the UX.', xp: 55},
+                {mode: 'ideas', task: 'Study Traditional Insurance Economics: How do insurers price risk, manage reserves, handle claims? What translates to DeFi?', xp: 45},
+                {mode: 'execution', task: 'Create a Risk Rating System: A "credit score" for DeFi protocols. What factors determine safety? How do you communicate risk to consumers?', xp: 55},
+                {mode: 'ideas', task: 'Design Automated Claims: When a hack happens, how do you verify loss and pay out without manual review? Create the smart contract logic.', xp: 55},
+                {mode: 'execution', task: 'Build a Protocol Audit Checklist: What should users check before depositing? Turn expert knowledge into a consumer tool.', xp: 50},
+                {mode: 'personality', task: 'Interview 5 DeFi Users About Insurance: Do they have it? Why not? What would make them buy? Extract product requirements.', xp: 50},
+                {mode: 'execution', task: 'Design a "DeFi Safety Score" Dashboard: Shows users their total exposure, insurance coverage, and risk-adjusted position.', xp: 55},
+                {mode: 'ideas', task: 'Solve the Correlated Risk Problem: One big hack affects many protocols. How do you insure against systemic risk? Design the model.', xp: 55},
+                {mode: 'execution', task: 'Create an Insurance Sales Flow: Integrated into DeFi deposits — "Protect this position?" at the moment of risk. Design the UX.', xp: 50},
+                {mode: 'ideas', task: 'Predict the First Major DeFi Insurance Payout: Write a 2028 headline about a $500M claim. What happened? How did it change the industry?', xp: 50}
+            ]
+        },
+        // OPPORTUNITY 6: GLOBAL REMITTANCES
+        {
+            title: '🌍 Cross-Border Remittances at Scale',
+            mode: 'execution',
+            description: 'Remittances are a $700B market with 6% average fees. Stablecoins make it near-free. The company that makes "send money home" as easy as texting wins.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Map Remittance Corridors: US→Mexico, UAE→India, UK→Nigeria. What are the volumes, fees, and pain points for the top 10 corridors?', xp: 45},
+                {mode: 'ideas', task: 'Research Current Solutions: Western Union, Wise, Remitly, crypto options. What are the fees, speeds, and UX? Where does DeFi win?', xp: 45},
+                {mode: 'execution', task: 'Calculate the DeFi Advantage: For a $500 remittance, compare traditional fees vs stablecoin transfer costs. Make the value proposition undeniable.', xp: 45},
+                {mode: 'ideas', task: 'Identify the Last-Mile Problem: Getting stablecoins is easy. Getting cash in a rural village is hard. Map the off-ramp infrastructure gap.', xp: 50},
+                {mode: 'execution', task: 'Design a WhatsApp-Based Remittance: Send money by text. No app download. Design how it works technically and experientially.', xp: 55},
+                {mode: 'ideas', task: 'Study Trust in Remittances: Families trust specific agents and methods. How do you build trust in a new system? Research the psychology.', xp: 50},
+                {mode: 'execution', task: 'Create an Agent Network Model: Local shops that cash out stablecoins. Design the economics, onboarding, and trust system.', xp: 55},
+                {mode: 'personality', task: 'Interview 5 Remittance Senders: Why do they use their current method? What would make them switch? Document their concerns.', xp: 55},
+                {mode: 'execution', task: 'Design the Recipient Experience: Grandmother in a village gets a notification. Then what? Cash pickup, mobile money, or local store credit?', xp: 55},
+                {mode: 'execution', task: 'Build a Corridor-Specific Prototype: Pick one remittance corridor and design the complete end-to-end experience.', xp: 60},
+                {mode: 'personality', task: 'Partner with a Diaspora Community: Find a community organization and offer to help them reduce remittance costs. Learn from real users.', xp: 55},
+                {mode: 'ideas', task: 'Predict Western Union\'s Decline: Write a 2030 headline about traditional remittance companies losing market share. What was the tipping point?', xp: 45}
+            ]
+        },
+        // OPPORTUNITY 7: ON-CHAIN CREDIT & REPUTATION
+        {
+            title: '📊 On-Chain Credit Scoring & Reputation',
+            mode: 'ideas',
+            description: 'Credit scores are broken and exclusionary. On-chain behavior creates a new, global, transparent reputation system. Your wallet history becomes your financial identity.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Audit Traditional Credit Scoring: How do FICO scores work? What do they miss? Why do they exclude billions of people?', xp: 45},
+                {mode: 'ideas', task: 'Map On-Chain Reputation Signals: Transaction history, protocol usage, repayment behavior, governance participation. What indicates creditworthiness?', xp: 50},
+                {mode: 'execution', task: 'Design an On-Chain Credit Score: What factors? How weighted? How do you prevent gaming? Create the algorithm framework.', xp: 55},
+                {mode: 'ideas', task: 'Solve the Cold Start Problem: New wallets have no history. How do you bootstrap reputation? Bridge off-chain data? Design solutions.', xp: 50},
+                {mode: 'execution', task: 'Create a "DeFi Credit Report": A dashboard showing your on-chain reputation, history, and creditworthiness. Design the UX.', xp: 55},
+                {mode: 'ideas', task: 'Research Privacy-Preserving Reputation: How do you prove creditworthiness without revealing your whole history? ZK proofs, selective disclosure.', xp: 55},
+                {mode: 'execution', task: 'Design Reputation-Based Lending: A lending product where your rate depends on on-chain reputation, not traditional credit. Create the model.', xp: 55},
+                {mode: 'personality', task: 'Interview 5 People Excluded from Traditional Credit: What\'s their on-chain activity? Could it demonstrate creditworthiness? Document the opportunity.', xp: 50},
+                {mode: 'execution', task: 'Build a "Prove Your Reputation" Tool: Let users generate a verifiable credential of their on-chain history to share with lenders.', xp: 55},
+                {mode: 'ideas', task: 'Map the Global Credit Gap: 3B people lack credit scores. Which countries/segments could on-chain reputation serve first?', xp: 50},
+                {mode: 'execution', task: 'Design a Credit Builder Product: Help users deliberately build on-chain reputation through small, positive actions.', xp: 50},
+                {mode: 'ideas', task: 'Predict the Death of FICO: Write a 2032 headline about on-chain reputation replacing traditional credit scores. What enabled the shift?', xp: 50}
+            ]
+        },
+        // OPPORTUNITY 8: DESIGNING TRUST WITHOUT INTERMEDIARIES
+        {
+            title: '🤝 Designing Trust Without Intermediaries',
+            mode: 'ideas',
+            description: 'The meta-opportunity: DeFi replaces trusted institutions with transparent systems. Someone needs to codify how to design trust at scale without middlemen.',
+            difficulty: 'hard',
+            timeframe: '6-18 months',
+            quests: [
+                {mode: 'ideas', task: 'Map How Trust Works Today: Banks, lawyers, notaries, escrow agents — what do they actually do? What\'s the trust service they provide?', xp: 45},
+                {mode: 'ideas', task: 'Study Trust in DeFi Protocols: How do Uniswap, Aave, and Compound create trust? Code audits, TVL, governance. What are the mechanisms?', xp: 50},
+                {mode: 'ideas', task: 'Identify Trust Gaps in DeFi: Where do people still not trust the system? What\'s missing? Regulation, insurance, reputation, recourse?', xp: 50},
+                {mode: 'execution', task: 'Create a "Trust Design Framework": A methodology for building trustworthy systems without central authorities. Principles, patterns, anti-patterns.', xp: 55},
+                {mode: 'ideas', task: 'Research Mechanism Design: How do economists design incentive systems? What translates to DeFi trust design?', xp: 50},
+                {mode: 'execution', task: 'Design Trust Signals for Protocols: What indicators should users check? Audit status, TVL history, governance health, team doxxing. Create the checklist.', xp: 50},
+                {mode: 'execution', task: 'Create a "Trust Score" for DeFi: A composite rating that combines all trust signals into one number. Design the methodology.', xp: 55},
+                {mode: 'personality', task: 'Interview 10 DeFi Users About Trust: What makes them trust a protocol? What would make them trust more? Extract the psychology.', xp: 55},
+                {mode: 'execution', task: 'Design Dispute Resolution for DeFi: When things go wrong, how are disputes resolved without lawyers? Create an on-chain arbitration system.', xp: 55},
+                {mode: 'ideas', task: 'Study Failed Trust Systems: Protocols that lost trust after hacks or rug pulls. What could have prevented it? What did we learn?', xp: 45},
+                {mode: 'personality', task: 'Write "The Trust Design Manifesto": Principles for building trusted systems without intermediaries. Publish and advocate.', xp: 50},
+                {mode: 'ideas', task: 'Predict the Trust Standard: Write a 2030 headline about an industry-wide trust certification for DeFi. Who created it? What does it require?', xp: 50}
+            ]
+        }
+    ]
+},
+
+// ============================================================================
 // 🤖 AI & TECHNOLOGY
 // ============================================================================
 
