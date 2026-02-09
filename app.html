@@ -1442,7 +1442,7 @@ function pricingH(){return `<div class="screen-center"><div class="container-sm"
 
 function onboardingH(){
     const step = S.onboardStep;
-    const totalSteps = 5; // Updated: 1-email/industry, 2-quiz, 3-results+pay, 4-goals, 5-interests/forecasts
+    const totalSteps = 6; // 1-email/industry, 2-quiz, 3-results+pay, 4-account, 5-goals, 6-interests
     
     // Progress bar
     const progressBar = `<div class="progress-bar" style="margin-bottom:30px">${Array(totalSteps).fill(0).map((_,i)=>`<div class="progress-dot ${i<step?'done':i===step-1?'active':''}"></div>`).join('')}</div>`;
@@ -1562,7 +1562,24 @@ function onboardingH(){
     }
     
     if(step === 4) {
-        // Goals (after payment)
+        // Create account (after payment) - collect name and password
+        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
+        ${progressBar}
+        <div class="card">
+            <h2 class="card-title">Create Your Account</h2>
+            <p class="card-subtitle">Set up your login credentials</p>
+            <form id="post-payment-account-form">
+                <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="ob-name" value="${S.user?.name||''}" required></div>
+                <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="ob-email-display" value="${S.onboardData?.email||S.user?.email||''}" disabled style="opacity:0.7"></div>
+                <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="ob-pass" minlength="6" required placeholder="Min 6 characters"></div>
+                <button type="submit" class="btn btn-primary btn-full">Continue →</button>
+            </form>
+        </div>
+        </div></div>`;
+    }
+    
+    if(step === 5) {
+        // Goals (after account creation)
         const selectedGoals = S.onboardData.goals || [];
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
         ${progressBar}
@@ -1582,7 +1599,7 @@ function onboardingH(){
         </div></div>`;
     }
     
-    if(step === 5) {
+    if(step === 6) {
         // Interests + suggested forecasts (final step)
         const selectedInterests = S.onboardData.forecastInterests || [];
         const suggestedForecasts = getSuggestedForecasts();
@@ -2003,6 +2020,17 @@ function bindEvents(){
         render();
     });
     
+    // Step 4: Post-payment account creation (name + password)
+    document.getElementById('post-payment-account-form')?.addEventListener('submit',e=>{
+        e.preventDefault();
+        S.user = S.user || {};
+        S.user.name = document.getElementById('ob-name').value;
+        S.user.password = document.getElementById('ob-pass').value;
+        S.user.email = S.onboardData?.email || S.user?.email;
+        S.onboardStep=5; // Go to goals
+        render();;
+    });
+    
     // Step 2: Start Assessment
     document.getElementById('start-assessment')?.addEventListener('click',()=>{
         S.quizStep=0;
@@ -2024,7 +2052,7 @@ function bindEvents(){
     }));
     document.getElementById('goals-continue')?.addEventListener('click',()=>{
         if(S.onboardData.goals && S.onboardData.goals.length > 0){
-            S.onboardStep=5;
+            S.onboardStep=6;
             render();
         }
     });
