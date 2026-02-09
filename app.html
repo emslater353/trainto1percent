@@ -2014,6 +2014,7 @@ function bindEvents(){
     // Step 4: Goals selection (after payment)
     document.querySelectorAll('.goal-option').forEach(g=>g.addEventListener('click',()=>{
         const goalId = g.dataset.goal;
+        if(!S.onboardData.goals) S.onboardData.goals = [];
         if(S.onboardData.goals.includes(goalId)){
             S.onboardData.goals = S.onboardData.goals.filter(id=>id!==goalId);
         } else {
@@ -2022,7 +2023,7 @@ function bindEvents(){
         render();
     }));
     document.getElementById('goals-continue')?.addEventListener('click',()=>{
-        if(S.onboardData.goals.length > 0){
+        if(S.onboardData.goals && S.onboardData.goals.length > 0){
             S.onboardStep=5;
             render();
         }
@@ -8699,7 +8700,10 @@ async function init(){
             S.user = { email: pendingData.email, plan: 'paid' };
             S.scores = pendingData.scores || {ideas:50,personality:50,execution:50};
             S.freeQuizScores = pendingData.baseline_scores || S.scores;
-            S.onboardData = pendingData.onboardData || {};
+            S.onboardData = pendingData.onboardData || {goals: [], forecastInterests: []};
+            // Ensure goals array exists
+            if(!S.onboardData.goals) S.onboardData.goals = [];
+            if(!S.onboardData.forecastInterests) S.onboardData.forecastInterests = [];
             S.onboardSelectedForecasts = pendingData.onboardSelectedForecasts || [];
             S.onboardStep = pendingData.onboardStep || 4; // Continue to goals
             S.screen = 'onboarding';
