@@ -1596,123 +1596,6 @@ function onboardingH(){
     
     return loginH();
 }
-    }
-    
-    if(step === 6) {
-        // Results + Suggested Forecasts
-        const {ideas:i,personality:p,execution:e}=S.scores;
-        const avgScore = Math.round((i+p+e)/3);
-        const percentile = getPercentile(avgScore);
-        const weak = weakest();
-        const suggestedForecasts = getSuggestedForecasts();
-        
-        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
-        ${progressBar}
-        <div class="card">
-            <h2 class="card-title text-center">Your Mode Profile</h2>
-            
-            <div class="results-meters">
-                <div class="meter"><div class="meter-circle ideas">${i}%</div><div class="meter-label">Ideas</div></div>
-                <div class="meter"><div class="meter-circle personality">${p}%</div><div class="meter-label">Personality</div></div>
-                <div class="meter"><div class="meter-circle execution">${e}%</div><div class="meter-label">Execution</div></div>
-            </div>
-            
-            <div class="verdict">
-                <div class="verdict-title">Your Position</div>
-                <div class="verdict-text">You're in the <strong>${percentile}th percentile</strong>. AI Proof Club operates at 85%+ across all modes. Your <strong style="text-transform:capitalize">${weak}</strong> mode needs the most work.</div>
-            </div>
-            
-            <div style="margin-top:25px">
-                <h3 style="font-size:14px;margin-bottom:15px">🔮 Suggested Forecasts for You</h3>
-                <p class="text-secondary text-small mb-10">Based on your interests and assessment, these opportunities match your profile:</p>
-                <div style="display:flex;flex-direction:column;gap:10px">
-                    ${suggestedForecasts.slice(0,3).map(f=>`
-                        <div class="suggested-forecast" data-fid="${f.id}" style="background:var(--bg-primary);border:1px solid var(--bg-tertiary);padding:15px;cursor:pointer;transition:all 0.3s;${S.onboardSelectedForecasts?.includes(f.id)?'border-color:var(--accent);':''}">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                                <span style="font-size:11px;color:var(--accent);text-transform:uppercase">${f.probability}% likely</span>
-                                <span style="font-size:10px;color:var(--text-secondary)">${f.timeframe}</span>
-                            </div>
-                            <div style="font-size:13px;margin-bottom:5px">${f.title}</div>
-                            <div style="font-size:11px;color:var(--text-secondary)">${f.opportunities[0]?.title || 'Opportunity available'}</div>
-                        </div>
-                    `).join('')}
-                </div>
-                <p class="text-secondary text-small mt-10 text-center">Tap to select forecasts you want to track</p>
-            </div>
-            
-            <button class="btn btn-primary btn-full mt-20" id="forecasts-continue">Continue →</button>
-        </div>
-        </div></div>`;
-    }
-    
-    if(step === 7) {
-        // Email signup + Quest Teaser + Paywall
-        const suggestedForecasts = getSuggestedForecasts();
-        const selectedForecasts = S.onboardSelectedForecasts || [];
-        const teaserQuests = getTeaserQuests(selectedForecasts);
-        
-        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
-        ${progressBar}
-        <div class="card">
-            <h2 class="card-title text-center">Your Weekly Quests Are Ready</h2>
-            <p class="card-subtitle text-center">Based on ${selectedForecasts.length || 3} forecasts you're tracking</p>
-            
-            <div style="margin:20px 0">
-                <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:15px;color:var(--text-secondary)">This Week's Quests Preview</h4>
-                ${teaserQuests.slice(0,3).map((q,idx)=>`
-                    <div style="background:var(--bg-primary);border:1px solid var(--bg-tertiary);padding:15px;margin-bottom:10px;${idx > 0 ? 'filter:blur(3px);pointer-events:none;' : ''}">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                            <span class="quest-mode ${q.mode}" style="font-size:9px;padding:2px 6px">${q.mode}</span>
-                            <span style="font-size:10px;color:var(--accent)">+${q.xp} XP</span>
-                        </div>
-                        <div style="font-size:13px">${q.task}</div>
-                        <div style="font-size:10px;color:var(--text-secondary);margin-top:5px">🔮 ${q.forecastTitle?.substring(0,40)}...</div>
-                    </div>
-                `).join('')}
-                <div style="text-align:center;margin-top:5px">
-                    <span style="font-size:11px;color:var(--text-secondary)">+ ${Math.max(0, teaserQuests.length - 3)} more quests this week</span>
-                </div>
-            </div>
-            
-            <div style="background:var(--bg-primary);border:1px solid var(--accent);padding:20px;margin:25px 0">
-                <h4 style="font-size:12px;margin-bottom:15px;text-align:center">📧 Get Weekly Quest Emails</h4>
-                <p class="text-secondary text-small text-center mb-10">We'll send you personalized quests every week based on the forecasts you're tracking.</p>
-                <div class="form-group" style="margin-bottom:0">
-                    <input type="email" class="form-input" id="weekly-email" placeholder="your@email.com" value="${S.user?.email || ''}">
-                </div>
-                <label style="display:flex;align-items:center;gap:10px;margin-top:10px;cursor:pointer">
-                    <input type="checkbox" id="email-optin" checked style="width:16px;height:16px">
-                    <span style="font-size:11px;color:var(--text-secondary)">Send me weekly quest emails</span>
-                </label>
-            </div>
-            
-            <div style="border-top:1px solid var(--bg-tertiary);padding-top:25px;margin-top:25px">
-                <h4 style="font-size:14px;text-align:center;margin-bottom:15px">Unlock Full Access</h4>
-                <div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary);text-align:center">
-                    <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Start Training</div>
-                    <div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div>
-                    <ul style="list-style:none;text-align:left;margin:20px 0;font-size:11px">
-                        <li style="padding:6px 0">✓ Personalized quests from ${selectedForecasts.length || 3}+ forecasts</li>
-                        <li style="padding:6px 0">✓ AI Coaches for Ideas, Personality & Execution</li>
-                        <li style="padding:6px 0">✓ Progress tracking & weekly reviews</li>
-                        <li style="padding:6px 0">✓ Cancel anytime</li>
-                    </ul>
-                    <a href="${STRIPE_LINK}" class="btn btn-primary btn-full" id="subscribe-btn">Start Monthly →</a>
-                </div>
-                ${STRIPE_ANNUAL?`
-                <div style="border:1px solid var(--bg-tertiary);padding:15px;margin-top:15px;text-align:center">
-                    <div style="font-size:11px;color:var(--success);margin-bottom:5px">Best Value — 2 Months Free</div>
-                    <div style="font-size:24px;font-weight:700">$99<span style="font-size:12px;color:var(--text-secondary)">/year</span></div>
-                    <a href="${STRIPE_ANNUAL}" class="btn btn-secondary btn-full mt-10">Start Annual →</a>
-                </div>
-                `:''}
-            </div>
-        </div>
-        </div></div>`;
-    }
-    
-    return '';
-}
 
 function uploadH(){return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
 <h2 class="card-title text-center mb-10">Upload ChatGPT History</h2>
@@ -1757,8 +1640,6 @@ function quizH(){
         <div class="q-text">${q.t}</div>
         <div class="options">${q.o.map((o,i)=>`<button class="option" data-idx="${i}">${o.t}</button>`).join('')}</div>
         ${isFree ? `<p class="text-center mt-20"><a class="text-link text-small" id="quit-quiz">← Back to login</a></p>` : ''}
-    </div></div>`;
-}
     </div></div>`;
 }
 
