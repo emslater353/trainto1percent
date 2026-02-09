@@ -1358,7 +1358,18 @@ function diagnosticH(){
                 <p class="text-secondary text-small">AI Proof Club gives you weekly quests based on your profile to build real-world proof that you can do what AI can't. Track forecasts. Level up. Become irreplaceable.</p>
             </div>
             
-            <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}" class="btn btn-primary btn-full mt-20" id="diag-to-signup-link">Start Training — $9.99/mo →</a>
+            <div style="display:flex;flex-direction:column;gap:15px;margin-top:20px">
+                <div style="border:2px solid var(--accent);padding:15px;background:var(--bg-primary)">
+                    <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Monthly</div>
+                    <div style="font-size:24px;font-weight:700">$9.99<span style="font-size:12px;color:var(--text-secondary)">/month</span></div>
+                    <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}" class="btn btn-primary btn-full mt-10" id="diag-to-signup-link">Start Monthly →</a>
+                </div>
+                <div style="border:1px solid var(--success);padding:15px">
+                    <div style="font-size:10px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Best Value — 2 Months Free</div>
+                    <div style="font-size:24px;font-weight:700">$99<span style="font-size:12px;color:var(--text-secondary)">/year</span></div>
+                    <a href="${STRIPE_ANNUAL}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}" class="btn btn-secondary btn-full mt-10" id="diag-to-signup-annual">Start Annual →</a>
+                </div>
+            </div>
             <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
         </div>
         <p class="text-center mt-20"><a class="text-link text-small" id="back-to-login">← Back to login</a></p>
@@ -1523,8 +1534,27 @@ function onboardingH(){
                     <li style="padding:5px 0">✓ Forecast tracking + opportunities</li>
                     <li style="padding:5px 0">✓ Progress tracking + receipts</li>
                 </ul>
-                <div style="font-size:24px;font-weight:700;text-align:center;margin-bottom:15px">$9.99<span style="font-size:12px;color:var(--text-secondary)">/month</span></div>
-                <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email||'')}" class="btn btn-primary btn-full" id="go-to-stripe-link">Start Training →</a>
+                
+                <div style="display:flex;flex-direction:column;gap:12px">
+                    <div style="border:2px solid var(--accent);padding:12px;background:var(--bg-secondary)">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div>
+                                <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Monthly</div>
+                                <div style="font-size:20px;font-weight:700">$9.99<span style="font-size:11px;color:var(--text-secondary)">/month</span></div>
+                            </div>
+                            <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email||'')}" class="btn btn-primary btn-small" id="go-to-stripe-link">Start Monthly →</a>
+                        </div>
+                    </div>
+                    <div style="border:1px solid var(--success);padding:12px">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div>
+                                <div style="font-size:10px;color:var(--success);text-transform:uppercase;letter-spacing:1px">Best Value — 2 Months Free</div>
+                                <div style="font-size:20px;font-weight:700">$99<span style="font-size:11px;color:var(--text-secondary)">/year</span></div>
+                            </div>
+                            <a href="${STRIPE_ANNUAL}?prefilled_email=${encodeURIComponent(S.onboardData.email||'')}" class="btn btn-secondary btn-small" id="go-to-stripe-annual">Start Annual →</a>
+                        </div>
+                    </div>
+                </div>
                 <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
             </div>
         </div>
@@ -1949,26 +1979,6 @@ function bindEvents(){
         S.diagnosticStep++;
         render();
     }));
-    document.getElementById('diag-to-signup-link')?.addEventListener('click',()=>{
-        // Save pending data before redirect to Stripe
-        const scores = calculateDiagnosticScores();
-        const pendingUser = {
-            email: S.diagnosticEmail,
-            industry: S.diagnosticIndustry,
-            scores: scores,
-            baseline_scores: scores,
-            onboardStep: 4, // After payment, go to goals
-            onboardData: {
-                email: S.diagnosticEmail,
-                industry: S.diagnosticIndustry,
-                goals: [],
-                forecastInterests: []
-            },
-            onboardSelectedForecasts: []
-        };
-        localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
-        // Link will navigate to Stripe
-    });
     document.getElementById('back-to-login')?.addEventListener('click',()=>{
         S.screen='login';
         render();
@@ -2043,6 +2053,47 @@ function bindEvents(){
         };
         localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
         // Link will navigate to Stripe
+    });
+    document.getElementById('go-to-stripe-annual')?.addEventListener('click',()=>{
+        // Save pending user data before redirecting to Stripe (annual)
+        const pendingUser = {
+            email: S.onboardData.email,
+            industry: S.onboardData.industry,
+            scores: S.freeQuizScores || S.scores,
+            baseline_scores: S.freeQuizScores || S.scores,
+            onboardStep: 4,
+            onboardData: S.onboardData,
+            onboardSelectedForecasts: S.onboardSelectedForecasts
+        };
+        localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
+    });
+    
+    // Diagnostic results - save pending data for both monthly and annual
+    document.getElementById('diag-to-signup-link')?.addEventListener('click',()=>{
+        const scores = calculateDiagnosticScores();
+        const pendingUser = {
+            email: S.diagnosticEmail,
+            industry: S.diagnosticIndustry,
+            scores: scores,
+            baseline_scores: scores,
+            onboardStep: 4,
+            onboardData: { email: S.diagnosticEmail, industry: S.diagnosticIndustry, goals: [], forecastInterests: [] },
+            onboardSelectedForecasts: []
+        };
+        localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
+    });
+    document.getElementById('diag-to-signup-annual')?.addEventListener('click',()=>{
+        const scores = calculateDiagnosticScores();
+        const pendingUser = {
+            email: S.diagnosticEmail,
+            industry: S.diagnosticIndustry,
+            scores: scores,
+            baseline_scores: scores,
+            onboardStep: 4,
+            onboardData: { email: S.diagnosticEmail, industry: S.diagnosticIndustry, goals: [], forecastInterests: [] },
+            onboardSelectedForecasts: []
+        };
+        localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
     });
     
     // Finish onboarding
