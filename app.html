@@ -1273,7 +1273,7 @@ function render(){
     bindEvents();
 }
 
-// New 4-question diagnostic with email gate
+// 4-question AI-Proof Score flow
 function diagnosticH(){
     const step = S.diagnosticStep;
     
@@ -1281,7 +1281,7 @@ function diagnosticH(){
     if(step === 0){
         return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
         <div class="card">
-            <h2 class="card-title text-center">Discover Your AI-Proof Score</h2>
+            <h2 class="card-title text-center">Get Your AI-Proof Score</h2>
             <p class="card-subtitle text-center">4 quick questions to see where you stand</p>
             
             <div style="background:var(--bg-primary);padding:20px;margin:20px 0;text-align:center">
@@ -1290,7 +1290,7 @@ function diagnosticH(){
                     <div><span style="font-size:24px">⚡</span><div style="font-size:10px;color:var(--personality)">Personality</div></div>
                     <div><span style="font-size:24px">🎯</span><div style="font-size:10px;color:var(--execution)">Execution</div></div>
                 </div>
-                <p class="text-secondary text-small">We measure the 3 modes that separate people who thrive from AI vs get replaced by it.</p>
+                <p class="text-secondary text-small">We measure the 3 modes that separate people who thrive with AI vs get replaced by it.</p>
             </div>
             
             <form id="diagnostic-start-form">
@@ -1305,9 +1305,9 @@ function diagnosticH(){
                         ${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary btn-full">Start Diagnostic →</button>
+                <button type="submit" class="btn btn-primary btn-full">Get My Score →</button>
             </form>
-            <p class="text-center text-secondary text-small mt-15">Takes 60 seconds. Results emailed to you.</p>
+            <p class="text-center text-secondary text-small mt-15">Takes 60 seconds.</p>
         </div>
         <p class="text-center mt-20"><a class="text-link text-small" id="back-to-login">← Back to login</a></p>
         </div></div>`;
@@ -1325,7 +1325,7 @@ function diagnosticH(){
         </div></div>`;
     }
     
-    // Step 5: Results (already have email from step 0)
+    // Step 5: Results
     if(step === 5){
         const scores = calculateDiagnosticScores();
         const {ideas:i,personality:p,execution:e} = scores;
@@ -1336,7 +1336,6 @@ function diagnosticH(){
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
         <div class="card text-center">
             <h2 class="card-title">Your AI-Proof Score</h2>
-            <p class="text-secondary text-small mb-20">Results sent to ${S.diagnosticEmail}</p>
             
             <div class="results-meters">
                 <div class="meter"><div class="meter-circle ideas">${i}%</div><div class="meter-label">Ideas</div></div>
@@ -1359,7 +1358,7 @@ function diagnosticH(){
                 <p class="text-secondary text-small">AI Proof Club gives you weekly quests based on your profile to build real-world proof that you can do what AI can't. Track forecasts. Level up. Become irreplaceable.</p>
             </div>
             
-            <button class="btn btn-primary btn-full mt-20" id="diag-to-signup">Start Training — $9.99/mo →</button>
+            <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}" class="btn btn-primary btn-full mt-20" id="diag-to-signup-link">Start Training — $9.99/mo →</a>
             <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
         </div>
         <p class="text-center mt-20"><a class="text-link text-small" id="back-to-login">← Back to login</a></p>
@@ -1385,7 +1384,7 @@ function calculateDiagnosticScores(){
     return scores;
 }
 
-function loginH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Welcome back</h2><p class="card-subtitle">Continue your training</p><form id="login-form"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required></div><button type="submit" class="btn btn-primary btn-full">Sign In</button></form><p class="text-center mt-10"><a class="text-link text-small" id="forgot-pass">Forgot password?</a></p><p class="text-center text-secondary text-small mt-20">New? <a class="text-link" id="to-signup">Start training</a></p></div><div class="card mt-20 text-center" style="border-color:var(--accent)"><p class="text-small mb-10">Not sure yet?</p><button class="btn btn-secondary btn-full" id="take-free-quiz">Take Free Diagnostic →</button><p class="text-secondary text-small mt-10">2 minutes. No signup required.</p></div></div></div>`;}
+function loginH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Welcome back</h2><p class="card-subtitle">Continue your training</p><form id="login-form"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required></div><button type="submit" class="btn btn-primary btn-full">Sign In</button></form><p class="text-center mt-10"><a class="text-link text-small" id="forgot-pass">Forgot password?</a></p><p class="text-center text-secondary text-small mt-20">New? <a class="text-link" id="to-signup">Start training</a></p></div><div class="card mt-20 text-center" style="border-color:var(--accent)"><p class="text-small mb-10">Not sure yet?</p><button class="btn btn-secondary btn-full" id="take-free-quiz">Get My AI-Proof Score →</button><p class="text-secondary text-small mt-10">4 questions. 60 seconds.</p></div></div></div>`;}
 
 function freeResultsH(){
     const {ideas:i,personality:p,execution:e}=S.freeQuizScores||S.scores;
@@ -1428,7 +1427,7 @@ function forgotH(){return `<div class="screen-center"><div class="container-sm">
 
 function signupH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Start training</h2><p class="card-subtitle">Build skills AI can't replace</p><form id="signup-form"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="name" required></div><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required minlength="6"></div><button type="submit" class="btn btn-primary btn-full">Create Account</button></form><p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p></div></div></div>`;}
 
-function pricingH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center"><h2 class="card-title">Choose Your Plan</h2><p class="text-secondary text-small mb-20">Cancel anytime</p><div style="display:flex;flex-direction:column;gap:15px"><div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary)"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Most Popular</div><div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div><a href="${STRIPE_LINK}" class="btn btn-primary btn-full mt-20">Start Monthly →</a></div>${STRIPE_ANNUAL?`<div style="border:1px solid var(--bg-tertiary);padding:20px"><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Best Value — 2 Months Free</div><div style="font-size:36px;font-weight:700">$99<span style="font-size:14px;color:var(--text-secondary)">/year</span></div><a href="${STRIPE_ANNUAL}" class="btn btn-secondary btn-full mt-20">Start Annual →</a></div>`:''}</div><ul style="list-style:none;text-align:left;margin-top:25px;font-size:12px"><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Mode diagnostic + ChatGPT analysis</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progressive weekly quests</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ 3 AI Coaches (Ideas, Personality, Execution)</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progress capsules + Weekly reviews</li><li style="padding:8px 0">✓ Cancel anytime</li></ul></div></div></div>`;}
+function pricingH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center"><h2 class="card-title">Choose Your Plan</h2><p class="text-secondary text-small mb-20">Cancel anytime</p><div style="display:flex;flex-direction:column;gap:15px"><div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary)"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Most Popular</div><div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div><a href="${STRIPE_LINK}" class="btn btn-primary btn-full mt-20">Start Monthly →</a></div>${STRIPE_ANNUAL?`<div style="border:1px solid var(--bg-tertiary);padding:20px"><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Best Value — 2 Months Free</div><div style="font-size:36px;font-weight:700">$99<span style="font-size:14px;color:var(--text-secondary)">/year</span></div><a href="${STRIPE_ANNUAL}" class="btn btn-secondary btn-full mt-20">Start Annual →</a></div>`:''}</div><ul style="list-style:none;text-align:left;margin-top:25px;font-size:12px"><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ AI-Proof Score + personalized profile</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progressive weekly quests</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ 3 AI Coaches (Ideas, Personality, Execution)</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progress capsules + Weekly reviews</li><li style="padding:8px 0">✓ Cancel anytime</li></ul></div></div></div>`;}
 
 function onboardingH(){
     const step = S.onboardStep;
@@ -1499,10 +1498,6 @@ function onboardingH(){
         const percentile = getPercentile(avgScore);
         const weak = weakest();
         
-        // Build Stripe URL with success redirect
-        const successUrl = encodeURIComponent(window.location.origin + '/app.html?success=true');
-        const stripeUrl = `${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email||'')}&success_url=${successUrl}`;
-        
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
         ${progressBar}
         <div class="card">
@@ -1529,7 +1524,7 @@ function onboardingH(){
                     <li style="padding:5px 0">✓ Progress tracking + receipts</li>
                 </ul>
                 <div style="font-size:24px;font-weight:700;text-align:center;margin-bottom:15px">$9.99<span style="font-size:12px;color:var(--text-secondary)">/month</span></div>
-                <button class="btn btn-primary btn-full" id="go-to-stripe">Start Training →</button>
+                <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email||'')}" class="btn btn-primary btn-full" id="go-to-stripe-link">Start Training →</a>
                 <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
             </div>
         </div>
@@ -1954,15 +1949,25 @@ function bindEvents(){
         S.diagnosticStep++;
         render();
     }));
-    document.getElementById('diag-to-signup')?.addEventListener('click',()=>{
-        // Pre-fill email from diagnostic
-        S.onboardData.email = S.diagnosticEmail;
-        S.onboardData.industry = S.diagnosticIndustry;
-        // Store diagnostic scores for later
-        S.freeQuizScores = calculateDiagnosticScores();
-        S.onboardStep=1;
-        S.screen='onboarding';
-        render();
+    document.getElementById('diag-to-signup-link')?.addEventListener('click',()=>{
+        // Save pending data before redirect to Stripe
+        const scores = calculateDiagnosticScores();
+        const pendingUser = {
+            email: S.diagnosticEmail,
+            industry: S.diagnosticIndustry,
+            scores: scores,
+            baseline_scores: scores,
+            onboardStep: 4, // After payment, go to goals
+            onboardData: {
+                email: S.diagnosticEmail,
+                industry: S.diagnosticIndustry,
+                goals: [],
+                forecastInterests: []
+            },
+            onboardSelectedForecasts: []
+        };
+        localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
+        // Link will navigate to Stripe
     });
     document.getElementById('back-to-login')?.addEventListener('click',()=>{
         S.screen='login';
@@ -2024,8 +2029,8 @@ function bindEvents(){
         render();
     }));
     
-    // Go to Stripe payment (step 3)
-    document.getElementById('go-to-stripe')?.addEventListener('click',()=>{
+    // Go to Stripe payment (step 3) - save pending data before redirect
+    document.getElementById('go-to-stripe-link')?.addEventListener('click',()=>{
         // Save pending user data before redirecting to Stripe
         const pendingUser = {
             email: S.onboardData.email,
@@ -2037,10 +2042,7 @@ function bindEvents(){
             onboardSelectedForecasts: S.onboardSelectedForecasts
         };
         localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
-        
-        // Redirect to Stripe
-        const successUrl = encodeURIComponent(window.location.origin + '/app.html?success=true');
-        window.location.href = `${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email||'')}`;
+        // Link will navigate to Stripe
     });
     
     // Finish onboarding
