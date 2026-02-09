@@ -2021,14 +2021,40 @@ function bindEvents(){
     });
     
     // Step 4: Post-payment account creation (name + password)
-    document.getElementById('post-payment-account-form')?.addEventListener('submit',e=>{
+    document.getElementById('post-payment-account-form')?.addEventListener('submit', async e=>{
         e.preventDefault();
+        const btn = e.target.querySelector('button');
+        btn.textContent = 'Creating account...';
+        btn.disabled = true;
+        
         S.user = S.user || {};
         S.user.name = document.getElementById('ob-name').value;
         S.user.password = document.getElementById('ob-pass').value;
         S.user.email = S.onboardData?.email || S.user?.email;
+        S.user.industry = S.onboardData?.industry;
+        S.user.scores = S.freeQuizScores || S.scores || {ideas:50,personality:50,execution:50};
+        S.user.baseline_scores = S.user.scores;
+        S.user.plan = 'paid';
+        S.user.start_date = new Date().toISOString();
+        S.user.onboarded = false; // Will be true after they finish all steps
+        
+        // Save to database NOW so they can always log back in
+        const existing = await db('users','GET',null,`?email=eq.${encodeURIComponent(S.user.email)}`);
+        if(existing?.length){
+            // Update existing user
+            await db('users','PATCH', S.user, `?email=eq.${encodeURIComponent(S.user.email)}`);
+            S.user = {...existing[0], ...S.user};
+        } else {
+            // Create new user
+            const res = await db('users','POST', S.user);
+            if(res?.length) S.user = res[0];
+        }
+        
+        localStorage.setItem('apc_session', JSON.stringify(S.user));
+        localStorage.removeItem('apc_pending');
+        
         S.onboardStep=5; // Go to goals
-        render();;
+        render();
     });
     
     // Step 2: Start Assessment
