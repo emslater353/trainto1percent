@@ -1499,6 +1499,10 @@ function onboardingH(){
         const percentile = getPercentile(avgScore);
         const weak = weakest();
         
+        // Build Stripe URL with success redirect
+        const successUrl = encodeURIComponent(window.location.origin + '/app.html?success=true');
+        const stripeUrl = `${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email||'')}&success_url=${successUrl}`;
+        
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
         ${progressBar}
         <div class="card">
@@ -1525,7 +1529,7 @@ function onboardingH(){
                     <li style="padding:5px 0">✓ Progress tracking + receipts</li>
                 </ul>
                 <div style="font-size:24px;font-weight:700;text-align:center;margin-bottom:15px">$9.99<span style="font-size:12px;color:var(--text-secondary)">/month</span></div>
-                <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email||'')}" class="btn btn-primary btn-full">Start Training →</a>
+                <button class="btn btn-primary btn-full" id="go-to-stripe">Start Training →</button>
                 <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
             </div>
         </div>
@@ -2019,6 +2023,25 @@ function bindEvents(){
         }
         render();
     }));
+    
+    // Go to Stripe payment (step 3)
+    document.getElementById('go-to-stripe')?.addEventListener('click',()=>{
+        // Save pending user data before redirecting to Stripe
+        const pendingUser = {
+            email: S.onboardData.email,
+            industry: S.onboardData.industry,
+            scores: S.freeQuizScores || S.scores,
+            baseline_scores: S.freeQuizScores || S.scores,
+            onboardStep: 4, // After payment, continue to step 4
+            onboardData: S.onboardData,
+            onboardSelectedForecasts: S.onboardSelectedForecasts
+        };
+        localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
+        
+        // Redirect to Stripe
+        const successUrl = encodeURIComponent(window.location.origin + '/app.html?success=true');
+        window.location.href = `${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email||'')}`;
+    });
     
     // Finish onboarding
     document.getElementById('finish-onboarding')?.addEventListener('click',async()=>{
@@ -8618,7 +8641,18 @@ async function init(){
     if(params.get('success')==='true'){
         history.replaceState({},'',location.pathname);
         const pending=localStorage.getItem('apc_pending');
-        if(pending){S.user=JSON.parse(pending);S.user.plan='paid';S.screen='onboarding';updateHash();render();return;}
+        if(pending){
+            const pendingData = JSON.parse(pending);
+            S.user = { email: pendingData.email, plan: 'paid' };
+            S.scores = pendingData.scores || {ideas:50,personality:50,execution:50};
+            S.freeQuizScores = pendingData.baseline_scores || S.scores;
+            S.onboardData = pendingData.onboardData || {};
+            S.onboardSelectedForecasts = pendingData.onboardSelectedForecasts || [];
+            S.onboardStep = pendingData.onboardStep || 4; // Continue to goals
+            S.screen = 'onboarding';
+            render();
+            return;
+        }
     }
     
     const session=localStorage.getItem('apc_session');
