@@ -3376,6 +3376,573 @@ const FORECAST_DATABASE = [
 },
 
 // ============================================================================
+// 🎤 PERFECT VOICE CLONING - COMPREHENSIVE FORECAST
+// ============================================================================
+
+{
+    id: 'voice-cloning-trivial',
+    title: 'Perfect voice cloning becomes trivially easy',
+    source: 'ElevenLabs, Resemble AI, open source voice models',
+    probability: 95,
+    timeframe: 'Already happening',
+    category: 'ai',
+    threatMode: 'personality',
+    threatReason: 'Your voice is no longer proof of identity. Trust in audio collapses. Those who build verification systems and new trust infrastructure win.',
+    atRisk: 'Call centers relying on voice verification, families without safe words, anyone who trusts phone calls, audio-based authentication systems',
+    opportunities: [
+        {
+            title: '🔐 Voice Authentication & Verification',
+            mode: 'execution',
+            description: 'Voice is no longer proof of identity. New verification systems — challenge-response, liveness detection, multi-factor — become essential infrastructure.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Map Voice Fraud Vectors: How can cloned voices be used maliciously? Family scams, corporate fraud, authentication bypass. Create a threat taxonomy.', xp: 50},
+                {mode: 'ideas', task: 'Research Current Voice Auth: How do banks and call centers verify identity by voice? What breaks with perfect cloning?', xp: 45},
+                {mode: 'execution', task: 'Design a Challenge-Response Protocol: Questions or tasks that cloned voices can\'t answer. Real-time verification methods.', xp: 55},
+                {mode: 'ideas', task: 'Study Liveness Detection: What distinguishes live speech from recordings or synthesis? Breathing, hesitation, ambient noise.', xp: 50},
+                {mode: 'execution', task: 'Create a Family Safety Protocol: Simple system families can use to verify calls are real. Safe words, callback procedures.', xp: 45},
+                {mode: 'execution', task: 'Design Enterprise Voice Security: Protocol for businesses to verify voice communications. Training, procedures, technology.', xp: 55},
+                {mode: 'personality', task: 'Test with 10 Families: Implement your safety protocol. Does it work? Is it usable? Iterate.', xp: 55},
+                {mode: 'execution', task: 'Build a "Voice Verification" Checklist: Simple steps anyone can take to verify a voice call is legitimate.', xp: 45},
+                {mode: 'execution', task: 'Create Corporate Training on Voice Fraud: Curriculum for employees on recognizing and preventing voice clone attacks.', xp: 50},
+                {mode: 'personality', task: 'Partner with a Bank or Call Center: Help them redesign voice verification. Pilot new protocols.', xp: 60},
+                {mode: 'execution', task: 'Design a Voice Provenance System: Way to cryptographically sign and verify authentic voice recordings.', xp: 55},
+                {mode: 'ideas', task: 'Predict the First Major Voice Clone Fraud: Write a 2027 headline about a massive voice cloning scam. What was stolen? What changed?', xp: 50}
+            ]
+        },
+        {
+            title: '🔍 Deepfake Detection for Calls',
+            mode: 'execution',
+            description: 'Real-time detection of synthetic voices during phone calls. Protect banks, families, and enterprises from voice clone fraud.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Research Deepfake Detection Tech: What methods detect synthetic audio? Spectral analysis, artifact detection, ML classifiers. Survey the field.', xp: 50},
+                {mode: 'ideas', task: 'Study Detection Arms Race: How do detection methods evolve as synthesis improves? What\'s the long-term trajectory?', xp: 50},
+                {mode: 'execution', task: 'Design Detection UX: How do you alert someone mid-call that the voice may be fake? Without causing panic. Create the interface.', xp: 50},
+                {mode: 'execution', task: 'Build a Detection Prototype: Simple tool that analyzes audio for synthetic markers. Even if imperfect, start somewhere.', xp: 55},
+                {mode: 'ideas', task: 'Map the Customer Segments: Who needs this most? Banks, elderly, executives, high-net-worth. Prioritize by urgency.', xp: 45},
+                {mode: 'execution', task: 'Create a Consumer Protection App: Phone app that monitors calls for deepfake indicators. MVP feature set.', xp: 55},
+                {mode: 'execution', task: 'Design Enterprise Integration: How does detection plug into call center software? API specifications.', xp: 55},
+                {mode: 'personality', task: 'Test with Real Synthetic Voices: Generate cloned voices and test your detection. Measure accuracy.', xp: 55},
+                {mode: 'execution', task: 'Build an Alert and Response Protocol: When deepfake is detected, then what? Design the workflow.', xp: 50},
+                {mode: 'personality', task: 'Partner with a Telecom or Bank: Pilot your detection system. Get real-world data.', xp: 60},
+                {mode: 'execution', task: 'Create Detection Accuracy Benchmarks: How do you measure and communicate detection reliability?', xp: 50},
+                {mode: 'ideas', task: 'Predict Detection Becoming Standard: Write a 2029 headline about deepfake detection being required on all calls. What regulation passed?', xp: 45}
+            ]
+        },
+        {
+            title: '👨‍👩‍👧 Family Safety Protocols & Training',
+            mode: 'personality',
+            description: 'Families need playbooks for the voice clone era. Safe words, verification procedures, and training to protect against impersonation scams.',
+            difficulty: 'easy',
+            timeframe: '1-3 months',
+            quests: [
+                {mode: 'ideas', task: 'Research Family Voice Scams: Document real cases of voice cloning used against families. What happened? How did it work?', xp: 40},
+                {mode: 'execution', task: 'Create a Family Safe Word System: Protocol for establishing and using verification phrases. Simple enough for grandparents.', xp: 45},
+                {mode: 'execution', task: 'Design a Family Security Workshop: 30-minute training any family can do together. Materials, exercises, protocols.', xp: 50},
+                {mode: 'ideas', task: 'Identify Most Vulnerable Family Members: Who gets targeted? Elderly, children, caregivers. Tailor protection strategies.', xp: 45},
+                {mode: 'execution', task: 'Build a "Voice Clone Drill": Practice exercise where families test their verification protocols.', xp: 45},
+                {mode: 'personality', task: 'Run 5 Family Workshops: Deliver your training. Learn what resonates, what confuses, what sticks.', xp: 55},
+                {mode: 'execution', task: 'Create Shareable Safety Guides: One-pagers families can print and reference. Fridge-worthy.', xp: 40},
+                {mode: 'execution', task: 'Design Emergency Response Steps: If someone thinks they\'ve been scammed, what do they do? Create the playbook.', xp: 45},
+                {mode: 'personality', task: 'Partner with Senior Centers: Elderly are most vulnerable. Offer free training to senior communities.', xp: 50},
+                {mode: 'execution', task: 'Build a Family Security Assessment: Questionnaire that identifies a family\'s vulnerability and recommends steps.', xp: 45},
+                {mode: 'personality', task: 'Create Viral Safety Content: TikTok, YouTube explaining voice clone risks. Reach millions of families.', xp: 50},
+                {mode: 'ideas', task: 'Predict Family Safety Becoming Curriculum: Write a 2028 headline about schools teaching voice clone safety. What incident triggered it?', xp: 40}
+            ]
+        }
+    ]
+},
+
+// ============================================================================
+// 🌍 REAL-TIME PERFECT TRANSLATION - COMPREHENSIVE FORECAST
+// ============================================================================
+
+{
+    id: 'perfect-translation',
+    title: 'Real-time perfect language translation eliminates barriers',
+    source: 'Meta SeamlessM4T, Google Translate trajectory, AI audio models',
+    probability: 80,
+    timeframe: '2026-2028',
+    category: 'ai',
+    threatMode: 'ideas',
+    threatReason: 'Language stops being a moat. Anyone can sell anywhere, hire anyone, access any market. The winners understand that culture — not language — becomes the real barrier.',
+    atRisk: 'Translators, language teachers, companies whose moat was local-language expertise, anyone who thinks knowing English is a competitive advantage',
+    opportunities: [
+        {
+            title: '🎭 Cultural Nuance Consulting',
+            mode: 'personality',
+            description: 'Translation becomes free. Cultural understanding doesn\'t. The consultant who helps navigate humor, taboos, business customs, and local aesthetics wins.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Map What Translation Misses: Humor, sarcasm, status signals, taboos, religious sensitivities. What doesn\'t translate even with perfect words?', xp: 50},
+                {mode: 'ideas', task: 'Research Cultural Business Failures: Companies that failed in new markets due to cultural misunderstanding. What went wrong?', xp: 45},
+                {mode: 'execution', task: 'Create a Cultural Due Diligence Framework: Checklist for entering a new cultural market. Beyond language to meaning.', xp: 55},
+                {mode: 'ideas', task: 'Study How Culture Varies: Hofstede dimensions, Meyer\'s Culture Map. What are the key variables that differ across cultures?', xp: 50},
+                {mode: 'execution', task: 'Design Cultural Adaptation Guides: For specific markets — Japan, Brazil, Germany, India. What do outsiders get wrong?', xp: 55},
+                {mode: 'personality', task: 'Interview 10 People from Different Cultures: What do foreigners misunderstand about their culture? Collect the insights.', xp: 55},
+                {mode: 'execution', task: 'Build a "Cultural Red Flags" Detector: Common mistakes companies make when entering new cultures. Warning system.', xp: 50},
+                {mode: 'execution', task: 'Create Cultural Training for Remote Teams: Global teams need cultural fluency. Design the curriculum.', xp: 50},
+                {mode: 'personality', task: 'Consult for 3 Companies Expanding Internationally: Help them navigate cultural challenges. Build case studies.', xp: 55},
+                {mode: 'execution', task: 'Design Pricing for Cultural Consulting: Retainer, project-based, training? Create sustainable business model.', xp: 45},
+                {mode: 'personality', task: 'Write "Beyond Translation": Thought leadership on cultural intelligence in the AI era. Become the authority.', xp: 50},
+                {mode: 'ideas', task: 'Predict Cultural Intelligence as Job Requirement: Write a 2030 headline about cultural fluency becoming mandatory for global roles.', xp: 45}
+            ]
+        },
+        {
+            title: '🌐 Global Sales & Customer Success',
+            mode: 'execution',
+            description: 'One salesperson can now sell to the entire world. Companies need global sales operations — one person covering 20 markets instead of 20 people.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Map the Global Sales Stack: What tools enable one person to sell globally? Translation, scheduling, payment, compliance. Create the toolkit.', xp: 45},
+                {mode: 'ideas', task: 'Research Global Sales Leaders: Who\'s already doing this well? What\'s their process? Interview or study 5 examples.', xp: 50},
+                {mode: 'execution', task: 'Design a Global Sales Playbook: How to run sales across time zones, languages, and cultures. The methodology.', xp: 55},
+                {mode: 'execution', task: 'Create Market Prioritization Framework: Which global markets to enter first? Demand, competition, payment infrastructure.', xp: 50},
+                {mode: 'ideas', task: 'Study Cross-Border Payment Solutions: Stripe Atlas, Wise, local payment methods. What enables global revenue collection?', xp: 45},
+                {mode: 'execution', task: 'Build Global Sales Templates: Outreach, proposals, contracts that work across cultures. Modular and adaptable.', xp: 50},
+                {mode: 'personality', task: 'Close 5 Deals in Non-English Markets: Use translation tools. Document what works, what breaks.', xp: 60},
+                {mode: 'execution', task: 'Design Follow-the-Sun Customer Success: One team covering global customers 24/7 through handoffs. Create the ops model.', xp: 55},
+                {mode: 'execution', task: 'Create Global Sales Training: Teach salespeople to sell across languages and cultures effectively.', xp: 50},
+                {mode: 'personality', task: 'Partner with a SaaS Company Going Global: Help them build global sales ops. Prove the model.', xp: 55},
+                {mode: 'execution', task: 'Build a Global Sales Dashboard: Track performance across markets, languages, regions.', xp: 50},
+                {mode: 'ideas', task: 'Predict the End of Regional Sales Teams: Write a 2029 headline about global sales consolidation. What enabled it?', xp: 45}
+            ]
+        },
+        {
+            title: '✈️ Translation-Driven Travel Experiences',
+            mode: 'execution',
+            description: 'Travel anywhere without language barriers. New travel experiences emerge for people who can now visit any country and communicate freely.',
+            difficulty: 'easy',
+            timeframe: '1-6 months',
+            quests: [
+                {mode: 'ideas', task: 'Map Travel Language Friction: Where does language barrier hurt travel most? Navigation, restaurants, emergencies, local experiences. List the pain points.', xp: 40},
+                {mode: 'ideas', task: 'Research Translation Travel Tech: What devices and apps exist? AirPods, dedicated devices, phone apps. Test and compare.', xp: 45},
+                {mode: 'execution', task: 'Design a "Language-Free Travel" Guide: How to set up your tech stack for seamless international travel. Step-by-step.', xp: 45},
+                {mode: 'execution', task: 'Create Destination Guides for Non-Speakers: "Visit Japan Without Japanese" — local tips, tech setup, cultural basics.', xp: 50},
+                {mode: 'ideas', task: 'Identify New Travel Markets: What destinations were avoided due to language? Where does perfect translation unlock demand?', xp: 45},
+                {mode: 'execution', task: 'Design Deep Local Experiences: Tours and experiences that were impossible without local language. Now accessible.', xp: 50},
+                {mode: 'personality', task: 'Take a Trip Using Only Translation: Visit a country where you don\'t speak the language. Document the experience.', xp: 55},
+                {mode: 'execution', task: 'Build a Translation Travel Checklist: Everything travelers need to prepare for language-barrier-free travel.', xp: 40},
+                {mode: 'execution', task: 'Create "Local Connection" Experiences: Pair travelers with locals for authentic experiences, translation-enabled.', xp: 50},
+                {mode: 'personality', task: 'Partner with a Travel Agency: Help them offer language-barrier-free packages. New market opportunity.', xp: 55},
+                {mode: 'execution', task: 'Design Emergency Protocols: What happens when translation fails in a crisis? Backup systems for travelers.', xp: 45},
+                {mode: 'ideas', task: 'Predict the Tourism Explosion: Write a 2028 headline about translation transforming global tourism. Which destinations boomed?', xp: 45}
+            ]
+        }
+    ]
+},
+
+// ============================================================================
+// 🎵 AI MUSIC INDISTINGUISHABLE FROM HUMAN - COMPREHENSIVE FORECAST
+// ============================================================================
+
+{
+    id: 'ai-music-indistinguishable',
+    title: 'AI generates music indistinguishable from human artists',
+    source: 'Suno, Udio, MusicLM trajectories',
+    probability: 88,
+    timeframe: '2026-2027',
+    category: 'media',
+    threatMode: 'personality',
+    threatReason: 'When anyone can generate a hit song, the music itself becomes worthless. The value shifts to artist identity, story, live performance, and human connection.',
+    atRisk: 'Session musicians, jingle writers, stock music creators, artists without strong personal brands, anyone whose value is "making sounds"',
+    opportunities: [
+        {
+            title: '🎤 Artist Brand & Story Studios',
+            mode: 'personality',
+            description: 'The music is free. The artist is the product. Studios that build compelling artist identities, stories, and brands become essential.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Study Artists with Strong Brands: Taylor Swift, Beyoncé, Tyler the Creator. What makes their brand work? It\'s not just the music.', xp: 50},
+                {mode: 'ideas', task: 'Analyze Brand Components: Origin story, visual identity, values, fan relationship, narrative arc. What makes an artist brand?', xp: 50},
+                {mode: 'execution', task: 'Create an Artist Brand Framework: Methodology for developing a compelling artist identity. The brand-building process.', xp: 55},
+                {mode: 'ideas', task: 'Research Fan Psychology: Why do fans connect with artists? Parasocial relationships, identity, belonging. Understand the psychology.', xp: 50},
+                {mode: 'execution', task: 'Design a "Brand Audit" for Artists: Assessment that identifies gaps in an artist\'s brand and positioning.', xp: 50},
+                {mode: 'execution', task: 'Build Storytelling Templates: Frameworks for artist origin stories, comeback narratives, evolution arcs.', xp: 50},
+                {mode: 'personality', task: 'Brand 3 Emerging Artists: Apply your framework. Help them develop distinctive identities.', xp: 55},
+                {mode: 'execution', task: 'Create Visual Identity Systems: Templates and processes for artist visual branding — covers, social, merch.', xp: 50},
+                {mode: 'execution', task: 'Design Fan Relationship Strategies: How artists build and maintain genuine fan connections at scale.', xp: 50},
+                {mode: 'personality', task: 'Partner with a Label or Manager: They need brand development. Offer your services.', xp: 55},
+                {mode: 'execution', task: 'Create "Human Artist" Certification: A badge that verifies the human behind the art. Authenticity premium.', xp: 50},
+                {mode: 'ideas', task: 'Predict the First AI Artist Scandal: Write a 2028 headline about a beloved "artist" revealed as AI. What happened to fans?', xp: 45}
+            ]
+        },
+        {
+            title: '🎪 Live Experience & Performance',
+            mode: 'execution',
+            description: 'AI can\'t play a live show. The live experience becomes the primary revenue and connection point. Building the infrastructure for premium live music.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Research Live Music Economics: How do artists make money from live shows? Tickets, merch, VIP, sponsorship. Understand the model.', xp: 45},
+                {mode: 'ideas', task: 'Study Premium Live Experiences: What makes a concert unforgettable? Beyond the music — production, intimacy, exclusivity.', xp: 50},
+                {mode: 'execution', task: 'Design "Intimate Experience" Formats: Small-venue, high-touch live experiences. 50-person concerts, house shows, private performances.', xp: 55},
+                {mode: 'execution', task: 'Create Live Show Templates: Production elements, fan interactions, setlist structures that maximize connection.', xp: 50},
+                {mode: 'ideas', task: 'Map the Venue Landscape: What venues exist for intimate shows? Homes, galleries, warehouses, private clubs. Create a database.', xp: 45},
+                {mode: 'execution', task: 'Design VIP Experience Tiers: Meet and greets, soundchecks, dinners with artists. Premium live add-ons.', xp: 50},
+                {mode: 'execution', task: 'Build a House Concert Network: Platform connecting artists with hosts for private shows. The Airbnb of concerts.', xp: 55},
+                {mode: 'personality', task: 'Produce 5 Live Experiences: Book and run intimate shows. Test formats, pricing, artist fit.', xp: 55},
+                {mode: 'execution', task: 'Create Live-Stream Hybrid Events: Combine in-person intimacy with global reach. The best of both.', xp: 50},
+                {mode: 'personality', task: 'Partner with 10 Artists: Build a roster of artists who want to do premium live experiences.', xp: 55},
+                {mode: 'execution', task: 'Design Subscription Live Experiences: Monthly intimate shows for paying members. Recurring revenue model.', xp: 55},
+                {mode: 'ideas', task: 'Predict Live Music Premium: Write a 2030 headline about live concert tickets costing 10x recorded music. Why did this happen?', xp: 45}
+            ]
+        },
+        {
+            title: '🎧 Personalized Soundtrack Platforms',
+            mode: 'execution',
+            description: 'AI generates personalized music for every moment — workout, focus, sleep, mood. Infinite soundtrack for your life.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Map Functional Music Use Cases: When do people use music functionally? Focus, sleep, workout, meditation, productivity. List all contexts.', xp: 45},
+                {mode: 'ideas', task: 'Research Music-Brain Science: How does music affect focus, relaxation, energy? What parameters matter? BPM, key, instrumentation.', xp: 50},
+                {mode: 'execution', task: 'Design a "Mood Engine": System that generates appropriate music based on user state and activity. Specification.', xp: 55},
+                {mode: 'execution', task: 'Create Context-Aware Triggers: Music that adapts to calendar, location, time of day, heart rate. The intelligence layer.', xp: 55},
+                {mode: 'ideas', task: 'Study Existing Functional Music: Brain.fm, Endel, Focus@Will. What do they do well? What\'s missing?', xp: 45},
+                {mode: 'execution', task: 'Build a Personalization Model: How music adapts to individual preferences over time. Learning system design.', xp: 55},
+                {mode: 'execution', task: 'Design the User Experience: How do users interact with infinite personalized music? Not playlists. Something new.', xp: 50},
+                {mode: 'personality', task: 'Test with 20 Users: Give them AI-generated personalized soundtracks. Measure satisfaction, effectiveness.', xp: 55},
+                {mode: 'execution', task: 'Create B2B Applications: Personalized music for gyms, offices, spas, retail. The commercial opportunity.', xp: 50},
+                {mode: 'execution', task: 'Build Integration APIs: Let other apps use personalized soundtrack generation. Platform play.', xp: 55},
+                {mode: 'execution', task: 'Design Ethical Guidelines: What are the risks of music-based mood manipulation? Create responsible use principles.', xp: 50},
+                {mode: 'ideas', task: 'Predict the Personal Soundtrack Era: Write a 2029 headline about everyone having AI-generated life soundtracks. What changed?', xp: 45}
+            ]
+        }
+    ]
+},
+
+// ============================================================================
+// ⚖️ AI HANDLES 80% OF LEGAL WORK - COMPREHENSIVE FORECAST
+// ============================================================================
+
+{
+    id: 'ai-legal-80-percent',
+    title: 'AI handles 80% of routine legal work',
+    source: 'Harvey AI, CoCounsel adoption, legal tech investment',
+    probability: 70,
+    timeframe: '2030-2035',
+    category: 'ai',
+    threatMode: 'execution',
+    threatReason: 'Routine legal work becomes automated — contracts, research, compliance, discovery. Human lawyers become strategists and relationship managers, not document processors.',
+    atRisk: 'Junior associates, paralegals, document review attorneys, legal researchers, solo practitioners competing on price',
+    opportunities: [
+        {
+            title: '🤝 Legal Strategy & Negotiation Boutiques',
+            mode: 'personality',
+            description: 'AI does the research. Humans do the judgment. Boutique firms focused on high-stakes strategy, negotiation, and courtroom presence.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Map Legal Work by Automation Potential: What legal tasks can AI do? What requires human judgment? Create the hierarchy.', xp: 50},
+                {mode: 'ideas', task: 'Research High-Value Legal Moments: When does human legal skill matter most? Negotiation, trial, deal-making, crisis. Identify the leverage points.', xp: 50},
+                {mode: 'execution', task: 'Design a "Strategy-Only" Law Firm Model: No document work, no research. Pure strategy and presence. What does the firm look like?', xp: 55},
+                {mode: 'ideas', task: 'Study Elite Negotiators: What makes great legal negotiators effective? Beyond knowledge to psychology and presence.', xp: 50},
+                {mode: 'execution', task: 'Create a Legal Strategy Framework: Methodology for approaching high-stakes legal situations. The strategic playbook.', xp: 55},
+                {mode: 'execution', task: 'Design "AI-Augmented Strategy" Workflow: How strategists use AI research to inform human judgment. The integration.', xp: 50},
+                {mode: 'personality', task: 'Interview 5 Elite Litigators: What do they do that can\'t be automated? Extract the human value.', xp: 55},
+                {mode: 'execution', task: 'Build a Client Communication System: High-touch client relationships for strategic matters. The service model.', xp: 50},
+                {mode: 'execution', task: 'Create Pricing for Strategic Services: Value-based pricing for high-stakes legal strategy. Not hourly.', xp: 50},
+                {mode: 'personality', task: 'Partner with AI Legal Tools: They handle automation. You handle strategy. Build the partnership.', xp: 55},
+                {mode: 'execution', task: 'Design a "Human Counsel" Premium: Certification that strategic advice comes from experienced humans.', xp: 50},
+                {mode: 'ideas', task: 'Predict the Associate Extinction: Write a 2032 headline about law firms eliminating junior associates. What replaced the training pipeline?', xp: 45}
+            ]
+        },
+        {
+            title: '🏢 Legal Ops Automation Firms',
+            mode: 'execution',
+            description: 'Help law firms and legal departments implement AI automation. The system integrators of legal tech transformation.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Map the Legal Tech Stack: What AI legal tools exist? Harvey, CoCounsel, Kira, Luminance. Create the landscape map.', xp: 50},
+                {mode: 'ideas', task: 'Research Legal Department Pain Points: Where does legal spend the most time on low-value work? Contracts, compliance, discovery.', xp: 50},
+                {mode: 'execution', task: 'Design a Legal Automation Assessment: Framework for evaluating a legal team\'s automation opportunities. The diagnostic.', xp: 55},
+                {mode: 'execution', task: 'Create Implementation Playbooks: Step-by-step guides for implementing common legal AI tools.', xp: 55},
+                {mode: 'ideas', task: 'Study Change Management in Legal: Lawyers are conservative. How do you drive adoption? Research what works.', xp: 50},
+                {mode: 'execution', task: 'Build ROI Calculators: Tools that quantify the value of legal automation. Make the business case.', xp: 50},
+                {mode: 'personality', task: 'Implement 3 Legal Automation Projects: Work with law firms or legal teams. Build case studies.', xp: 60},
+                {mode: 'execution', task: 'Design Legal AI Training Programs: Teach lawyers to work with AI tools effectively. Curriculum.', xp: 50},
+                {mode: 'execution', task: 'Create Integration Architectures: How legal AI tools connect with existing systems. Technical specs.', xp: 55},
+                {mode: 'personality', task: 'Partner with Legal AI Vendors: They build tools. You implement them. Build the channel.', xp: 55},
+                {mode: 'execution', task: 'Design Ongoing Optimization Services: Retainer for continuously improving legal automation.', xp: 50},
+                {mode: 'ideas', task: 'Predict the Legal Tech Consolidation: Write a 2030 headline about legal tech winners. Who survived?', xp: 45}
+            ]
+        },
+        {
+            title: '📋 Self-Serve Legal for SMBs',
+            mode: 'execution',
+            description: 'Small businesses can\'t afford lawyers but need legal help. AI-powered self-serve legal products for contracts, compliance, and common issues.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Map SMB Legal Needs: What legal issues do small businesses face? Contracts, employment, IP, compliance. Prioritize by frequency and pain.', xp: 45},
+                {mode: 'ideas', task: 'Research Existing Self-Serve Legal: LegalZoom, Rocket Lawyer, Clerky. What works? What\'s missing? Find the gaps.', xp: 45},
+                {mode: 'execution', task: 'Design a Contract Generation System: AI that creates customized contracts from simple inputs. Spec the product.', xp: 55},
+                {mode: 'execution', task: 'Create "Legal Health Check" for SMBs: Assessment that identifies legal risks and gaps. Lead generation tool.', xp: 50},
+                {mode: 'ideas', task: 'Study SMB Legal Buying Behavior: How do small businesses currently get legal help? What do they avoid? Why?', xp: 45},
+                {mode: 'execution', task: 'Build Plain-English Legal Explanations: Translate legal concepts for non-lawyers. The content library.', xp: 45},
+                {mode: 'execution', task: 'Design a Compliance Monitoring System: Automated tracking of regulatory requirements for SMBs. By industry.', xp: 55},
+                {mode: 'personality', task: 'Test with 10 Small Businesses: Give them your self-serve tools. What\'s useful? What\'s confusing?', xp: 55},
+                {mode: 'execution', task: 'Create Industry-Specific Packages: Legal templates for restaurants, agencies, e-commerce. Vertical focus.', xp: 50},
+                {mode: 'execution', task: 'Design Escalation to Human Lawyers: When self-serve isn\'t enough, connect to attorneys. The hybrid model.', xp: 50},
+                {mode: 'personality', task: 'Partner with Accountants or Bookkeepers: They serve SMBs who need legal. Build referral relationships.', xp: 55},
+                {mode: 'ideas', task: 'Predict SMB Legal Transformation: Write a 2029 headline about small businesses handling legal without lawyers. What enabled it?', xp: 45}
+            ]
+        }
+    ]
+},
+
+// ============================================================================
+// 🎉 EXPERIENCE ECONOMY GROWS - COMPREHENSIVE FORECAST
+// ============================================================================
+
+{
+    id: 'experience-economy-grows',
+    title: 'Experience economy continues explosive growth',
+    source: 'Consumer spending data, post-COVID trends, millennial/Gen-Z preferences',
+    probability: 92,
+    timeframe: 'Already happening',
+    category: 'work',
+    threatMode: 'execution',
+    threatReason: 'People want memories, not things. Those who can create transformative experiences win. Those selling commodities lose.',
+    atRisk: 'Retailers focused on products, service businesses without experiential elements, anyone competing on price alone',
+    opportunities: [
+        {
+            title: '🎨 Experience Design Studios',
+            mode: 'ideas',
+            description: 'Designing memorable experiences for brands, venues, and events. The architects of transformation.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Study Peak Experience Psychology: What makes experiences memorable? Peak-end rule, surprise, emotion, social sharing. Understand the science.', xp: 50},
+                {mode: 'ideas', task: 'Analyze Great Experiences: Disney, Meow Wolf, Sleep No More, Secret Cinema. What makes them work? Deconstruct the elements.', xp: 50},
+                {mode: 'execution', task: 'Create an Experience Design Framework: Methodology for designing memorable experiences. The creative process.', xp: 55},
+                {mode: 'ideas', task: 'Map Experience Types: Entertainment, learning, transformation, escape, connection. Categorize the landscape.', xp: 45},
+                {mode: 'execution', task: 'Design a "Memory Moment" Toolkit: Templates for creating peak moments within experiences. The building blocks.', xp: 50},
+                {mode: 'execution', task: 'Build an Experience Brief Template: How to capture client needs for experience design. The discovery process.', xp: 45},
+                {mode: 'personality', task: 'Design 3 Experiences: For brands, venues, or events. Create and document the designs.', xp: 55},
+                {mode: 'execution', task: 'Create Experience Measurement: How do you know an experience worked? Metrics beyond attendance.', xp: 50},
+                {mode: 'execution', task: 'Design Scalable Experience Formats: Experiences that can be replicated across locations. Franchisable.', xp: 55},
+                {mode: 'personality', task: 'Partner with Event Agencies: They need experience design capability. Offer your services.', xp: 55},
+                {mode: 'execution', task: 'Build a Portfolio of Experience Designs: Case studies showing your approach and results.', xp: 50},
+                {mode: 'ideas', task: 'Predict the Experience Requirement: Write a 2030 headline about experiences becoming mandatory for brands. What made it essential?', xp: 45}
+            ]
+        },
+        {
+            title: '🏕️ Micro-Retreats & Local Adventures',
+            mode: 'execution',
+            description: 'People want transformation but lack time and money for big trips. Micro-retreats — 2-hour to 2-day local experiences — fill the gap.',
+            difficulty: 'easy',
+            timeframe: '1-6 months',
+            quests: [
+                {mode: 'ideas', task: 'Research Micro-Retreat Demand: Who wants short transformative experiences? What are they looking for? Survey or interview 20 people.', xp: 45},
+                {mode: 'ideas', task: 'Map Local Experience Opportunities: What transformative experiences could happen within 1 hour of your city? Underutilized spaces, activities.', xp: 45},
+                {mode: 'execution', task: 'Design 5 Micro-Retreat Formats: 2-hour, half-day, full-day, overnight. Different themes and transformations.', xp: 55},
+                {mode: 'execution', task: 'Create Venue Partnership Templates: Agreements with spaces that can host micro-retreats. Farms, studios, nature areas.', xp: 45},
+                {mode: 'ideas', task: 'Study Successful Micro-Experiences: What local experiences already work? Escape rooms, cooking classes, sound baths. What makes them succeed?', xp: 45},
+                {mode: 'execution', task: 'Build a Facilitator Training: How to lead transformative micro-experiences. The guide curriculum.', xp: 50},
+                {mode: 'personality', task: 'Run 10 Micro-Retreats: Test your formats. Learn what sells, what transforms, what people share.', xp: 55},
+                {mode: 'execution', task: 'Create Marketing for Local Experiences: How to reach people seeking local transformation. Channels and messaging.', xp: 45},
+                {mode: 'execution', task: 'Design Corporate Micro-Retreats: Team experiences for companies. Different value proposition, higher prices.', xp: 50},
+                {mode: 'personality', task: 'Build a Facilitator Network: Train others to run your formats. Scale beyond yourself.', xp: 55},
+                {mode: 'execution', task: 'Create a Micro-Retreat Platform: Marketplace connecting seekers with local experiences.', xp: 55},
+                {mode: 'ideas', task: 'Predict the Local Experience Boom: Write a 2028 headline about micro-retreats replacing traditional vacations. Why?', xp: 40}
+            ]
+        },
+        {
+            title: '🏢 Corporate Offsites as Product',
+            mode: 'execution',
+            description: 'Remote companies need intentional gathering. Corporate offsites become a product category with specialized designers, venues, and facilitators.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Research Corporate Offsite Failures: What goes wrong? Bad venues, no agenda, too much work, not enough bonding. List the pitfalls.', xp: 45},
+                {mode: 'ideas', task: 'Study Great Company Retreats: What do companies like Zapier, GitLab, Basecamp do? Analyze successful remote-company gatherings.', xp: 50},
+                {mode: 'execution', task: 'Create an Offsite Design Framework: Methodology for designing effective team gatherings. The planning process.', xp: 55},
+                {mode: 'execution', task: 'Build an Offsite Checklist: Everything from venue selection to follow-up. The comprehensive guide.', xp: 45},
+                {mode: 'ideas', task: 'Map Offsite Types: Strategy, bonding, celebration, onboarding, crisis. Different gatherings need different designs.', xp: 45},
+                {mode: 'execution', task: 'Design Facilitation Agendas: Templates for different offsite goals. Plug-and-play programming.', xp: 50},
+                {mode: 'personality', task: 'Facilitate 5 Corporate Offsites: Run team gatherings. Build case studies and testimonials.', xp: 55},
+                {mode: 'execution', task: 'Create Venue Evaluation Criteria: What makes a great offsite venue? Scoring system for selection.', xp: 45},
+                {mode: 'execution', task: 'Design Remote-First Offsite Principles: What\'s different when the team is normally distributed? Specific considerations.', xp: 50},
+                {mode: 'personality', task: 'Partner with Venues: Hotels, retreat centers, unique spaces. Build preferred relationships.', xp: 55},
+                {mode: 'execution', task: 'Build an Offsite ROI Calculator: Prove the value of gathering to finance-minded executives.', xp: 50},
+                {mode: 'ideas', task: 'Predict the Gathering Mandate: Write a 2029 headline about in-person gathering becoming required for remote teams. What happened?', xp: 45}
+            ]
+        }
+    ]
+},
+
+// ============================================================================
+// 🧠 MENTAL HEALTH DEMAND EXCEEDS SUPPLY - COMPREHENSIVE FORECAST
+// ============================================================================
+
+{
+    id: 'mental-health-demand-crisis',
+    title: 'Mental health demand far exceeds supply of providers',
+    source: 'WHO data, therapist shortage statistics, youth mental health crisis',
+    probability: 95,
+    timeframe: 'Already happening',
+    category: 'work',
+    threatMode: 'personality',
+    threatReason: 'There aren\'t enough therapists. Period. Technology and new models must extend care to millions who can\'t access traditional therapy.',
+    atRisk: 'Traditional private practice therapists competing on availability, mental health systems that don\'t scale, anyone ignoring the crisis',
+    opportunities: [
+        {
+            title: '👥 Group Therapy & Cohort Programs',
+            mode: 'execution',
+            description: 'One therapist, eight clients. Group therapy scales while maintaining effectiveness. Building group programs for specific populations.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Research Group Therapy Effectiveness: When does group work better than individual? What conditions, populations, issues?', xp: 50},
+                {mode: 'ideas', task: 'Study Successful Group Models: AA, DBT groups, support groups. What makes them work? Structure, facilitation, culture.', xp: 50},
+                {mode: 'execution', task: 'Design a Group Therapy Format: 8-week cohort program for a specific issue. Curriculum, exercises, progression.', xp: 55},
+                {mode: 'ideas', task: 'Identify Underserved Populations: Who can\'t access mental health care? New parents, shift workers, rural residents. Find the gaps.', xp: 45},
+                {mode: 'execution', task: 'Create Facilitator Training: How to lead effective therapy groups. The clinical curriculum.', xp: 55},
+                {mode: 'execution', task: 'Build Group Matching Systems: How do you put the right people together? Assessment and grouping methodology.', xp: 50},
+                {mode: 'personality', task: 'Run 3 Pilot Groups: Test your format. Measure outcomes. Iterate based on feedback.', xp: 55},
+                {mode: 'execution', task: 'Design Virtual Group Protocols: Online groups that maintain intimacy and effectiveness.', xp: 50},
+                {mode: 'execution', task: 'Create Pricing for Group Programs: Make it accessible while sustainable. The economic model.', xp: 45},
+                {mode: 'personality', task: 'Partner with Employers or Insurers: They want scalable mental health. Offer group solutions.', xp: 55},
+                {mode: 'execution', task: 'Build a Group Program Marketplace: Platform connecting people to appropriate group programs.', xp: 55},
+                {mode: 'ideas', task: 'Predict Group Therapy Mainstream: Write a 2030 headline about group therapy becoming primary care model. What changed?', xp: 45}
+            ]
+        },
+        {
+            title: '💪 Preventative Mental Fitness',
+            mode: 'execution',
+            description: 'Don\'t wait for crisis. Build mental fitness before problems emerge. The gym membership model for mental health.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Research Mental Fitness Concept: What does "mental fitness" mean? Resilience, emotional regulation, stress management. Define the domain.', xp: 45},
+                {mode: 'ideas', task: 'Study Prevention Science: What interventions prevent mental health problems? Before crisis, not after.', xp: 50},
+                {mode: 'execution', task: 'Create a Mental Fitness Assessment: Measure someone\'s baseline mental fitness. The diagnostic.', xp: 50},
+                {mode: 'execution', task: 'Design a Mental Fitness Program: Daily/weekly practices that build mental strength. The workout routine for the mind.', xp: 55},
+                {mode: 'ideas', task: 'Analyze the Peloton Model: How did fitness become subscription? Apply lessons to mental fitness.', xp: 45},
+                {mode: 'execution', task: 'Build a Mental Fitness App Concept: Features, content, progression. The product specification.', xp: 55},
+                {mode: 'personality', task: 'Pilot with 30 People: Run them through your mental fitness program. Measure outcomes.', xp: 55},
+                {mode: 'execution', task: 'Create Corporate Mental Fitness: Workplace programs that build team mental fitness. B2B opportunity.', xp: 50},
+                {mode: 'execution', task: 'Design Mental Fitness Metrics: How do you know it\'s working? Track and visualize progress.', xp: 45},
+                {mode: 'personality', task: 'Partner with Gyms or Wellness Centers: They do physical fitness. Add mental. Build the relationship.', xp: 55},
+                {mode: 'execution', task: 'Create Mental Fitness Certification: Train coaches to deliver mental fitness programs.', xp: 55},
+                {mode: 'ideas', task: 'Predict Mental Fitness Mandate: Write a 2031 headline about mental fitness becoming required like physical fitness. What triggered it?', xp: 45}
+            ]
+        },
+        {
+            title: '🏥 Therapist-Extender Tools',
+            mode: 'execution',
+            description: 'Help therapists see more patients effectively. AI triage, between-session support, supervision tools that extend each therapist\'s capacity.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Map Therapist Time Usage: What do therapists spend time on? Sessions, notes, admin, coordination. Find the time sinks.', xp: 45},
+                {mode: 'ideas', task: 'Research AI in Mental Health: What tools exist? Woebot, Wysa, Talkspace. What works? What\'s missing?', xp: 50},
+                {mode: 'execution', task: 'Design Between-Session Support: AI or human support between therapy sessions. Extends the therapeutic relationship.', xp: 55},
+                {mode: 'execution', task: 'Create AI Triage for Therapy: System that assesses new patients and matches to appropriate care. Save therapist time.', xp: 55},
+                {mode: 'ideas', task: 'Study Therapist Burnout: Why do therapists burn out? How can tools help with sustainability?', xp: 50},
+                {mode: 'execution', task: 'Build Note-Taking Automation: AI that helps therapists with documentation. Save hours per week.', xp: 50},
+                {mode: 'execution', task: 'Design Supervision Efficiency Tools: Help supervisors oversee more therapists effectively.', xp: 50},
+                {mode: 'personality', task: 'Test with 5 Therapists: Give them your tools. Measure time saved, satisfaction, patient outcomes.', xp: 55},
+                {mode: 'execution', task: 'Create Patient Progress Tracking: Dashboard that helps therapists monitor all patients between sessions.', xp: 50},
+                {mode: 'personality', task: 'Partner with a Therapy Practice: Pilot your tools in a real clinical setting.', xp: 60},
+                {mode: 'execution', task: 'Design Ethical Guidelines: What should AI do vs not do in mental health? Create responsible use framework.', xp: 50},
+                {mode: 'ideas', task: 'Predict the Therapist Multiplier: Write a 2030 headline about therapists seeing 3x more patients with AI. How did it work?', xp: 45}
+            ]
+        }
+    ]
+},
+
+// ============================================================================
+// 🎓 COLLEGE ROI QUESTIONED - COMPREHENSIVE FORECAST
+// ============================================================================
+
+{
+    id: 'college-roi-questioned',
+    title: 'College ROI increasingly questioned',
+    source: 'Student debt data, alternative credential growth, employer hiring shifts',
+    probability: 88,
+    timeframe: 'Already happening',
+    category: 'work',
+    threatMode: 'ideas',
+    threatReason: 'When college costs $200K and AI can teach for free, the degree loses its monopoly. Those who build alternative paths win.',
+    atRisk: 'Traditional universities slow to adapt, students blindly following the degree path, education debt-dependent businesses',
+    opportunities: [
+        {
+            title: '🛠️ Alternative Credential & Apprenticeships',
+            mode: 'execution',
+            description: 'Build the alternative to college. Apprenticeships, bootcamps, credentials that prove ability without the degree.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Map Alternative Credential Landscape: Bootcamps, certifications, apprenticeships, portfolios. What exists? What works?', xp: 45},
+                {mode: 'ideas', task: 'Research Employer Acceptance: Which employers hire without degrees? What do they look for instead? Interview 10 hiring managers.', xp: 55},
+                {mode: 'execution', task: 'Design an Apprenticeship Program: Structure for learning-while-earning. Curriculum, employer partnerships, progression.', xp: 55},
+                {mode: 'ideas', task: 'Study Successful Non-Degree Paths: People who built great careers without college. What did they do instead?', xp: 45},
+                {mode: 'execution', task: 'Create a "College Alternative" Guide: For high school students and parents. The decision framework.', xp: 50},
+                {mode: 'execution', task: 'Build Employer Partnerships: Companies willing to hire from your alternative program. Create the pipeline.', xp: 55},
+                {mode: 'personality', task: 'Place 10 People Without Degrees: Help non-college candidates get hired. Build case studies.', xp: 60},
+                {mode: 'execution', task: 'Design Credential Stacking: How multiple smaller credentials add up to career readiness. The architecture.', xp: 50},
+                {mode: 'execution', task: 'Create ROI Comparison Tools: Calculator showing college vs alternatives for specific careers.', xp: 45},
+                {mode: 'personality', task: 'Partner with High Schools: Help students explore alternatives before defaulting to college.', xp: 55},
+                {mode: 'execution', task: 'Build an Alternative Credential Platform: Marketplace connecting learners with non-degree programs.', xp: 55},
+                {mode: 'ideas', task: 'Predict the College Reckoning: Write a 2032 headline about major universities closing. What replaced them?', xp: 50}
+            ]
+        },
+        {
+            title: '💼 Employer-Led Training Pipelines',
+            mode: 'execution',
+            description: 'Companies train their own talent instead of requiring degrees. Building the infrastructure for employer-led education.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Research Corporate Training History: When did companies train employees? What changed? Why did they outsource to colleges?', xp: 45},
+                {mode: 'ideas', task: 'Study Successful Corporate Universities: AT&T, McDonald\'s Hamburger University, Google Career Certificates. What works?', xp: 50},
+                {mode: 'execution', task: 'Design a "Hire to Train" Program: Structure where companies hire then train, instead of requiring pre-trained candidates.', xp: 55},
+                {mode: 'ideas', task: 'Calculate the Economics: Is it cheaper to train internally or require degrees? Build the business case.', xp: 50},
+                {mode: 'execution', task: 'Create Training Curriculum Templates: Modular training programs companies can customize. Building blocks.', xp: 55},
+                {mode: 'execution', task: 'Design Assessment for Trainability: What predicts success in training programs? Better than degree screening.', xp: 50},
+                {mode: 'personality', task: 'Convince 3 Companies to Try "Hire to Train": Pilot the model. Document results.', xp: 60},
+                {mode: 'execution', task: 'Build Training Infrastructure: LMS, assessment, certification for employer-led education.', xp: 55},
+                {mode: 'execution', task: 'Create Industry-Specific Programs: Training pipelines for tech, healthcare, trades. Vertical focus.', xp: 50},
+                {mode: 'personality', task: 'Partner with Workforce Development: Government agencies funding job training. Access the resources.', xp: 55},
+                {mode: 'execution', task: 'Design Career Progression Within Training: Not just entry-level. Ongoing development pathways.', xp: 50},
+                {mode: 'ideas', task: 'Predict the Corporate University Boom: Write a 2030 headline about companies becoming primary educators. Why did this happen?', xp: 45}
+            ]
+        },
+        {
+            title: '📁 Portfolio-First Career Accelerators',
+            mode: 'personality',
+            description: 'Build a portfolio, not a resume. Programs that help people create proof of work that gets them hired.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Study Portfolio-Based Hiring: Which fields hire on portfolio? Design, development, writing. What makes portfolios work?', xp: 45},
+                {mode: 'ideas', task: 'Research Portfolio Requirements: What do employers actually want to see? Interview 10 hiring managers across fields.', xp: 50},
+                {mode: 'execution', task: 'Create a Portfolio Development Curriculum: Structured program to build hire-worthy portfolios. The process.', xp: 55},
+                {mode: 'execution', task: 'Design Portfolio Templates by Role: What should a PM portfolio include vs a marketer? Role-specific guidance.', xp: 50},
+                {mode: 'ideas', task: 'Identify Portfolio-Friendly Projects: Real projects people can do to build portfolios. The project library.', xp: 45},
+                {mode: 'execution', task: 'Build Portfolio Review System: Feedback mechanism to improve portfolios. Peer and expert review.', xp: 50},
+                {mode: 'personality', task: 'Run a Portfolio Accelerator Cohort: 8 weeks to a job-ready portfolio. Test with 10 people.', xp: 55},
+                {mode: 'execution', task: 'Create Portfolio-to-Job Pipelines: Connect people with strong portfolios to employers who value them.', xp: 55},
+                {mode: 'execution', task: 'Design Portfolio Hosting: Platform optimized for showcasing work to employers. The portfolio infrastructure.', xp: 50},
+                {mode: 'personality', task: 'Partner with Employers: Build relationships with companies that hire on portfolio.', xp: 55},
+                {mode: 'execution', task: 'Create Portfolio Success Metrics: Track how portfolios lead to jobs. Prove the model.', xp: 45},
+                {mode: 'ideas', task: 'Predict the Portfolio Standard: Write a 2029 headline about portfolios replacing resumes as hiring default. What drove the change?', xp: 45}
+            ]
+        }
+    ]
+},
+
+// ============================================================================
 // 🤖 AI & TECHNOLOGY
 // ============================================================================
 
