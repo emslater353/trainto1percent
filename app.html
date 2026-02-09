@@ -111,9 +111,14 @@
             box-shadow: 0 0 15px var(--accent-glow);
         }
         .btn-success { 
+            background: transparent; 
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        .btn-success:hover {
             background: var(--success); 
             color: var(--bg-primary);
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
         }
         .btn-full { width: 100%; }
         .btn-small { padding: 10px 16px; font-size: 10px; }
@@ -596,13 +601,16 @@
             
             /* Quests mobile */
             .quest { padding: 15px; }
-            .quest-title { font-size: 13px; }
+            .quest-title { font-size: 13px; word-break: break-word; }
             .quest-actions { flex-direction: column; gap: 8px; }
             .quest-actions .btn { width: 100%; }
+            .main { overflow-x: hidden; }
+            .card { overflow-x: hidden; }
             
             /* Chat mobile */
-            .chat-container { height: calc(100vh - 200px); }
+            .chat-container { height: calc(100vh - 280px); margin-bottom: 10px; }
             .chat-input { font-size: 16px !important; }
+            .chat-input-row { padding-bottom: 10px; }
             
             /* Cards mobile */
             .card { padding: 15px; }
@@ -1624,7 +1632,41 @@ function resultsH(){
 
 function appH(c){return `<div class="app-layout"><aside class="sidebar"><div class="sidebar-logo">AI PROOF <span>CLUB</span></div><div class="sidebar-streak"><div class="streak-value">🔥 ${streak()}</div><div class="streak-label">Day Streak</div></div><ul class="sidebar-nav"><li><a href="#" data-screen="dashboard" class="${S.screen==='dashboard'?'active':''}">◉ Dashboard</a></li><li><a href="#" data-screen="quests" class="${S.screen==='quests'?'active':''}">⚔ Quests</a></li><li><a href="#" data-screen="coach" class="${S.screen==='coach'?'active':''}">◎ AI Coach</a></li><li><a href="#" data-screen="forecasts" class="${S.screen==='forecasts'?'active':''}">🔮 Forecasts</a></li><li><a href="#" data-screen="receipts" class="${S.screen==='receipts'?'active':''}">◈ Receipts</a></li><li><a href="#" data-screen="capsules" class="${S.screen==='capsules'?'active':''}">📦 Capsules</a></li><li><a href="#" data-screen="review" class="${S.screen==='review'?'active':''}">📊 Review</a></li><li><a href="#" data-screen="settings" class="${S.screen==='settings'?'active':''}">⚙ Settings</a></li></ul><div class="sidebar-user"><div class="sidebar-name">${S.user?.name||'User'}</div><div class="sidebar-email">${S.user?.email||''}</div><span class="sidebar-logout" id="logout">Sign out</span></div></aside><main class="main">${c}</main><nav class="mobile-nav"><div class="mobile-nav-item ${S.screen==='dashboard'?'active':''}" data-screen="dashboard"><span>◉</span>Home</div><div class="mobile-nav-item ${S.screen==='quests'?'active':''}" data-screen="quests"><span>⚔</span>Quests</div><div class="mobile-nav-item ${S.screen==='coach'?'active':''}" data-screen="coach"><span>◎</span>Coach</div><div class="mobile-nav-item ${S.screen==='forecasts'?'active':''}" data-screen="forecasts"><span>🔮</span>Forecasts</div><div class="mobile-nav-item ${['receipts','capsules','review','settings'].includes(S.screen)?'active':''}" id="more-menu-toggle"><span>☰</span>More</div></nav><div class="more-menu ${S.showMoreMenu?'show':''}" id="more-menu"><div class="more-menu-item" data-screen="receipts"><span>◈</span> Receipts</div><div class="more-menu-item" data-screen="capsules"><span>📦</span> Capsules</div><div class="more-menu-item" data-screen="review"><span>📊</span> Review</div><div class="more-menu-item" data-screen="settings"><span>⚙</span> Settings</div><div class="more-menu-item" id="mobile-logout"><span>↩</span> Sign Out</div></div></div>`;}
 
-function dashH(){const active=S.quests.filter(q=>!q.done).slice(0,3),recent=S.receipts.slice(-3).reverse();return `<div class="page-header"><h1 class="page-title">Dashboard</h1><p class="page-subtitle">Day ${dayNum()}</p></div><div class="stats"><div class="stat"><div class="stat-value">${totalXP()}</div><div class="stat-label">XP</div></div><div class="stat"><div class="stat-value">${S.receipts.length}</div><div class="stat-label">Receipts</div></div><div class="stat"><div class="stat-value">${streak()}</div><div class="stat-label">Streak</div></div><div class="stat"><div class="stat-value">${dayNum()}</div><div class="stat-label">Day</div></div></div><div class="grid-2"><div><div class="card"><div class="card-header"><span class="card-header-title">Mode Levels</span></div><div class="mode-bars"><div class="mode-bar"><span class="mode-name ideas">Ideas</span><div class="mode-track"><div class="mode-fill ideas" style="width:${S.scores.ideas}%"></div></div><span class="mode-value">${S.scores.ideas}%</span></div><div class="mode-bar"><span class="mode-name personality">Personality</span><div class="mode-track"><div class="mode-fill personality" style="width:${S.scores.personality}%"></div></div><span class="mode-value">${S.scores.personality}%</span></div><div class="mode-bar"><span class="mode-name execution">Execution</span><div class="mode-track"><div class="mode-fill execution" style="width:${S.scores.execution}%"></div></div><span class="mode-value">${S.scores.execution}%</span></div></div></div><div class="card"><div class="card-header"><span class="card-header-title">Today's Quests</span><a href="#" data-screen="quests" class="text-link">All →</a></div>${active.length?active.map(q=>`<div class="quest ${q.boss?'boss':''}"><div class="quest-header"><span class="quest-mode ${q.mode}">${q.mode}</span><span class="quest-diff ${q.diff}">${q.boss?'👑 BOSS':q.diff}</span></div><div class="quest-title">${q.t}</div><div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span></div><div class="quest-actions"><button class="btn btn-small btn-success complete-q" data-id="${q.id}">✓ Done</button></div></div>`).join(''):'<p class="text-secondary text-small">All done!</p>'}</div></div><div><div class="card"><div class="card-header"><span class="card-header-title">Recent Receipts</span></div>${recent.length?recent.map(r=>`<div class="receipt"><div class="receipt-check">✓</div><div class="receipt-content"><div class="receipt-title">${r.title}</div><div class="receipt-meta">${r.mode} · +${r.xp} XP</div></div></div>`).join(''):'<p class="text-secondary text-small">Complete quests to earn receipts.</p>'}</div></div></div>`;}
+function dashH(){
+    const active=S.quests.filter(q=>!q.done).slice(0,3);
+    const recent=S.receipts.slice(-3).reverse();
+    const forecastQuests=getFollowedForecastQuests().slice(0,2);
+    
+    // Calculate days until Monday (next quest refresh)
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const daysUntilMonday = dayOfWeek === 0 ? 1 : dayOfWeek === 1 ? 7 : 8 - dayOfWeek;
+    const questRefreshText = daysUntilMonday === 1 ? 'New quests tomorrow!' : daysUntilMonday === 7 ? 'New quests in 7 days' : `New quests in ${daysUntilMonday} days`;
+    
+    return `<div class="page-header"><h1 class="page-title">Dashboard</h1><p class="page-subtitle">Day ${dayNum()}</p></div>
+    
+    <div class="card mb-20" style="background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(0,255,170,0.05) 100%); border-color: var(--accent)">
+        <div class="card-header"><span class="card-header-title">⚔️ Your Quests</span><a href="#" data-screen="quests" class="text-link">All →</a></div>
+        <p class="text-secondary text-small" style="margin-bottom:12px;padding:0 15px">Complete quests to level up your <strong style="color:var(--${weakest()})">${weakest()}</strong> mode. <span style="color:var(--accent)">${questRefreshText}</span></p>
+        ${forecastQuests.length?forecastQuests.map(q=>`<div class="quest" style="border-left:3px solid var(--accent)">
+            <div class="quest-header"><span class="quest-mode ${q.mode}">${q.mode}</span><span class="quest-diff" style="color:var(--accent)">🔮 Forecast</span></div>
+            <div class="quest-title">${q.t}</div>
+            <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span></div>
+            <div class="quest-actions"><button class="btn btn-small btn-success complete-forecast-q" data-fid="${q.forecastId}" data-oid="${q.oppId}">○ Done</button></div>
+        </div>`).join(''):''}
+        ${active.length?active.map(q=>`<div class="quest ${q.boss?'boss':''}">
+            <div class="quest-header"><span class="quest-mode ${q.mode}">${q.mode}</span><span class="quest-diff ${q.diff}">${q.boss?'👑 BOSS':q.diff}</span></div>
+            <div class="quest-title">${q.t}</div>
+            <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span></div>
+            <div class="quest-actions"><button class="btn btn-small btn-success complete-q" data-id="${q.id}">○ Done</button></div>
+        </div>`).join(''):''}
+        ${!active.length && !forecastQuests.length?'<p class="text-secondary text-small" style="padding:10px 15px">All caught up! 🎉 Check back Monday for new quests.</p>':''}
+    </div>
+    
+    <div class="stats"><div class="stat"><div class="stat-value">${totalXP()}</div><div class="stat-label">XP</div></div><div class="stat"><div class="stat-value">${S.receipts.length}</div><div class="stat-label">Receipts</div></div><div class="stat"><div class="stat-value">${streak()}</div><div class="stat-label">Streak</div></div><div class="stat"><div class="stat-value">${dayNum()}</div><div class="stat-label">Day</div></div></div>
+    
+    <div class="grid-2"><div><div class="card"><div class="card-header"><span class="card-header-title">Mode Levels</span></div><div class="mode-bars"><div class="mode-bar"><span class="mode-name ideas">Ideas</span><div class="mode-track"><div class="mode-fill ideas" style="width:${S.scores.ideas}%"></div></div><span class="mode-value">${S.scores.ideas}%</span></div><div class="mode-bar"><span class="mode-name personality">Personality</span><div class="mode-track"><div class="mode-fill personality" style="width:${S.scores.personality}%"></div></div><span class="mode-value">${S.scores.personality}%</span></div><div class="mode-bar"><span class="mode-name execution">Execution</span><div class="mode-track"><div class="mode-fill execution" style="width:${S.scores.execution}%"></div></div><span class="mode-value">${S.scores.execution}%</span></div></div></div></div><div><div class="card"><div class="card-header"><span class="card-header-title">Recent Receipts</span></div>${recent.length?recent.map(r=>`<div class="receipt"><div class="receipt-check">✓</div><div class="receipt-content"><div class="receipt-title">${r.title}</div><div class="receipt-meta">${r.mode} · +${r.xp} XP</div></div></div>`).join(''):'<p class="text-secondary text-small">Complete quests to earn receipts.</p>'}</div></div></div>`;
+}
 
 function questsH(){
     const active=S.quests.filter(q=>!q.done && !S.hiddenQuests.includes(q.id));
@@ -1650,7 +1692,7 @@ function questsH(){
             <div class="quest-title">${q.t}</div>
             <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span><span class="quest-progress">Step ${q.step}/${q.totalSteps}</span></div>
             <div class="quest-actions">
-                <button class="btn btn-small btn-success complete-forecast-q" data-fid="${q.forecastId}" data-oid="${q.oppId}">✓ Complete</button>
+                <button class="btn btn-small btn-success complete-forecast-q" data-fid="${q.forecastId}" data-oid="${q.oppId}">○ Done</button>
             </div>
         </div>`).join('')}
     </div>`:''}
@@ -1662,7 +1704,7 @@ function questsH(){
             <div class="quest-title">${q.t}</div>
             <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span></div>
             <div class="quest-actions">
-                <button class="btn btn-small btn-success complete-custom-q" data-id="${q.id}">✓ Complete</button>
+                <button class="btn btn-small btn-success complete-custom-q" data-id="${q.id}">○ Done</button>
                 <button class="btn btn-small btn-secondary delete-custom-q" data-id="${q.id}">✕</button>
             </div>
         </div>`).join('')}
@@ -1679,7 +1721,7 @@ function questsH(){
             <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span>${q.diff==='anon'?'<span>🔒 Anon OK</span>':''}</div>
             ${q.tip?`<div class="quest-tip">💡 ${q.tip}</div>`:''}
             <div class="quest-actions">
-                <button class="btn btn-small btn-success complete-q" data-id="${q.id}">✓ Complete</button>
+                <button class="btn btn-small btn-success complete-q" data-id="${q.id}">○ Done</button>
                 <button class="btn btn-small btn-secondary skip-q" data-id="${q.id}">Skip</button>
                 <button class="btn btn-small btn-ghost hide-q" data-id="${q.id}" title="Hide this quest">✕</button>
             </div>
