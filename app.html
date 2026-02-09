@@ -731,6 +731,10 @@ const S = {
     weeklyEmailOptIn: null, // {email, optedIn} for weekly quest emails
     freeQuizMode: false, // true if taking quiz from landing page (not logged in)
     freeQuizScores: null, // store scores from free quiz
+    diagnosticStep: 0, // 0=email/industry, 1-4=questions, 5=results (gated)
+    diagnosticEmail: '',
+    diagnosticIndustry: '',
+    diagnosticAnswers: [],
     // Forecasts
     forecasts: [],
     forecastFilter: 'all', // all, ai, tech, crypto, politics, science
@@ -852,6 +856,30 @@ const Qs = [
         {t:"Are magnetic and well-connected",m:"personality",w:2},
         {t:"Ship like crazy and make things happen",m:"execution",w:2},
         {t:"Are reliable and steady",m:"execution",w:1}
+    ]}
+];
+
+// Shortened 4-question diagnostic for landing page (email gate)
+const DiagnosticQs = [
+    {t:"When facing a complex decision, you typically:",o:[
+        {t:"Map out all possible scenarios",m:"ideas",w:2},
+        {t:"Talk through it with people you trust",m:"personality",w:2},
+        {t:"Make a quick call and adjust as you go",m:"execution",w:2}
+    ]},
+    {t:"People come to you when they need:",o:[
+        {t:"A fresh perspective or creative solution",m:"ideas",w:2},
+        {t:"Someone to listen and support them",m:"personality",w:2},
+        {t:"Someone to help get things done",m:"execution",w:2}
+    ]},
+    {t:"When you commit to something:",o:[
+        {t:"You think it through carefully first",m:"ideas",w:2},
+        {t:"You get others bought in",m:"personality",w:2},
+        {t:"You do it—your word is your bond",m:"execution",w:2}
+    ]},
+    {t:"In five years, you want people to say you:",o:[
+        {t:"See things others miss",m:"ideas",w:2},
+        {t:"Are magnetic and well-connected",m:"personality",w:2},
+        {t:"Ship and make things happen",m:"execution",w:2}
     ]}
 ];
 
@@ -1231,8 +1259,8 @@ function capsules(){
 function render(){
     const screens={
         login:loginH, signup:signupH, forgot:forgotH, pricing:pricingH,
-        // Free quiz flow (from landing page)
-        freeQuiz:quizH, freeResults:freeResultsH,
+        // Free diagnostic flow (from landing page) - 4 questions with email gate
+        diagnostic:diagnosticH, freeQuiz:quizH, freeResults:freeResultsH,
         // Onboarding flow
         onboarding:onboardingH, upload:uploadH, analyzing:analyzingH, quiz:quizH, results:resultsH,
         // App screens
@@ -1243,6 +1271,118 @@ function render(){
     document.getElementById('app').innerHTML=(screens[S.screen]||loginH)()+(S.modal?modalH():'');
     if(typeof updateHash === 'function') updateHash();
     bindEvents();
+}
+
+// New 4-question diagnostic with email gate
+function diagnosticH(){
+    const step = S.diagnosticStep;
+    
+    // Step 0: Email + Industry collection
+    if(step === 0){
+        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
+        <div class="card">
+            <h2 class="card-title text-center">Discover Your AI-Proof Score</h2>
+            <p class="card-subtitle text-center">4 quick questions to see where you stand</p>
+            
+            <div style="background:var(--bg-primary);padding:20px;margin:20px 0;text-align:center">
+                <div style="display:flex;gap:15px;justify-content:center;margin-bottom:15px">
+                    <div><span style="font-size:24px">💡</span><div style="font-size:10px;color:var(--ideas)">Ideas</div></div>
+                    <div><span style="font-size:24px">⚡</span><div style="font-size:10px;color:var(--personality)">Personality</div></div>
+                    <div><span style="font-size:24px">🎯</span><div style="font-size:10px;color:var(--execution)">Execution</div></div>
+                </div>
+                <p class="text-secondary text-small">We measure the 3 modes that separate people who thrive from AI vs get replaced by it.</p>
+            </div>
+            
+            <form id="diagnostic-start-form">
+                <div class="form-group">
+                    <label class="form-label">Your Email</label>
+                    <input type="email" class="form-input" id="diag-email" required placeholder="you@email.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Your Industry</label>
+                    <select class="form-input" id="diag-industry" required>
+                        <option value="">Select your industry...</option>
+                        ${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Start Diagnostic →</button>
+            </form>
+            <p class="text-center text-secondary text-small mt-15">Takes 60 seconds. Results emailed to you.</p>
+        </div>
+        <p class="text-center mt-20"><a class="text-link text-small" id="back-to-login">← Back to login</a></p>
+        </div></div>`;
+    }
+    
+    // Steps 1-4: Questions
+    if(step >= 1 && step <= 4){
+        const q = DiagnosticQs[step - 1];
+        return `<div class="screen-center"><div class="container-md">
+            <div class="logo">AI PROOF <span>CLUB</span></div>
+            <div class="progress-bar">${[1,2,3,4].map(i=>`<div class="progress-dot ${i<step?'done':i===step?'active':''}"></div>`).join('')}</div>
+            <div class="q-number">Question ${step} of 4</div>
+            <div class="q-text">${q.t}</div>
+            <div class="options">${q.o.map((o,i)=>`<button class="option diag-option" data-idx="${i}">${o.t}</button>`).join('')}</div>
+        </div></div>`;
+    }
+    
+    // Step 5: Results (already have email from step 0)
+    if(step === 5){
+        const scores = calculateDiagnosticScores();
+        const {ideas:i,personality:p,execution:e} = scores;
+        const avgScore = Math.round((i+p+e)/3);
+        const percentile = getPercentile(avgScore);
+        const weak = ['ideas','personality','execution'].reduce((a,b)=>scores[a]<scores[b]?a:b);
+        
+        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
+        <div class="card text-center">
+            <h2 class="card-title">Your AI-Proof Score</h2>
+            <p class="text-secondary text-small mb-20">Results sent to ${S.diagnosticEmail}</p>
+            
+            <div class="results-meters">
+                <div class="meter"><div class="meter-circle ideas">${i}%</div><div class="meter-label">Ideas</div></div>
+                <div class="meter"><div class="meter-circle personality">${p}%</div><div class="meter-label">Personality</div></div>
+                <div class="meter"><div class="meter-circle execution">${e}%</div><div class="meter-label">Execution</div></div>
+            </div>
+            
+            <div class="verdict">
+                <div class="verdict-title">Your Position</div>
+                <div class="verdict-text">You're in the <strong>${percentile}th percentile</strong>. The AI-Proof threshold is 85%+.</div>
+            </div>
+            
+            <div class="verdict" style="border-color:var(--${weak})">
+                <div class="verdict-title">Your Weakest Mode</div>
+                <div class="verdict-text"><strong style="text-transform:capitalize">${weak}</strong> is where AI will hit you hardest. This is where your training starts.</div>
+            </div>
+            
+            <div style="background:var(--bg-primary);padding:20px;margin-top:25px;text-align:left">
+                <h4 style="font-size:13px;margin-bottom:10px">What happens next?</h4>
+                <p class="text-secondary text-small">AI Proof Club gives you weekly quests based on your profile to build real-world proof that you can do what AI can't. Track forecasts. Level up. Become irreplaceable.</p>
+            </div>
+            
+            <button class="btn btn-primary btn-full mt-20" id="diag-to-signup">Start Training — $9.99/mo →</button>
+            <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
+        </div>
+        <p class="text-center mt-20"><a class="text-link text-small" id="back-to-login">← Back to login</a></p>
+        </div></div>`;
+    }
+    
+    return loginH();
+}
+
+function calculateDiagnosticScores(){
+    let scores = {ideas: 50, personality: 50, execution: 50};
+    S.diagnosticAnswers.forEach((answerIdx, qIdx) => {
+        const q = DiagnosticQs[qIdx];
+        if(q && q.o[answerIdx]){
+            const opt = q.o[answerIdx];
+            scores[opt.m] += opt.w * 8; // Amplify since fewer questions
+        }
+    });
+    // Clamp scores
+    Object.keys(scores).forEach(k => {
+        scores[k] = Math.max(20, Math.min(95, scores[k]));
+    });
+    return scores;
 }
 
 function loginH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Welcome back</h2><p class="card-subtitle">Continue your training</p><form id="login-form"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required></div><button type="submit" class="btn btn-primary btn-full">Sign In</button></form><p class="text-center mt-10"><a class="text-link text-small" id="forgot-pass">Forgot password?</a></p><p class="text-center text-secondary text-small mt-20">New? <a class="text-link" id="to-signup">Start training</a></p></div><div class="card mt-20 text-center" style="border-color:var(--accent)"><p class="text-small mb-10">Not sure yet?</p><button class="btn btn-secondary btn-full" id="take-free-quiz">Take Free Diagnostic →</button><p class="text-secondary text-small mt-10">2 minutes. No signup required.</p></div></div></div>`;}
@@ -1292,23 +1432,28 @@ function pricingH(){return `<div class="screen-center"><div class="container-sm"
 
 function onboardingH(){
     const step = S.onboardStep;
-    const totalSteps = 7; // Updated: 1-account, 2-occupation, 3-goals, 4-interests, 5-quiz, 6-results+forecasts, 7-email+paywall
+    const totalSteps = 5; // Updated: 1-email/industry, 2-quiz, 3-results+pay, 4-goals, 5-interests/forecasts
     
     // Progress bar
     const progressBar = `<div class="progress-bar" style="margin-bottom:30px">${Array(totalSteps).fill(0).map((_,i)=>`<div class="progress-dot ${i<step?'done':i===step-1?'active':''}"></div>`).join('')}</div>`;
     
     if(step === 1) {
-        // Account creation
+        // Email + Industry (first step - collect email immediately)
         return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
         ${progressBar}
         <div class="card">
-            <h2 class="card-title">Let's start with you</h2>
-            <p class="card-subtitle">Create your account</p>
-            <form id="onboard-account-form">
-                <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="ob-name" value="${S.user?.name||''}" required></div>
-                <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="ob-email" value="${S.user?.email||''}" required></div>
-                <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="ob-pass" minlength="6" required></div>
-                <button type="submit" class="btn btn-primary btn-full">Continue →</button>
+            <h2 class="card-title">Let's get started</h2>
+            <p class="card-subtitle">First, tell us a bit about you</p>
+            <form id="onboard-email-form">
+                <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="ob-email" value="${S.onboardData.email||S.diagnosticEmail||''}" required></div>
+                <div class="form-group">
+                    <label class="form-label">Industry</label>
+                    <select class="form-input" id="ob-industry" required>
+                        <option value="">Select your industry...</option>
+                        ${INDUSTRIES.map(i=>`<option value="${i}" ${(S.onboardData.industry||S.diagnosticIndustry)===i?'selected':''}>${i}</option>`).join('')}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Continue to Assessment →</button>
             </form>
         </div>
         <p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p>
@@ -1316,92 +1461,12 @@ function onboardingH(){
     }
     
     if(step === 2) {
-        // Occupation
-        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
-        ${progressBar}
-        <div class="card">
-            <h2 class="card-title">What do you do?</h2>
-            <p class="card-subtitle">This helps us personalize your training</p>
-            <form id="onboard-occupation-form">
-                <div class="form-group">
-                    <label class="form-label">Occupation</label>
-                    <select class="form-input" id="ob-occupation" required>
-                        <option value="">Select your role...</option>
-                        ${OCCUPATIONS.map(o=>`<option value="${o}" ${S.onboardData.occupation===o?'selected':''}>${o}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Industry</label>
-                    <select class="form-input" id="ob-industry" required>
-                        <option value="">Select your industry...</option>
-                        ${INDUSTRIES.map(i=>`<option value="${i}" ${S.onboardData.industry===i?'selected':''}>${i}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Years of Experience</label>
-                    <select class="form-input" id="ob-experience" required>
-                        <option value="">Select...</option>
-                        <option value="0-2" ${S.onboardData.experience==='0-2'?'selected':''}>0-2 years</option>
-                        <option value="3-5" ${S.onboardData.experience==='3-5'?'selected':''}>3-5 years</option>
-                        <option value="6-10" ${S.onboardData.experience==='6-10'?'selected':''}>6-10 years</option>
-                        <option value="10+" ${S.onboardData.experience==='10+'?'selected':''}>10+ years</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary btn-full">Continue →</button>
-            </form>
-        </div>
-        </div></div>`;
-    }
-    
-    if(step === 3) {
-        // Goals
-        const selectedGoals = S.onboardData.goals || [];
-        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
-        ${progressBar}
-        <div class="card">
-            <h2 class="card-title">What's driving you here?</h2>
-            <p class="card-subtitle">Select all that apply</p>
-            <div class="goal-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0">
-                ${GOALS.map(g=>`
-                    <div class="choice-card goal-option ${selectedGoals.includes(g.id)?'selected':''}" data-goal="${g.id}" style="padding:15px;cursor:pointer">
-                        <div style="font-size:24px;margin-bottom:8px">${g.icon}</div>
-                        <div style="font-size:12px">${g.label}</div>
-                    </div>
-                `).join('')}
-            </div>
-            <button class="btn btn-primary btn-full" id="goals-continue" ${selectedGoals.length===0?'disabled':''}>Continue →</button>
-        </div>
-        </div></div>`;
-    }
-    
-    if(step === 4) {
-        // Fields of interest (renamed)
-        const selectedInterests = S.onboardData.forecastInterests || [];
-        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
-        ${progressBar}
-        <div class="card">
-            <h2 class="card-title">What are your fields of interest as AI evolves?</h2>
-            <p class="card-subtitle">We'll show you relevant forecasts and opportunities</p>
-            <div class="interest-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:20px 0">
-                ${FORECAST_INTERESTS.map(f=>`
-                    <div class="choice-card interest-option ${selectedInterests.includes(f.id)?'selected':''}" data-interest="${f.id}" style="padding:15px;cursor:pointer">
-                        <div style="font-size:24px;margin-bottom:8px">${f.icon}</div>
-                        <div style="font-size:11px">${f.label}</div>
-                    </div>
-                `).join('')}
-            </div>
-            <button class="btn btn-primary btn-full" id="interests-continue" ${selectedInterests.length===0?'disabled':''}>Continue →</button>
-        </div>
-        </div></div>`;
-    }
-    
-    if(step === 5) {
-        // Direct to Assessment (no upload choice)
+        // 7-question Quiz intro
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
         ${progressBar}
         <div class="card text-center">
             <h2 class="card-title">Mode Assessment</h2>
-            <p class="card-subtitle">15 quick questions to understand your strengths</p>
+            <p class="card-subtitle">7 questions to understand your strengths</p>
             
             <div style="background:var(--bg-primary);padding:25px;margin:25px 0;text-align:left">
                 <div style="display:flex;gap:20px;margin-bottom:20px">
@@ -1422,9 +1487,115 @@ function onboardingH(){
             </div>
             
             <button class="btn btn-primary btn-full" id="start-assessment">Start Assessment →</button>
-            <p class="text-secondary text-small mt-20">Takes about 3 minutes</p>
+            <p class="text-secondary text-small mt-20">Takes about 2 minutes</p>
         </div>
         </div></div>`;
+    }
+    
+    if(step === 3) {
+        // Results + Paywall (show results, require payment to continue)
+        const {ideas:i,personality:p,execution:e}=S.freeQuizScores||S.scores;
+        const avgScore = Math.round((i+p+e)/3);
+        const percentile = getPercentile(avgScore);
+        const weak = weakest();
+        
+        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
+        ${progressBar}
+        <div class="card">
+            <h2 class="card-title text-center">Your Mode Profile</h2>
+            
+            <div class="results-meters">
+                <div class="meter"><div class="meter-circle ideas">${i}%</div><div class="meter-label">Ideas</div></div>
+                <div class="meter"><div class="meter-circle personality">${p}%</div><div class="meter-label">Personality</div></div>
+                <div class="meter"><div class="meter-circle execution">${e}%</div><div class="meter-label">Execution</div></div>
+            </div>
+            
+            <div class="verdict">
+                <div class="verdict-title">Your Position</div>
+                <div class="verdict-text">You're in the <strong>${percentile}th percentile</strong>. AI Proof Club operates at 85%+ across all modes. Your <strong style="text-transform:capitalize">${weak}</strong> mode needs the most work.</div>
+            </div>
+            
+            <div style="background:var(--bg-primary);padding:20px;margin-top:20px;border:1px solid var(--accent)">
+                <h3 style="font-size:14px;text-align:center;margin-bottom:15px">🚀 Ready to Level Up?</h3>
+                <p class="text-secondary text-small text-center mb-15">Get weekly quests to build your ${weak} mode. Track forecasts. Become irreplaceable.</p>
+                <ul style="list-style:none;font-size:11px;margin-bottom:15px">
+                    <li style="padding:5px 0">✓ Weekly quests based on your profile</li>
+                    <li style="padding:5px 0">✓ AI Coaches for each mode</li>
+                    <li style="padding:5px 0">✓ Forecast tracking + opportunities</li>
+                    <li style="padding:5px 0">✓ Progress tracking + receipts</li>
+                </ul>
+                <div style="font-size:24px;font-weight:700;text-align:center;margin-bottom:15px">$9.99<span style="font-size:12px;color:var(--text-secondary)">/month</span></div>
+                <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email||'')}" class="btn btn-primary btn-full">Start Training →</a>
+                <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
+            </div>
+        </div>
+        </div></div>`;
+    }
+    
+    if(step === 4) {
+        // Goals (after payment)
+        const selectedGoals = S.onboardData.goals || [];
+        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
+        ${progressBar}
+        <div class="card">
+            <h2 class="card-title">What's driving you here?</h2>
+            <p class="card-subtitle">Select all that apply</p>
+            <div class="goal-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0">
+                ${GOALS.map(g=>`
+                    <div class="choice-card goal-option ${selectedGoals.includes(g.id)?'selected':''}" data-goal="${g.id}" style="padding:15px;cursor:pointer">
+                        <div style="font-size:24px;margin-bottom:8px">${g.icon}</div>
+                        <div style="font-size:12px">${g.label}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <button class="btn btn-primary btn-full" id="goals-continue" ${selectedGoals.length===0?'disabled':''}>Continue →</button>
+        </div>
+        </div></div>`;
+    }
+    
+    if(step === 5) {
+        // Interests + suggested forecasts (final step)
+        const selectedInterests = S.onboardData.forecastInterests || [];
+        const suggestedForecasts = getSuggestedForecasts();
+        
+        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
+        ${progressBar}
+        <div class="card">
+            <h2 class="card-title">What topics interest you?</h2>
+            <p class="card-subtitle">We'll show you relevant forecasts and opportunities</p>
+            <div class="interest-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:20px 0">
+                ${FORECAST_INTERESTS.map(f=>`
+                    <div class="choice-card interest-option ${selectedInterests.includes(f.id)?'selected':''}" data-interest="${f.id}" style="padding:15px;cursor:pointer">
+                        <div style="font-size:24px;margin-bottom:8px">${f.icon}</div>
+                        <div style="font-size:11px">${f.label}</div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            ${suggestedForecasts.length ? `
+            <div style="margin-top:25px">
+                <h3 style="font-size:14px;margin-bottom:15px">🔮 Suggested Forecasts</h3>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                    ${suggestedForecasts.slice(0,3).map(f=>`
+                        <div class="suggested-forecast" data-fid="${f.id}" style="background:var(--bg-primary);border:1px solid var(--bg-tertiary);padding:15px;cursor:pointer;transition:all 0.3s;${S.onboardSelectedForecasts?.includes(f.id)?'border-color:var(--accent);':''}">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                                <span style="font-size:11px;color:var(--accent);text-transform:uppercase">${f.probability}% likely</span>
+                                <span style="font-size:10px;color:var(--text-secondary)">${f.timeframe}</span>
+                            </div>
+                            <div style="font-size:13px">${f.title}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            <button class="btn btn-primary btn-full mt-20" id="finish-onboarding">Start Training →</button>
+        </div>
+        </div></div>`;
+    }
+    
+    return loginH();
+}
     }
     
     if(step === 6) {
@@ -1574,16 +1745,20 @@ function uploadH(){return `<div class="screen-center"><div class="container-md">
 function analyzingH(){return `<div class="screen-center"><div class="container-sm text-center"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><div class="spinner"></div><p class="text-secondary mt-20">Analyzing patterns...</p></div></div></div>`;}
 
 function quizH(){
-    const q=Qs[S.quizStep];
+    // Use first 7 questions for onboarding, all 15 for free quiz
     const isFree = S.freeQuizMode || S.screen === 'freeQuiz';
+    const quizQuestions = isFree ? Qs : Qs.slice(0, 7);
+    const q=quizQuestions[S.quizStep];
     return `<div class="screen-center"><div class="container-md">
         <div class="logo">AI PROOF <span>CLUB</span></div>
         ${isFree ? '<p class="text-center text-secondary text-small mb-20">Free Mode Assessment</p>' : ''}
-        <div class="progress-bar">${Qs.map((_,i)=>`<div class="progress-dot ${i<S.quizStep?'done':i===S.quizStep?'active':''}"></div>`).join('')}</div>
-        <div class="q-number">Question ${S.quizStep+1} of ${Qs.length}</div>
+        <div class="progress-bar">${quizQuestions.map((_,i)=>`<div class="progress-dot ${i<S.quizStep?'done':i===S.quizStep?'active':''}"></div>`).join('')}</div>
+        <div class="q-number">Question ${S.quizStep+1} of ${quizQuestions.length}</div>
         <div class="q-text">${q.t}</div>
         <div class="options">${q.o.map((o,i)=>`<button class="option" data-idx="${i}">${o.t}</button>`).join('')}</div>
         ${isFree ? `<p class="text-center mt-20"><a class="text-link text-small" id="quit-quiz">← Back to login</a></p>` : ''}
+    </div></div>`;
+}
     </div></div>`;
 }
 
@@ -1872,12 +2047,40 @@ function bindEvents(){
     document.getElementById('forgot-pass')?.addEventListener('click',()=>{S.screen='forgot';render();});
     document.getElementById('back-login')?.addEventListener('click',()=>{S.screen='login';S.freeQuizMode=false;render();});
     
-    // Free quiz flow
+    // Free diagnostic flow (4 questions with email gate)
     document.getElementById('take-free-quiz')?.addEventListener('click',()=>{
-        S.freeQuizMode=true;
-        S.quizStep=0;
-        S.quizAnswers=[];
-        S.screen='freeQuiz';
+        S.diagnosticStep=0;
+        S.diagnosticEmail='';
+        S.diagnosticIndustry='';
+        S.diagnosticAnswers=[];
+        S.screen='diagnostic';
+        render();
+    });
+    document.getElementById('diagnostic-start-form')?.addEventListener('submit',async e=>{
+        e.preventDefault();
+        S.diagnosticEmail = document.getElementById('diag-email').value;
+        S.diagnosticIndustry = document.getElementById('diag-industry').value;
+        S.diagnosticStep = 1;
+        render();
+    });
+    document.querySelectorAll('.diag-option').forEach(o=>o.addEventListener('click',()=>{
+        const idx = parseInt(o.dataset.idx);
+        S.diagnosticAnswers.push(idx);
+        S.diagnosticStep++;
+        render();
+    }));
+    document.getElementById('diag-to-signup')?.addEventListener('click',()=>{
+        // Pre-fill email from diagnostic
+        S.onboardData.email = S.diagnosticEmail;
+        S.onboardData.industry = S.diagnosticIndustry;
+        // Store diagnostic scores for later
+        S.freeQuizScores = calculateDiagnosticScores();
+        S.onboardStep=1;
+        S.screen='onboarding';
+        render();
+    });
+    document.getElementById('back-to-login')?.addEventListener('click',()=>{
+        S.screen='login';
         render();
     });
     document.getElementById('quit-quiz')?.addEventListener('click',()=>{
@@ -1891,17 +2094,24 @@ function bindEvents(){
         render();
     });
     
-    // Onboarding flow
-    document.getElementById('onboard-account-form')?.addEventListener('submit',e=>{
+    // Onboarding flow - Step 1: Email + Industry
+    document.getElementById('onboard-email-form')?.addEventListener('submit',e=>{
         e.preventDefault();
-        handleOnboardAccount();
-    });
-    document.getElementById('onboard-occupation-form')?.addEventListener('submit',e=>{
-        e.preventDefault();
-        handleOnboardOccupation();
+        S.onboardData.email = document.getElementById('ob-email').value;
+        S.onboardData.industry = document.getElementById('ob-industry').value;
+        S.onboardStep=2; // Go to quiz intro
+        render();
     });
     
-    // Goals selection
+    // Step 2: Start Assessment
+    document.getElementById('start-assessment')?.addEventListener('click',()=>{
+        S.quizStep=0;
+        S.quizAnswers=[];
+        S.screen='quiz';
+        render();
+    });
+    
+    // Step 4: Goals selection (after payment)
     document.querySelectorAll('.goal-option').forEach(g=>g.addEventListener('click',()=>{
         const goalId = g.dataset.goal;
         if(S.onboardData.goals.includes(goalId)){
@@ -1913,12 +2123,12 @@ function bindEvents(){
     }));
     document.getElementById('goals-continue')?.addEventListener('click',()=>{
         if(S.onboardData.goals.length > 0){
-            S.onboardStep=4;
+            S.onboardStep=5;
             render();
         }
     });
     
-    // Interests selection
+    // Step 5: Interests selection + finish
     document.querySelectorAll('.interest-option').forEach(i=>i.addEventListener('click',()=>{
         const interestId = i.dataset.interest;
         if(S.onboardData.forecastInterests.includes(interestId)){
@@ -1928,22 +2138,14 @@ function bindEvents(){
         }
         render();
     }));
-    document.getElementById('interests-continue')?.addEventListener('click',()=>{
-        if(S.onboardData.forecastInterests.length > 0){
-            S.onboardStep=5; // Go to assessment
-            render();
-        }
+    
+    // Finish onboarding
+    document.getElementById('finish-onboarding')?.addEventListener('click',async()=>{
+        // Complete the onboarding - save user and go to dashboard
+        await completeOnboarding();
     });
     
-    // Start Assessment (step 5)
-    document.getElementById('start-assessment')?.addEventListener('click',()=>{
-        S.quizStep=0;
-        S.quizAnswers=[];
-        S.screen='quiz';
-        render();
-    });
-    
-    // Suggested forecasts selection (step 6)
+    // Suggested forecasts selection
     document.querySelectorAll('.suggested-forecast').forEach(f=>f.addEventListener('click',()=>{
         const fid = f.dataset.fid;
         if(!S.onboardSelectedForecasts) S.onboardSelectedForecasts = [];
@@ -2225,15 +2427,20 @@ async function analyzeFile(){
 }
 
 function answerQuiz(i){
-    S.quizAnswers.push(Qs[S.quizStep].o[i]);
-    if(S.quizStep<Qs.length-1){
+    // Use first 7 questions for onboarding, all 15 for free quiz
+    const isFree = S.freeQuizMode || S.screen === 'freeQuiz';
+    const quizQuestions = isFree ? Qs : Qs.slice(0, 7);
+    
+    S.quizAnswers.push(quizQuestions[S.quizStep].o[i]);
+    if(S.quizStep < quizQuestions.length - 1){
         S.quizStep++;
         render();
     } else {
         // Calculate raw scores
         const raw = {ideas:50, personality:50, execution:50};
+        const multiplier = isFree ? 5 : 7; // Higher multiplier for fewer questions
         S.quizAnswers.forEach(a => {
-            raw[a.m] = Math.min(100, Math.max(0, raw[a.m] + a.w * 5)); // Adjusted multiplier for 15 questions
+            raw[a.m] = Math.min(100, Math.max(0, raw[a.m] + a.w * multiplier));
         });
         
         // Apply GPT analysis if available
@@ -2247,18 +2454,50 @@ function answerQuiz(i){
         const skewed = skewScores(raw);
         
         // Handle free quiz vs onboarding quiz
-        if(S.freeQuizMode || S.screen === 'freeQuiz') {
+        if(isFree) {
             S.freeQuizScores = skewed;
             S.freeQuizMode = false;
             S.screen = 'freeResults';
         } else {
             S.scores = skewed;
-            // Go to onboarding step 6 (results + suggested forecasts)
-            S.onboardStep = 6;
+            S.freeQuizScores = skewed;
+            // Go to onboarding step 3 (results + paywall)
+            S.onboardStep = 3;
             S.screen = 'onboarding';
         }
         render();
     }
+}
+
+async function completeOnboarding(){
+    // This is called after payment, at the end of onboarding step 5
+    // Include onboarding data in user object
+    S.user = S.user || {};
+    S.user.email = S.onboardData.email;
+    S.user.industry = S.onboardData.industry;
+    S.user.onboarded = true;
+    S.user.baseline_scores = {...S.scores};
+    S.user.scores = S.scores;
+    S.user.diff = S.diff || 'standard';
+    S.user.goals = S.onboardData.goals;
+    S.user.forecast_interests = S.onboardData.forecastInterests;
+    
+    // Follow selected forecasts
+    if(S.onboardSelectedForecasts?.length){
+        S.followedForecasts = [...S.onboardSelectedForecasts];
+    }
+    
+    S.quests = genQuests();
+    const res = await db('users','POST',S.user);
+    if(res?.length){
+        S.user = res[0];
+        localStorage.setItem('apc_session',JSON.stringify(S.user));
+        localStorage.removeItem('apc_pending');
+        // Send welcome email (don't await - fire and forget)
+        sendWelcomeEmail(S.user.name || 'there', S.user.email);
+    }
+    S.screen = 'dashboard';
+    render();
 }
 
 async function startApp(){
@@ -8472,11 +8711,12 @@ async function init(){
     
     // Check for diagnostic mode from landing page
     if(params.get('mode') === 'diagnostic') {
-        history.replaceState({}, '', location.pathname + '#quiz');
-        S.freeQuizMode = true;
-        S.quizStep = 0;
-        S.answers = [];
-        S.screen = 'freeQuiz';
+        history.replaceState({}, '', location.pathname + '#diagnostic');
+        S.diagnosticStep = 0;
+        S.diagnosticEmail = '';
+        S.diagnosticIndustry = '';
+        S.diagnosticAnswers = [];
+        S.screen = 'diagnostic';
         render();
         return;
     }
