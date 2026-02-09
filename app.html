@@ -282,11 +282,30 @@
             color: var(--text-primary); 
             transition: all 0.3s;
             background-image: var(--metal-shine);
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
         }
         .option:hover { 
             border-color: var(--accent); 
             box-shadow: 0 0 15px var(--accent-glow);
             transform: translateX(5px);
+        }
+        .option:focus {
+            outline: none;
+            border-color: var(--bg-tertiary);
+            box-shadow: none;
+            transform: none;
+        }
+        .option:active {
+            border-color: var(--accent);
+            transform: scale(0.98);
+        }
+        @media (hover: none) {
+            .option:hover {
+                border-color: var(--bg-tertiary);
+                box-shadow: none;
+                transform: none;
+            }
         }
 
         .results-meters { display: flex; justify-content: center; gap: 25px; margin: 25px 0; }
