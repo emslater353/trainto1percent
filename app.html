@@ -2347,7 +2347,7 @@ function hideQuest(id){
 }
 
 // Forecast Quest Functions
-function toggleFollowForecast(forecastId){
+async function toggleFollowForecast(forecastId){
     const idx = S.followedForecasts.indexOf(forecastId);
     if(idx === -1){
         S.followedForecasts.push(forecastId);
@@ -2355,7 +2355,7 @@ function toggleFollowForecast(forecastId){
     } else {
         S.followedForecasts.splice(idx, 1);
     }
-    save();
+    await save();
     render();
 }
 
@@ -8827,6 +8827,16 @@ async function init(){
                 if(missingReceipts.length) {
                     S.receipts = [...S.receipts, ...missingReceipts];
                     save(); // Sync merged receipts back to server
+                }
+            }
+            
+            // Merge followedForecasts from localStorage if server is missing some
+            if(localSession.followedForecasts && localSession.followedForecasts.length > S.followedForecasts.length) {
+                const serverIds = new Set(S.followedForecasts);
+                const missing = localSession.followedForecasts.filter(id => !serverIds.has(id));
+                if(missing.length) {
+                    S.followedForecasts = [...S.followedForecasts, ...missing];
+                    save();
                 }
             }
             
