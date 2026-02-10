@@ -2426,7 +2426,13 @@ async function login(){
         S.user=users[0];S.scores=users[0].scores||{ideas:50,personality:50,execution:50};
         S.receipts=users[0].receipts||[];S.quests=users[0].quests?.length?users[0].quests:genQuests();S.diff=users[0].diff||'standard';
         localStorage.setItem('apc_session',JSON.stringify(S.user));
-        S.screen=S.user.onboarded?'dashboard':'onboarding';render();
+        // If they have a password and paid, they're good - go to dashboard
+        if(S.user.plan === 'paid' || S.user.onboarded){
+            S.screen='dashboard';
+        } else {
+            S.screen='onboarding';
+        }
+        render();
     } else alert('Invalid credentials');
 }
 
