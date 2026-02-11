@@ -1208,37 +1208,70 @@ function getCurriculumWeek() {
 
 function genQuests() {
     const w = weakest();
-    const d = S.diff || 'standard'; // Use user-selected difficulty
+    const d = S.diff || 'standard';
     const qs = [];
     
+    // Get recently completed quest texts to avoid repeats (last 20 receipts)
+    const recentlyDone = new Set(
+        (S.receipts || []).slice(-20).map(r => r.title?.toLowerCase().trim())
+    );
+    
+    // Auto-progress difficulty based on receipts count
+    let effectiveDiff = d;
+    const totalCompleted = (S.receipts || []).length;
+    if (d === 'standard') {
+        if (totalCompleted >= 30) effectiveDiff = 'hard';
+        else if (totalCompleted >= 15) effectiveDiff = 'standard';
+    }
+    
+    // Helper to get quests excluding recently done
+    const getAvailableQuests = (mode, difficulty) => {
+        const pool = QB[mode]?.[difficulty] || QB[mode]?.['standard'] || [];
+        return pool.filter(q => !recentlyDone.has(q.t?.toLowerCase().trim()));
+    };
+    
     // Get quests from QB (quest bank) based on selected difficulty
-    const modeQuests = QB[w][d] || QB[w]['standard'];
+    let modeQuests = getAvailableQuests(w, effectiveDiff);
+    
+    // Fallback to all quests if too few available
+    if (modeQuests.length < 2) {
+        modeQuests = QB[w]?.[effectiveDiff] || QB[w]?.['standard'] || [];
+    }
     
     // 2 quests from weakest mode
     const shuffled = [...modeQuests].sort(() => Math.random() - 0.5);
     shuffled.slice(0, 2).forEach(q => {
-        qs.push({...q, mode: w, diff: d, id: Date.now() + Math.random(), done: false});
+        qs.push({...q, mode: w, diff: effectiveDiff, id: Date.now() + Math.random(), done: false});
     });
     
     // 1 quest from each other mode
     ['ideas', 'personality', 'execution'].filter(m => m !== w).forEach(m => {
-        const otherQuests = QB[m][d] || QB[m]['standard'];
-        const q = otherQuests[Math.floor(Math.random() * otherQuests.length)];
-        qs.push({...q, mode: m, diff: d, id: Date.now() + Math.random(), done: false});
+        let otherQuests = getAvailableQuests(m, effectiveDiff);
+        if (otherQuests.length === 0) {
+            otherQuests = QB[m]?.[effectiveDiff] || QB[m]?.['standard'] || [];
+        }
+        if (otherQuests.length > 0) {
+            const q = otherQuests[Math.floor(Math.random() * otherQuests.length)];
+            qs.push({...q, mode: m, diff: effectiveDiff, id: Date.now() + Math.random(), done: false});
+        }
     });
     
     // Anonymous option for personality if struggling (only on easy)
     if (w === 'personality' && S.scores.personality < 40 && d === 'easy') {
-        const anonQuests = QB.personality.anon;
-        if (anonQuests?.length) {
-            const q = anonQuests[Math.floor(Math.random() * anonQuests.length)];
+        const anonQuests = QB.personality?.anon || [];
+        if (anonQuests.length) {
+            const available = anonQuests.filter(q => !recentlyDone.has(q.t?.toLowerCase().trim()));
+            const pool = available.length > 0 ? available : anonQuests;
+            const q = pool[Math.floor(Math.random() * pool.length)];
             qs.push({...q, mode: 'personality', diff: 'anon', id: Date.now() + Math.random(), done: false});
         }
     }
     
-    // Boss quest on hard mode
-    if (d === 'hard' && QB.boss?.length) {
-        const boss = QB.boss[Math.floor(Math.random() * QB.boss.length)];
+    // Boss quest on hard mode or after 20+ completions
+    if ((effectiveDiff === 'hard' || totalCompleted >= 20) && QB.boss?.length) {
+        const available = QB.boss.filter(q => !recentlyDone.has(q.t?.toLowerCase().trim()));
+        const pool = available.length > 0 ? available : QB.boss;
+        const boss = pool[Math.floor(Math.random() * pool.length)];
         qs.push({t: boss.t, xp: boss.xp, mode: boss.m, diff: 'boss', tip: boss.tip, id: Date.now() + Math.random(), done: false, boss: true});
     }
     
