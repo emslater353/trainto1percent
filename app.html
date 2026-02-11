@@ -1845,33 +1845,26 @@ function questsH(){
     const custom=S.customQuests.filter(q=>!q.done);
     const forecastQuests=getFollowedForecastQuests();
     const done=[...S.quests.filter(q=>q.done), ...S.customQuests.filter(q=>q.done)];
-    const diffLabel=d=>{const l={easy:'Easy',standard:'Standard',hard:'Hard',anon:'Anon OK',boss:'Boss',forecast:'Forecast'};return l[d]||d;};
+    const allOpen = [...active, ...custom, ...forecastQuests];
     
     return `<div class="page-header"><h1 class="page-title">IRL Quests</h1><p class="page-subtitle">Focus: ${weakest()} mode</p></div>
-    <div class="flex gap-10 mb-20 flex-wrap">
-        <button class="btn btn-small ${S.diff==='easy'?'btn-primary':'btn-secondary'}" data-setdiff="easy">Easy</button>
-        <button class="btn btn-small ${S.diff==='standard'?'btn-primary':'btn-secondary'}" data-setdiff="standard">Standard</button>
-        <button class="btn btn-small ${S.diff==='hard'?'btn-primary':'btn-secondary'}" data-setdiff="hard">Hard</button>
-        <button class="btn btn-small btn-primary" id="get-quests-btn">+ Get Quests</button>
-        <button class="btn btn-small btn-secondary" id="add-custom-quest">+ Custom</button>
-    </div>
     
-    ${forecastQuests.length?`<div class="card mb-20">
-        <div class="card-header"><span class="card-header-title">🔮 From Your Forecasts</span><span class="card-badge">${forecastQuests.length}</span></div>
-        <p class="text-secondary text-small mb-10" style="padding:0 15px">Building toward opportunities you're tracking</p>
-        ${forecastQuests.map(q=>`<div class="quest forecast-quest">
+    <div class="card mb-20">
+        <div class="card-header">
+            <span class="card-header-title">Open Quests</span>
+            <span class="card-badge">${allOpen.length}</span>
+        </div>
+        
+        ${forecastQuests.length ? forecastQuests.map(q=>`<div class="quest forecast-quest">
             <div class="quest-header"><span class="quest-mode ${q.mode}">${q.mode}</span><span class="quest-diff forecast">🔮 ${q.forecastTitle?.substring(0,30)}...</span></div>
             <div class="quest-title">${q.t}</div>
             <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span><span class="quest-progress">Step ${q.step}/${q.totalSteps}</span></div>
             <div class="quest-actions">
                 <button class="btn btn-small btn-success complete-forecast-q" data-fid="${q.forecastId}" data-oid="${q.oppId}">○ Done</button>
             </div>
-        </div>`).join('')}
-    </div>`:''}
-    
-    ${custom.length?`<div class="card mb-20">
-        <div class="card-header"><span class="card-header-title">📝 Your Quests</span><span class="card-badge">${custom.length}</span></div>
-        ${custom.map(q=>`<div class="quest custom-quest">
+        </div>`).join('') : ''}
+        
+        ${custom.length ? custom.map(q=>`<div class="quest custom-quest">
             <div class="quest-header"><span class="quest-mode ${q.mode}">${q.mode}</span><span class="quest-diff">Custom</span></div>
             <div class="quest-title">${q.t}</div>
             <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span></div>
@@ -1879,25 +1872,28 @@ function questsH(){
                 <button class="btn btn-small btn-success complete-custom-q" data-id="${q.id}">○ Done</button>
                 <button class="btn btn-small btn-secondary delete-custom-q" data-id="${q.id}">✕</button>
             </div>
-        </div>`).join('')}
-    </div>`:''}
-    
-    <div class="card mb-20">
-        <div class="card-header"><span class="card-header-title">Active</span><span class="card-badge">${active.length}</span></div>
-        ${active.length?active.map(q=>`<div class="quest ${q.boss?'boss':''}">
+        </div>`).join('') : ''}
+        
+        ${active.length ? active.map(q=>`<div class="quest ${q.boss?'boss':''}">
             <div class="quest-header">
                 <span class="quest-mode ${q.mode}">${q.mode}</span>
-                <span class="quest-diff ${q.diff}">${q.boss?'👑 BOSS':diffLabel(q.diff)}</span>
+                ${q.boss?'<span class="quest-diff boss">👑 BOSS</span>':''}
             </div>
             <div class="quest-title">${q.t}</div>
-            <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span>${q.diff==='anon'?'<span>🔒 Anon OK</span>':''}</div>
+            <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span></div>
             ${q.tip?`<div class="quest-tip">💡 ${q.tip}</div>`:''}
             <div class="quest-actions">
                 <button class="btn btn-small btn-success complete-q" data-id="${q.id}">○ Done</button>
                 <button class="btn btn-small btn-secondary skip-q" data-id="${q.id}">Skip</button>
-                <button class="btn btn-small btn-ghost hide-q" data-id="${q.id}" title="Hide this quest">✕</button>
             </div>
-        </div>`).join(''):'<p class="text-secondary text-small">All done! Refresh for more.</p>'}
+        </div>`).join('') : ''}
+        
+        ${allOpen.length === 0 ? '<p class="text-secondary text-small" style="padding:15px">No open quests. Get more below!</p>' : ''}
+    </div>
+    
+    <div class="flex gap-10 mb-20">
+        <button class="btn btn-primary" id="get-quests-btn">+ Get More Quests</button>
+        <button class="btn btn-secondary" id="add-custom-quest">+ Add Custom</button>
     </div>
     
     ${S.hiddenQuests.length?`<p class="text-secondary text-small mb-20">${S.hiddenQuests.length} hidden quest(s). <a class="text-link" id="unhide-all">Show all</a></p>`:''}
