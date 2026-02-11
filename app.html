@@ -8669,13 +8669,20 @@ function forecastDetailModalH() {
                 <div style="margin-bottom:20px">
                     <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Opportunities to Prepare (${f.opportunities.length})</div>
                     
-                    ${f.opportunities.map((opp, i) => `
-                        <div style="background:var(--bg-primary);border:1px solid ${S.expandedOpp === i ? 'var(--accent)' : 'var(--bg-tertiary)'};margin-bottom:12px;transition:all 0.2s">
+                    ${f.opportunities.map((opp, i) => {
+                        const progress = S.forecastProgress[f.id]?.[i] || 0;
+                        const totalQuests = opp.quests.length;
+                        const isComplete = progress >= totalQuests;
+                        const hasProgress = progress > 0;
+                        return `
+                        <div style="background:var(--bg-primary);border:1px solid ${S.expandedOpp === i ? 'var(--accent)' : isComplete ? 'var(--success)' : 'var(--bg-tertiary)'};margin-bottom:12px;transition:all 0.2s">
                             <div class="opp-header" data-opp="${i}" style="padding:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start">
                                 <div style="flex:1">
-                                    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+                                    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
                                         <h4 style="font-size:14px;margin:0">${opp.title}</h4>
                                         <span style="font-size:10px;padding:2px 8px;background:var(--bg-tertiary);color:var(--${opp.mode})">+${opp.mode.toUpperCase()}</span>
+                                        ${isComplete ? `<span style="font-size:10px;padding:2px 8px;background:var(--success);color:white">✓ COMPLETE</span>` : 
+                                          hasProgress ? `<span style="font-size:10px;padding:2px 8px;background:var(--bg-tertiary);color:var(--accent)">${progress}/${totalQuests}</span>` : ''}
                                     </div>
                                     <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin:0">${opp.description}</p>
                                     <div style="font-size:10px;color:var(--text-muted);margin-top:8px">Difficulty: ${opp.difficulty} · Timeframe: ${opp.timeframe} · ${opp.quests.length} quests</div>
@@ -8686,20 +8693,36 @@ function forecastDetailModalH() {
                             ${S.expandedOpp === i ? `
                             <div style="padding:0 15px 15px 15px;border-top:1px solid var(--bg-tertiary)">
                                 <div style="background:var(--bg-secondary);padding:12px;border-left:2px solid var(--accent);margin-top:15px">
-                                    <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Quest Path</div>
-                                    ${opp.quests.map((q, j) => `
-                                        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;padding-bottom:10px;${j < opp.quests.length - 1 ? 'border-bottom:1px solid var(--bg-tertiary)' : ''}">
-                                            <span style="font-size:9px;padding:2px 6px;background:var(--bg-tertiary);color:var(--${q.mode});flex-shrink:0">${q.mode.substring(0,3).toUpperCase()}</span>
-                                            <span style="font-size:11px;flex:1;line-height:1.4">${q.task}</span>
-                                            <span style="font-size:10px;color:var(--accent);flex-shrink:0">+${q.xp}</span>
+                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                                        <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Quest Path</div>
+                                        ${(S.forecastProgress[f.id]?.[i] || 0) > 0 ? `<span style="font-size:10px;color:var(--success)">${S.forecastProgress[f.id]?.[i] || 0}/${opp.quests.length} Complete</span>` : ''}
+                                    </div>
+                                    ${opp.quests.map((q, j) => {
+                                        const progress = S.forecastProgress[f.id]?.[i] || 0;
+                                        const isCompleted = j < progress;
+                                        const isCurrent = j === progress;
+                                        return `
+                                        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;padding-bottom:10px;${j < opp.quests.length - 1 ? 'border-bottom:1px solid var(--bg-tertiary)' : ''}${isCompleted ? 'opacity:0.5;' : ''}">
+                                            <span style="font-size:12px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;${isCompleted ? 'background:var(--success);color:white' : isCurrent ? 'background:var(--accent);color:var(--bg-primary)' : 'background:var(--bg-tertiary);color:var(--text-secondary)'}">${isCompleted ? '✓' : j + 1}</span>
+                                            <div style="flex:1">
+                                                <span style="font-size:11px;line-height:1.4;${isCompleted ? 'text-decoration:line-through;' : ''}">${q.task}</span>
+                                                <div style="font-size:9px;color:var(--text-muted);margin-top:3px"><span style="color:var(--${q.mode})">${q.mode.toUpperCase()}</span> · +${q.xp} XP</div>
+                                            </div>
                                         </div>
-                                    `).join('')}
-                                    <button class="btn btn-small btn-primary btn-full mt-10 add-quest-path" data-forecast="${f.id}" data-opp="${i}">Add These Quests to My Queue →</button>
+                                    `}).join('')}
+                                    ${(S.forecastProgress[f.id]?.[i] || 0) < opp.quests.length ? `
+                                    <button class="btn btn-small btn-primary btn-full mt-10 add-quest-path" data-forecast="${f.id}" data-opp="${i}">${(S.forecastProgress[f.id]?.[i] || 0) > 0 ? 'Continue Quest Path →' : 'Add These Quests to My Queue →'}</button>
+                                    ` : `
+                                    <div style="text-align:center;padding:15px 0;color:var(--success)">
+                                        <span style="font-size:20px">🎉</span>
+                                        <div style="font-size:12px;margin-top:5px">Quest path complete!</div>
+                                    </div>
+                                    `}
                                 </div>
                             </div>
                             ` : ''}
                         </div>
-                    `).join('')}
+                    `}).join('')}
                 </div>
                 
                 <div style="display:flex;gap:10px;flex-wrap:wrap">
