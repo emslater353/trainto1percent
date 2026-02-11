@@ -1084,40 +1084,55 @@ function getDateStr(date = new Date()) {
 
 // Calculate streak from receipts
 function streak() {
-    if(!S.receipts || !S.receipts.length) return 0;
+    if(!S.receipts || !S.receipts.length) {
+        console.log('Streak: No receipts');
+        return 0;
+    }
     
     // Get unique dates from receipts (in YYYY-MM-DD format for consistent comparison)
-    const receiptDates = [...new Set(S.receipts.map(r => {
+    const receiptDates = new Set(S.receipts.map(r => {
         if(!r.ts) return null;
         return getDateStr(new Date(r.ts));
-    }).filter(d => d))].sort().reverse(); // Most recent first
+    }).filter(d => d));
     
-    if(!receiptDates.length) return 0;
+    console.log('Streak debug - Receipt dates:', [...receiptDates]);
+    
+    if(receiptDates.size === 0) {
+        console.log('Streak: No valid dates in receipts');
+        return 0;
+    }
     
     const today = getDateStr();
     const yesterday = getDateStr(new Date(Date.now() - 86400000));
     
-    // If most recent activity was before yesterday, streak is broken
-    if(receiptDates[0] !== today && receiptDates[0] !== yesterday) return 0;
+    console.log('Streak debug - Today:', today, 'Yesterday:', yesterday);
+    console.log('Streak debug - Has today:', receiptDates.has(today), 'Has yesterday:', receiptDates.has(yesterday));
     
-    // Count consecutive days going backwards from today
+    // Determine starting point: today if active, yesterday if yesterday was active
+    let checkDate;
+    if(receiptDates.has(today)) {
+        checkDate = new Date();
+    } else if(receiptDates.has(yesterday)) {
+        checkDate = new Date(Date.now() - 86400000);
+    } else {
+        // No recent activity, streak is broken
+        console.log('Streak: No activity today or yesterday');
+        return 0;
+    }
+    
+    // Count consecutive days going backwards
     let streakCount = 0;
-    let checkDate = new Date();
-    
-    // Start from today and go backwards
-    for(let i = 0; i < 365; i++) { // Max 1 year streak
+    for(let i = 0; i < 365; i++) {
         const dateStr = getDateStr(checkDate);
-        if(receiptDates.includes(dateStr)) {
+        if(receiptDates.has(dateStr)) {
             streakCount++;
-            checkDate = new Date(checkDate.getTime() - 86400000); // Go back one day
-        } else if(i === 0 && receiptDates[0] === yesterday) {
-            // Today has no activity but yesterday did - still valid, start from yesterday
             checkDate = new Date(checkDate.getTime() - 86400000);
         } else {
-            break; // Gap found, streak ends
+            break;
         }
     }
     
+    console.log('Streak debug - Final count:', streakCount);
     return streakCount;
 }
 
@@ -2981,7 +2996,8 @@ const FORECAST_DATABASE = [
 {
     id: 'brain-ai-merger',
     title: 'Humans begin merging with AI through brain interfaces',
-    source: 'Neuralink trials, Meta neural research, academic BCIs',
+    source: 'Metaculus forecasting community',
+    sourceUrl: 'https://www.metaculus.com/questions/5121/when-will-the-first-general-ai-system-be-devised-tested-and-publicly-announced/',
     probability: 65,
     timeframe: '2028-2035',
     category: 'ai',
@@ -3450,7 +3466,8 @@ const FORECAST_DATABASE = [
 {
     id: 'ai-writes-code',
     title: 'AI writes majority of code in professional settings',
-    source: 'GitHub Copilot data, Cursor adoption, Devin demos',
+    source: 'Polymarket AI coding predictions, GitHub Copilot data',
+    sourceUrl: 'https://polymarket.com/event/which-company-will-have-the-best-ai-model-for-coding-at-the-end-of-2025',
     probability: 82,
     timeframe: '2026-2027',
     category: 'ai',
@@ -3531,7 +3548,8 @@ const FORECAST_DATABASE = [
 {
     id: 'jobs-transform-80',
     title: '80% of jobs disappear or transform radically',
-    source: 'McKinsey, WEF Future of Jobs, AI automation studies',
+    source: 'Metaculus forecasts, McKinsey, WEF Future of Jobs',
+    sourceUrl: 'https://www.metaculus.com/questions/21427/employment-in-ai-automatable-jobs/',
     probability: 70,
     timeframe: '2030-2040',
     category: 'work',
@@ -5104,7 +5122,8 @@ const FORECAST_DATABASE = [
 {
     id: 'agi-before-2027',
     title: 'OpenAI announces AGI achievement before 2027',
-    source: 'Polymarket',
+    source: 'Polymarket prediction market',
+    sourceUrl: 'https://polymarket.com/predictions/openai',
     probability: 9,
     timeframe: '2026-2027',
     category: 'ai',
@@ -5137,7 +5156,8 @@ const FORECAST_DATABASE = [
 {
     id: 'gpt-6-release',
     title: 'GPT-6 released by end of 2026',
-    source: 'Polymarket',
+    source: 'Polymarket prediction market',
+    sourceUrl: 'https://polymarket.com/event/gpt-6-released-by',
     probability: 85,
     timeframe: '2026',
     category: 'ai',
@@ -5170,7 +5190,8 @@ const FORECAST_DATABASE = [
 {
     id: 'claude-5-release',
     title: 'Claude 5 released by March 31, 2026',
-    source: 'Polymarket',
+    source: 'Polymarket prediction market',
+    sourceUrl: 'https://polymarket.com/predictions/ai',
     probability: 95,
     timeframe: 'Q1 2026',
     category: 'ai',
@@ -5203,7 +5224,8 @@ const FORECAST_DATABASE = [
 {
     id: 'openai-hardware',
     title: 'OpenAI launches consumer hardware product by end of 2026',
-    source: 'Polymarket',
+    source: 'Polymarket prediction market',
+    sourceUrl: 'https://polymarket.com/predictions/openai',
     probability: 59,
     timeframe: '2026',
     category: 'ai',
@@ -5236,7 +5258,8 @@ const FORECAST_DATABASE = [
 {
     id: 'ai-bubble-burst',
     title: 'AI industry experiences major downturn by end of 2026',
-    source: 'Polymarket',
+    source: 'Polymarket prediction market',
+    sourceUrl: 'https://polymarket.com/predictions/ai',
     probability: 15,
     timeframe: '2026',
     category: 'ai',
@@ -8764,12 +8787,13 @@ function renderForecastCard(f) {
             <p style="font-size:11px;color:var(--text-muted);margin-top:8px"><strong>At risk:</strong> ${f.atRisk}</p>
         </div>
         
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
             <button class="btn btn-small btn-primary view-forecast-detail" data-id="${f.id}">See Opportunities →</button>
             <button class="btn btn-small ${S.followedForecasts.includes(f.id)?'btn-success':'btn-secondary'} follow-forecast" data-id="${f.id}">
                 ${S.followedForecasts.includes(f.id)?'✓ Following':'+ Follow'}
             </button>
         </div>
+        ${f.source ? `<div style="margin-top:12px;font-size:10px;color:var(--text-muted)">Source: ${f.source}</div>` : ''}
     </div>
     `;
 }
@@ -8874,12 +8898,26 @@ function forecastDetailModalH() {
                     `}).join('')}
                 </div>
                 
-                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
                     <button class="btn btn-small ${S.followedForecasts.includes(f.id)?'btn-success':'btn-secondary'} follow-forecast" data-id="${f.id}">
                         ${S.followedForecasts.includes(f.id)?'✓ Following':'+ Follow This Forecast'}
                     </button>
                     ${f.sourceUrl ? `<a href="${f.sourceUrl}" target="_blank" class="btn btn-small btn-secondary">View Source →</a>` : ''}
                 </div>
+                
+                ${f.source ? `
+                <div style="margin-top:15px;padding-top:15px;border-top:1px solid var(--bg-tertiary)">
+                    <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">SOURCE</div>
+                    <p style="font-size:11px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px">${f.source}</p>
+                    ${f.sourceUrl ? `<a href="${f.sourceUrl}" target="_blank" class="btn btn-small btn-secondary" style="margin-bottom:10px">View Prediction Market →</a>` : ''}
+                    <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;font-size:10px;color:var(--text-muted)">
+                        <span>Explore more:</span>
+                        <a href="https://polymarket.com/predictions/ai" target="_blank" style="color:var(--accent)">Polymarket AI</a>
+                        <a href="https://www.metaculus.com/questions/" target="_blank" style="color:var(--accent)">Metaculus</a>
+                        <a href="https://manifold.markets" target="_blank" style="color:var(--accent)">Manifold</a>
+                    </div>
+                </div>
+                ` : ''}
             </div>
         </div>
     `;
