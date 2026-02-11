@@ -1251,15 +1251,21 @@ function getDiffLabel(diff) {
 }
 
 function shouldRefreshQuests() {
-    if (!S.user?.lastQuestWeek) return true;
+    if (!S.user?.lastQuestWeek) return false; // Don't refresh if never set - user might be mid-week
     return getWeekNumber() > S.user.lastQuestWeek;
 }
 
 function checkWeeklyProgress() {
+    // Only refresh if it's actually a new week
     if (shouldRefreshQuests()) {
-        // Keep completed quests in history, generate new ones
+        // Generate new quests for the new week
         const newQuests = genQuests();
         S.quests = newQuests;
+        S.user.lastQuestWeek = getWeekNumber();
+        save();
+    }
+    // Set lastQuestWeek if not set (first time)
+    if (!S.user.lastQuestWeek && S.quests && S.quests.length > 0) {
         S.user.lastQuestWeek = getWeekNumber();
         save();
     }
