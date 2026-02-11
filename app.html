@@ -737,6 +737,7 @@ const S = {
     customQuests: [], // user-created quests
     followedForecasts: [], // forecast IDs user is tracking
     forecastProgress: {}, // {forecastId: {oppId: questIndex}} tracks which quest they're on
+    getQuestsExpandedOpp: null, // {forecastId, oppIndex} for Get Quests modal
     // Onboarding data
     onboardStep: 1, // 1=account, 2=occupation, 3=goals, 4=interests, 5=assessment, 6=results+forecasts, 7=email+paywall
     onboardData: {
@@ -1212,67 +1213,78 @@ function genQuests() {
     const qs = [];
     
     // Get recently completed quest texts to avoid repeats (last 20 receipts)
-    const recentlyDone = new Set(
-        (S.receipts || []).slice(-20).map(r => r.title?.toLowerCase().trim())
-    );
+    const recentlyDone = new Set();
+    if (S.receipts && S.receipts.length > 0) {
+        S.receipts.slice(-20).forEach(r => {
+            if (r.title) recentlyDone.add(r.title.toLowerCase().trim());
+        });
+    }
     
     // Auto-progress difficulty based on receipts count
     let effectiveDiff = d;
-    const totalCompleted = (S.receipts || []).length;
-    if (d === 'standard') {
-        if (totalCompleted >= 30) effectiveDiff = 'hard';
-        else if (totalCompleted >= 15) effectiveDiff = 'standard';
+    const totalCompleted = S.receipts ? S.receipts.length : 0;
+    if (d === 'standard' && totalCompleted >= 30) {
+        effectiveDiff = 'hard';
     }
     
     // Helper to get quests excluding recently done
     const getAvailableQuests = (mode, difficulty) => {
-        const pool = QB[mode]?.[difficulty] || QB[mode]?.['standard'] || [];
-        return pool.filter(q => !recentlyDone.has(q.t?.toLowerCase().trim()));
+        if (!QB[mode] || !QB[mode][difficulty]) return [];
+        return QB[mode][difficulty].filter(q => q.t && !recentlyDone.has(q.t.toLowerCase().trim()));
     };
     
-    // Get quests from QB (quest bank) based on selected difficulty
+    // Get quests from QB based on difficulty
     let modeQuests = getAvailableQuests(w, effectiveDiff);
     
-    // Fallback to all quests if too few available
-    if (modeQuests.length < 2) {
-        modeQuests = QB[w]?.[effectiveDiff] || QB[w]?.['standard'] || [];
+    // Fallback if too few available
+    if (modeQuests.length < 2 && QB[w] && QB[w][effectiveDiff]) {
+        modeQuests = QB[w][effectiveDiff];
+    }
+    if (!modeQuests || modeQuests.length === 0) {
+        modeQuests = QB[w]?.standard || [];
     }
     
     // 2 quests from weakest mode
     const shuffled = [...modeQuests].sort(() => Math.random() - 0.5);
     shuffled.slice(0, 2).forEach(q => {
-        qs.push({...q, mode: w, diff: effectiveDiff, id: Date.now() + Math.random(), done: false});
+        if (q && q.t) {
+            qs.push({...q, mode: w, diff: effectiveDiff, id: Date.now() + Math.random(), done: false});
+        }
     });
     
     // 1 quest from each other mode
     ['ideas', 'personality', 'execution'].filter(m => m !== w).forEach(m => {
         let otherQuests = getAvailableQuests(m, effectiveDiff);
-        if (otherQuests.length === 0) {
-            otherQuests = QB[m]?.[effectiveDiff] || QB[m]?.['standard'] || [];
+        if (otherQuests.length === 0 && QB[m]) {
+            otherQuests = QB[m][effectiveDiff] || QB[m].standard || [];
         }
-        if (otherQuests.length > 0) {
+        if (otherQuests && otherQuests.length > 0) {
             const q = otherQuests[Math.floor(Math.random() * otherQuests.length)];
-            qs.push({...q, mode: m, diff: effectiveDiff, id: Date.now() + Math.random(), done: false});
+            if (q && q.t) {
+                qs.push({...q, mode: m, diff: effectiveDiff, id: Date.now() + Math.random(), done: false});
+            }
         }
     });
     
-    // Anonymous option for personality if struggling (only on easy)
-    if (w === 'personality' && S.scores.personality < 40 && d === 'easy') {
-        const anonQuests = QB.personality?.anon || [];
-        if (anonQuests.length) {
-            const available = anonQuests.filter(q => !recentlyDone.has(q.t?.toLowerCase().trim()));
-            const pool = available.length > 0 ? available : anonQuests;
+    // Anonymous option for personality if struggling
+    if (w === 'personality' && S.scores.personality < 40 && d === 'easy' && QB.personality?.anon) {
+        const anonQuests = QB.personality.anon;
+        const available = anonQuests.filter(q => q.t && !recentlyDone.has(q.t.toLowerCase().trim()));
+        const pool = available.length > 0 ? available : anonQuests;
+        if (pool.length > 0) {
             const q = pool[Math.floor(Math.random() * pool.length)];
             qs.push({...q, mode: 'personality', diff: 'anon', id: Date.now() + Math.random(), done: false});
         }
     }
     
-    // Boss quest on hard mode or after 20+ completions
-    if ((effectiveDiff === 'hard' || totalCompleted >= 20) && QB.boss?.length) {
-        const available = QB.boss.filter(q => !recentlyDone.has(q.t?.toLowerCase().trim()));
+    // Boss quest after 20+ completions
+    if (totalCompleted >= 20 && QB.boss && QB.boss.length > 0) {
+        const available = QB.boss.filter(q => q.t && !recentlyDone.has(q.t.toLowerCase().trim()));
         const pool = available.length > 0 ? available : QB.boss;
         const boss = pool[Math.floor(Math.random() * pool.length)];
-        qs.push({t: boss.t, xp: boss.xp, mode: boss.m, diff: 'boss', tip: boss.tip, id: Date.now() + Math.random(), done: false, boss: true});
+        if (boss) {
+            qs.push({t: boss.t, xp: boss.xp, mode: boss.m, diff: 'boss', tip: boss.tip, id: Date.now() + Math.random(), done: false, boss: true});
+        }
     }
     
     return qs;
@@ -1840,8 +1852,8 @@ function questsH(){
         <button class="btn btn-small ${S.diff==='easy'?'btn-primary':'btn-secondary'}" data-setdiff="easy">Easy</button>
         <button class="btn btn-small ${S.diff==='standard'?'btn-primary':'btn-secondary'}" data-setdiff="standard">Standard</button>
         <button class="btn btn-small ${S.diff==='hard'?'btn-primary':'btn-secondary'}" data-setdiff="hard">Hard</button>
-        <button class="btn btn-small btn-secondary" id="refresh-q">↻ Refresh</button>
-        <button class="btn btn-small btn-secondary" id="add-custom-quest">+ Add Quest</button>
+        <button class="btn btn-small btn-primary" id="get-quests-btn">+ Get Quests</button>
+        <button class="btn btn-small btn-secondary" id="add-custom-quest">+ Custom</button>
     </div>
     
     ${forecastQuests.length?`<div class="card mb-20">
@@ -1988,6 +2000,7 @@ function settingsH(){return `<div class="page-header"><h1 class="page-title">Set
 
 function modalH(){
     if(S.modal==='forecastDetail') return forecastDetailModalH();
+    if(S.modal==='getQuests') return getQuestsModalH();
     if(S.modal==='complete'){
         const q=S.selectedQuest;
         return `<div class="modal-overlay" id="modal-bg"><div class="modal"><h3 class="modal-title">Quest Complete! 🎯</h3><p class="text-secondary text-small mb-20">${q.t}</p><div class="form-group"><label class="form-label">Reflection (optional)</label><textarea class="form-textarea" id="reflection" placeholder="What happened? What did you learn?"></textarea></div><div class="flex gap-10"><button class="btn btn-primary btn-full" id="confirm-done">Log Receipt (+${q.xp} XP)</button><button class="btn btn-secondary" id="cancel-modal">Cancel</button></div></div></div>`;
@@ -2017,6 +2030,72 @@ function modalH(){
         </form></div></div>`;
     }
     return '';
+}
+
+function getQuestsModalH(){
+    const w = weakest();
+    // Get suggested opportunities based on weakest mode
+    const suggested = FORECAST_DATABASE
+        .filter(f => f.threatMode === w || f.opportunities.some(o => o.mode === w))
+        .slice(0, 5);
+    
+    const expandedOpp = S.getQuestsExpandedOpp; // {forecastId, oppIndex}
+    
+    return `<div class="modal-overlay" id="modal-bg">
+        <div class="modal" style="max-width:480px;max-height:85vh;overflow-y:auto">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
+                <h3 class="modal-title" style="margin:0">Get More Quests</h3>
+                <button style="background:none;border:none;color:var(--text-secondary);font-size:20px;cursor:pointer" id="close-get-quests">×</button>
+            </div>
+            <p class="text-secondary text-small mb-20">Opportunities matched to your <strong style="color:var(--${w})">${w}</strong> mode:</p>
+            
+            ${suggested.length > 0 ? suggested.map(f => {
+                // Find best opportunity for user's weakest mode
+                const bestOpp = f.opportunities.find(o => o.mode === w) || f.opportunities[0];
+                const oppIndex = f.opportunities.indexOf(bestOpp);
+                const isExpanded = expandedOpp?.forecastId === f.id && expandedOpp?.oppIndex === oppIndex;
+                const progress = S.forecastProgress[f.id]?.[oppIndex] || 0;
+                const isComplete = progress >= bestOpp.quests.length;
+                
+                return `
+                <div class="get-quests-opp" style="background:var(--bg-primary);border:1px solid ${isExpanded ? 'var(--accent)' : 'var(--bg-tertiary)'};margin-bottom:10px;transition:all 0.2s">
+                    <div class="get-quests-opp-header" data-fid="${f.id}" data-oid="${oppIndex}" style="padding:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+                        <div style="flex:1">
+                            <div style="font-size:13px;font-weight:600;margin-bottom:4px">${bestOpp.title}</div>
+                            <div style="font-size:10px;color:var(--text-muted)">
+                                <span style="color:var(--${bestOpp.mode});text-transform:uppercase">${bestOpp.mode.substring(0,4)}</span> · 
+                                ${f.probability}% likely · ${bestOpp.quests.length} quests
+                                ${isComplete ? ' · <span style="color:var(--success)">✓ Done</span>' : progress > 0 ? ` · <span style="color:var(--accent)">${progress}/${bestOpp.quests.length}</span>` : ''}
+                            </div>
+                        </div>
+                        <div style="background:var(--accent);color:var(--bg-primary);padding:6px 12px;font-size:11px;font-weight:bold">${bestOpp.quests.length}</div>
+                    </div>
+                    
+                    ${isExpanded ? `
+                    <div style="padding:0 15px 15px 15px;border-top:1px solid var(--bg-tertiary)">
+                        <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin:12px 0 10px">Quest Path</div>
+                        ${bestOpp.quests.map((q, j) => {
+                            const done = j < progress;
+                            const current = j === progress;
+                            return `
+                            <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;${done ? 'opacity:0.5;' : ''}">
+                                <span style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;${done ? 'background:var(--success);color:white' : current ? 'background:var(--accent);color:var(--bg-primary)' : 'background:var(--bg-tertiary);color:var(--text-secondary)'}">${done ? '✓' : j + 1}</span>
+                                <span style="font-size:11px;line-height:1.4;${done ? 'text-decoration:line-through;' : ''}">${q.task}</span>
+                            </div>
+                        `}).join('')}
+                        ${!isComplete ? `
+                        <button class="btn btn-primary btn-full btn-small mt-10 add-opp-quests" data-fid="${f.id}" data-oid="${oppIndex}">${progress > 0 ? 'Continue These Quests →' : 'Add These Quests →'}</button>
+                        ` : `
+                        <div style="text-align:center;padding:10px 0;color:var(--success);font-size:12px">✓ Quest path complete!</div>
+                        `}
+                    </div>
+                    ` : ''}
+                </div>
+            `}).join('') : '<p class="text-secondary text-small">No matching opportunities found.</p>'}
+            
+            <button class="btn btn-secondary btn-full btn-small mt-10" id="browse-all-forecasts">Browse All Forecasts →</button>
+        </div>
+    </div>`;
 }
 
 function bindEvents(){
@@ -2274,7 +2353,48 @@ function bindEvents(){
     document.querySelectorAll('.complete-q').forEach(b=>b.addEventListener('click',()=>openModal(b.dataset.id)));
     document.querySelectorAll('.skip-q').forEach(b=>b.addEventListener('click',()=>skipQuest(b.dataset.id)));
     document.querySelectorAll('[data-setdiff]').forEach(b=>b.addEventListener('click',()=>{S.diff=b.dataset.setdiff;S.quests=genQuests();save();render();}));
-    document.getElementById('refresh-q')?.addEventListener('click',()=>{S.quests=genQuests();save();render();});
+    // Get Quests modal
+    document.getElementById('get-quests-btn')?.addEventListener('click',()=>{
+        S.modal='getQuests';
+        S.getQuestsExpandedOpp=null;
+        render();
+    });
+    document.getElementById('close-get-quests')?.addEventListener('click',()=>{
+        S.modal=null;
+        S.getQuestsExpandedOpp=null;
+        render();
+    });
+    document.getElementById('browse-all-forecasts')?.addEventListener('click',()=>{
+        S.modal=null;
+        S.getQuestsExpandedOpp=null;
+        S.screen='forecasts';
+        render();
+    });
+    // Expand/collapse opportunities in Get Quests modal
+    document.querySelectorAll('.get-quests-opp-header').forEach(el=>el.addEventListener('click',()=>{
+        const fid = el.dataset.fid;
+        const oid = parseInt(el.dataset.oid);
+        if(S.getQuestsExpandedOpp?.forecastId === fid && S.getQuestsExpandedOpp?.oppIndex === oid){
+            S.getQuestsExpandedOpp = null;
+        } else {
+            S.getQuestsExpandedOpp = {forecastId: fid, oppIndex: oid};
+        }
+        render();
+    }));
+    // Add quests from Get Quests modal
+    document.querySelectorAll('.add-opp-quests').forEach(el=>el.addEventListener('click',()=>{
+        const fid = el.dataset.fid;
+        const oid = parseInt(el.dataset.oid);
+        // Follow this forecast if not already
+        if(!S.followedForecasts.includes(fid)){
+            S.followedForecasts.push(fid);
+        }
+        if(!S.forecastProgress[fid]) S.forecastProgress[fid] = {};
+        S.modal=null;
+        S.getQuestsExpandedOpp=null;
+        save();
+        render();
+    }));
     
     // Custom quests
     document.getElementById('add-custom-quest')?.addEventListener('click',()=>{S.modal='addQuest';render();});
