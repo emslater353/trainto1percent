@@ -2248,12 +2248,22 @@ function bindEvents(){
         S.diagnosticEmail = document.getElementById('diag-email').value;
         S.diagnosticIndustry = document.getElementById('diag-industry').value;
         
-        // Save lead to database
-        await db('leads', 'POST', {
+        // Create Auth user with random password (they'll set real password if they convert)
+        const tempPassword = 'temp_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        const authResult = await authSignUp(S.diagnosticEmail, tempPassword);
+        
+        if (authResult.error && authResult.error.message !== 'User already registered') {
+            console.error('Lead capture error:', authResult.error);
+            // Still let them continue the quiz even if auth fails
+        }
+        
+        // Also save industry info to users table (Auth doesn't store custom fields)
+        await db('users', 'POST', {
             email: S.diagnosticEmail,
             industry: S.diagnosticIndustry,
             source: 'diagnostic_quiz',
-            created_at: new Date().toISOString()
+            start_date: new Date().toISOString(),
+            plan: 'lead'
         });
         
         S.diagnosticStep = 1;
