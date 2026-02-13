@@ -2247,6 +2247,15 @@ function bindEvents(){
         e.preventDefault();
         S.diagnosticEmail = document.getElementById('diag-email').value;
         S.diagnosticIndustry = document.getElementById('diag-industry').value;
+        
+        // Save lead to database
+        await db('leads', 'POST', {
+            email: S.diagnosticEmail,
+            industry: S.diagnosticIndustry,
+            source: 'diagnostic_quiz',
+            created_at: new Date().toISOString()
+        });
+        
         S.diagnosticStep = 1;
         render();
     });
