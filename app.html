@@ -750,6 +750,69 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const STRIPE_LINK = 'https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01';
 const STRIPE_ANNUAL = 'https://buy.stripe.com/dRm5kDbgP5CPdk89qO9ws02';
 
+// Supabase Auth helper functions
+async function supabaseAuth(action, data) {
+    const url = `${SUPABASE_URL}/auth/v1/${action}`;
+    const headers = {
+        'apikey': SUPABASE_KEY,
+        'Content-Type': 'application/json'
+    };
+    
+    // Add auth token for actions that need it
+    if (data.access_token) {
+        headers['Authorization'] = `Bearer ${data.access_token}`;
+    }
+    
+    try {
+        const r = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(data)
+        });
+        const result = await r.json();
+        if (!r.ok) {
+            console.error('Auth error:', result);
+            return { error: result };
+        }
+        return result;
+    } catch (e) {
+        console.error('Auth exception:', e);
+        return { error: { message: e.message } };
+    }
+}
+
+async function authSignUp(email, password) {
+    return supabaseAuth('signup', { email, password });
+}
+
+async function authSignIn(email, password) {
+    return supabaseAuth('token?grant_type=password', { email, password });
+}
+
+async function authResetPassword(email) {
+    return supabaseAuth('recover', { email });
+}
+
+async function authUpdatePassword(accessToken, newPassword) {
+    const url = `${SUPABASE_URL}/auth/v1/user`;
+    try {
+        const r = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password: newPassword })
+        });
+        const result = await r.json();
+        if (!r.ok) return { error: result };
+        return result;
+    } catch (e) {
+        return { error: { message: e.message } };
+    }
+}
+
 const S = {
     screen: 'login', user: null, scores: {ideas:50,personality:50,execution:50},
     quests: [], receipts: [], chat: [], loading: false, modal: null, selectedQuest: null,
@@ -2224,10 +2287,23 @@ function bindEvents(){
         btn.textContent = 'Creating account...';
         btn.disabled = true;
         
+        const name = document.getElementById('ob-name').value;
+        const password = document.getElementById('ob-pass').value;
+        const email = S.onboardData?.email || S.user?.email;
+        
+        // Create Supabase Auth account
+        const authResult = await authSignUp(email, password);
+        if (authResult.error && authResult.error.message !== 'User already registered') {
+            console.error('Auth signup error:', authResult.error);
+            alert('Account creation failed. Please try again.');
+            btn.textContent = 'Create Account';
+            btn.disabled = false;
+            return;
+        }
+        
         S.user = S.user || {};
-        S.user.name = document.getElementById('ob-name').value;
-        S.user.password = document.getElementById('ob-pass').value;
-        S.user.email = S.onboardData?.email || S.user?.email;
+        S.user.name = name;
+        S.user.email = email;
         S.user.industry = S.onboardData?.industry;
         S.user.scores = S.freeQuizScores || S.scores || {ideas:50,personality:50,execution:50};
         S.user.baseline_scores = S.user.scores;
@@ -2235,7 +2311,7 @@ function bindEvents(){
         S.user.start_date = new Date().toISOString();
         S.user.onboarded = false; // Will be true after they finish all steps
         
-        // Save to database NOW so they can always log back in
+        // Save to database NOW so they can always log back in (no password stored here)
         const existing = await db('users','GET',null,`?email=eq.${encodeURIComponent(S.user.email)}`);
         if(existing?.length){
             // Update existing user
@@ -2643,29 +2719,107 @@ function handleOnboardOccupation(){
 }
 
 async function login(){
-    const email=document.getElementById('email').value,pass=document.getElementById('pass').value;
-    const users=await db('users','GET',null,`?email=eq.${encodeURIComponent(email)}`);
-    if(users?.length&&users[0].password===pass){
-        S.user=users[0];S.scores=users[0].scores||{ideas:50,personality:50,execution:50};
-        S.receipts=users[0].receipts||[];S.quests=users[0].quests?.length?users[0].quests:genQuests();S.diff=users[0].diff||'standard';
-        localStorage.setItem('apc_session',JSON.stringify(S.user));
-        // If they have a password and paid, they're good - go to dashboard
-        if(S.user.plan === 'paid' || S.user.onboarded){
-            S.screen='dashboard';
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('pass').value;
+    
+    // Step 1: Try Supabase Auth first
+    const authResult = await authSignIn(email, pass);
+    
+    if (!authResult.error) {
+        // Supabase Auth worked - user is already migrated
+        const accessToken = authResult.access_token;
+        localStorage.setItem('apc_auth_token', accessToken);
+        
+        // Load user data from users table
+        const users = await db('users', 'GET', null, `?email=eq.${encodeURIComponent(email)}`);
+        if (users?.length) {
+            S.user = users[0];
+            S.scores = users[0].scores || {ideas:50, personality:50, execution:50};
+            S.receipts = users[0].receipts || [];
+            S.quests = users[0].quests?.length ? users[0].quests : genQuests();
+            S.diff = users[0].diff || 'standard';
+            localStorage.setItem('apc_session', JSON.stringify({...S.user, authToken: accessToken}));
+            
+            if (S.user.plan === 'paid' || S.user.onboarded) {
+                S.screen = 'dashboard';
+            } else {
+                S.screen = 'onboarding';
+            }
+            render();
+            return;
+        }
+    }
+    
+    // Step 2: Supabase Auth failed - check if they exist in SQL with old password
+    const users = await db('users', 'GET', null, `?email=eq.${encodeURIComponent(email)}`);
+    
+    if (users?.length && users[0].password === pass) {
+        // Old password matches! Migrate them to Supabase Auth
+        console.log('Migrating user to Supabase Auth...');
+        
+        const signupResult = await authSignUp(email, pass);
+        
+        if (signupResult.error && signupResult.error.message !== 'User already registered') {
+            console.error('Migration signup failed:', signupResult.error);
+            alert('Login error. Please try again or contact support.');
+            return;
+        }
+        
+        // Now sign them in with Supabase Auth
+        const newAuthResult = await authSignIn(email, pass);
+        
+        if (newAuthResult.error) {
+            // Might need to confirm email - just let them in with old method for now
+            console.log('Auth signin after migration failed, using legacy login');
         } else {
-            S.screen='onboarding';
+            localStorage.setItem('apc_auth_token', newAuthResult.access_token);
+        }
+        
+        // Load user data and proceed
+        S.user = users[0];
+        S.scores = users[0].scores || {ideas:50, personality:50, execution:50};
+        S.receipts = users[0].receipts || [];
+        S.quests = users[0].quests?.length ? users[0].quests : genQuests();
+        S.diff = users[0].diff || 'standard';
+        localStorage.setItem('apc_session', JSON.stringify(S.user));
+        
+        if (S.user.plan === 'paid' || S.user.onboarded) {
+            S.screen = 'dashboard';
+        } else {
+            S.screen = 'onboarding';
         }
         render();
-    } else alert('Invalid credentials');
+        return;
+    }
+    
+    alert('Invalid credentials');
 }
 
 async function signup(){
-    const name=document.getElementById('name').value,email=document.getElementById('email').value,pass=document.getElementById('pass').value;
-    const ex=await db('users','GET',null,`?email=eq.${encodeURIComponent(email)}`);
-    if(ex?.length){alert('Email exists');return;}
-    S.user={name,email,password:pass,start_date:new Date().toISOString(),onboarded:false};
-    localStorage.setItem('apc_pending',JSON.stringify(S.user));
-    S.screen='pricing';render();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('pass').value;
+    
+    // Check if email exists in users table
+    const ex = await db('users', 'GET', null, `?email=eq.${encodeURIComponent(email)}`);
+    if (ex?.length) {
+        alert('Email exists');
+        return;
+    }
+    
+    // Create Supabase Auth account
+    const authResult = await authSignUp(email, pass);
+    if (authResult.error && authResult.error.message !== 'User already registered') {
+        console.error('Signup error:', authResult.error);
+        alert('Signup failed: ' + (authResult.error.message || 'Unknown error'));
+        return;
+    }
+    
+    // Store user data (without password - it's in Supabase Auth now)
+    S.user = {name, email, start_date: new Date().toISOString(), onboarded: false};
+    localStorage.setItem('apc_pending', JSON.stringify(S.user));
+    S.screen = 'pricing';
+    render();
 }
 
 function handleFile(f){if(f?.name.endsWith('.json')){S.uploadedFile=f;render();}else alert('Upload .json file');}
@@ -2855,27 +3009,19 @@ async function resetPassword(){
     btn.textContent = 'Sending...';
     btn.disabled = true;
     
-    const users = await db('users','GET',null,`?email=eq.${encodeURIComponent(email)}`);
+    // Use Supabase Auth password reset
+    const result = await authResetPassword(email);
     
-    if(users?.length){
-        // Generate reset token
-        const resetToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
-        const resetExpiry = new Date(Date.now() + 3600000).toISOString(); // 1 hour
-        
-        // Store token in database
-        await db('users','PATCH',{ reset_token: resetToken, reset_expiry: resetExpiry },`?email=eq.${encodeURIComponent(email)}`);
-        
-        // Send email
-        await sendEmail('password-reset', { 
-            name: users[0].name, 
-            email, 
-            token: resetToken 
-        });
+    if (result.error) {
+        console.error('Password reset error:', result.error);
     }
     
     // Always show same message for security
     alert('If an account exists with that email, a reset link has been sent. Check your inbox.');
-    S.screen='login';render();
+    btn.textContent = 'Send Reset Link';
+    btn.disabled = false;
+    S.screen='login';
+    render();
 }
 
 // Change password (from settings when logged in)
@@ -2894,16 +3040,27 @@ async function changePassword(){
         return;
     }
     
-    // Verify current password
-    if(S.user.password !== currentPass) {
-        alert('Current password is incorrect.');
-        return;
-    }
+    // Try to verify via Supabase Auth by signing in with current password
+    const authResult = await authSignIn(S.user.email, currentPass);
     
-    // Update password
-    await db('users','PATCH',{ password: newPass },`?email=eq.${encodeURIComponent(S.user.email)}`);
-    S.user.password = newPass;
-    localStorage.setItem('apc_session',JSON.stringify(S.user));
+    if (authResult.error) {
+        // Fallback: check old SQL password for users not yet migrated
+        const users = await db('users', 'GET', null, `?email=eq.${encodeURIComponent(S.user.email)}`);
+        if (!users?.length || users[0].password !== currentPass) {
+            alert('Current password is incorrect.');
+            return;
+        }
+        
+        // Migrate to Supabase Auth with new password
+        await authSignUp(S.user.email, newPass);
+    } else {
+        // Update password in Supabase Auth
+        const updateResult = await authUpdatePassword(authResult.access_token, newPass);
+        if (updateResult.error) {
+            alert('Failed to update password. Please try again.');
+            return;
+        }
+    }
     
     alert('Password updated successfully!');
     document.getElementById('change-password-form').reset();
