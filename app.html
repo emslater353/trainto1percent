@@ -2719,11 +2719,25 @@ async function handleOnboardAccount(){
     const email = document.getElementById('ob-email').value;
     const pass = document.getElementById('ob-pass').value;
     
-    // Check if email exists
-    const ex = await db('users','GET',null,`?email=eq.${encodeURIComponent(email)}`);
-    if(ex?.length){alert('Email already exists. Please sign in.');return;}
+    // Create Supabase Auth account
+    const authResult = await authSignUp(email, pass);
+    if (authResult.error) {
+        if (authResult.error.message === 'User already registered') {
+            alert('Email already exists. Please sign in.');
+        } else {
+            alert('Signup failed: ' + (authResult.error.message || 'Unknown error'));
+        }
+        return;
+    }
     
-    S.user = {name, email, password: pass, start_date: new Date().toISOString(), onboarded: false};
+    // Sign them in to get access token
+    const signIn = await authSignIn(email, pass);
+    if (signIn.access_token) {
+        localStorage.setItem('apc_auth_token', signIn.access_token);
+    }
+    
+    S.user = {name, email, start_date: new Date().toISOString(), onboarded: false};
+    S.onboardData.email = email;
     localStorage.setItem('apc_pending', JSON.stringify(S.user));
     S.onboardStep = 2;
     render();
