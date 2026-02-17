@@ -2880,6 +2880,12 @@ async function signup(){
         return;
     }
     
+    // Sign in to get access token
+    const signInResult = await authSignIn(email, pass);
+    if (signInResult.access_token) {
+        localStorage.setItem('apc_auth_token', signInResult.access_token);
+    }
+    
     // Store user data (without password - it's in Supabase Auth now)
     S.user = {name, email, start_date: new Date().toISOString(), onboarded: false};
     localStorage.setItem('apc_pending', JSON.stringify(S.user));
@@ -9280,7 +9286,35 @@ async function init(){
             if(!S.onboardData.goals) S.onboardData.goals = [];
             if(!S.onboardData.forecastInterests) S.onboardData.forecastInterests = [];
             S.onboardSelectedForecasts = pendingData.onboardSelectedForecasts || [];
-            S.onboardStep = pendingData.onboardStep || 4; // Continue to goals
+            
+            // If user already has a name (from signup form), they already created their Auth account
+            // Skip step 4 (account creation) and go straight to step 5 (goals)
+            if(pendingData.name) {
+                S.user.name = pendingData.name;
+                S.user.start_date = pendingData.start_date || new Date().toISOString();
+                S.user.onboarded = false;
+                S.user.industry = pendingData.industry || S.onboardData?.industry;
+                S.user.scores = S.scores;
+                S.user.baseline_scores = S.freeQuizScores || S.scores;
+                
+                // Save to database now
+                const existing = await db('users','GET',null,`?email=eq.${encodeURIComponent(S.user.email)}`);
+                if(existing?.length){
+                    await db('users','PATCH', S.user, `?email=eq.${encodeURIComponent(S.user.email)}`);
+                    S.user = {...existing[0], ...S.user};
+                } else {
+                    const res = await db('users','POST', S.user);
+                    if(res?.length) S.user = res[0];
+                }
+                
+                localStorage.setItem('apc_session', JSON.stringify(S.user));
+                localStorage.removeItem('apc_pending');
+                
+                S.onboardStep = 5; // Skip to goals
+            } else {
+                S.onboardStep = pendingData.onboardStep || 4; // Continue to account creation
+            }
+            
             S.screen = 'onboarding';
             render();
             return;
