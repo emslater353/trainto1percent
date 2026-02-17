@@ -1140,10 +1140,10 @@ function getSuggestedForecasts() {
     const categoryMap = {
         'ai': ['ai', 'tech'],
         'work': ['work'],
-        'finance': ['finance', 'crypto'],
-        'creative': ['media'],
-        'health': ['work'], // health interests map to work/longevity forecasts
-        'business': ['tech', 'finance']
+        'finance': ['finance'],
+        'crypto': ['crypto', 'finance'],
+        'media': ['media'],
+        'tech': ['tech', 'ai']
     };
     
     // Get relevant categories
@@ -1159,12 +1159,20 @@ function getSuggestedForecasts() {
     // Filter and sort forecasts
     let forecasts = FORECAST_DATABASE.filter(f => relevantCategories.includes(f.category));
     
-    // Prioritize forecasts that match user's weak mode
+    // Prioritize exciting, specific forecasts over generic "already happening" ones
     forecasts.sort((a, b) => {
+        // Deprioritize "Already happening" — those feel boring as first impression
+        const aAlready = a.timeframe === 'Already happening' ? 1 : 0;
+        const bAlready = b.timeframe === 'Already happening' ? 1 : 0;
+        if(aAlready !== bAlready) return aAlready - bAlready;
+        
+        // Prioritize forecasts that match user's weak mode
         const aMatchesWeak = a.threatMode === weak ? 1 : 0;
         const bMatchesWeak = b.threatMode === weak ? 1 : 0;
         if(bMatchesWeak !== aMatchesWeak) return bMatchesWeak - aMatchesWeak;
-        return b.probability - a.probability; // Higher probability first
+        
+        // Then by probability descending (but not 95% generic ones)
+        return b.probability - a.probability;
     });
     
     return forecasts.slice(0, 10); // Return top 10
@@ -5608,39 +5616,6 @@ const FORECAST_DATABASE = [
 },
 
 {
-    id: 'ai-tutors-mainstream',
-    title: 'AI tutors outperform average human teachers',
-    source: 'Bill Gates',
-    probability: 70,
-    timeframe: '2-4 years',
-    category: 'ai',
-    threatMode: 'personality',
-    threatReason: 'Teaching content becomes commodity. Human teachers must focus on mentorship, motivation, and emotional support.',
-    atRisk: 'Teachers who compete on knowledge delivery rather than inspiration and connection',
-    opportunities: [
-        {
-            title: '🎓 AI-Augmented Tutor',
-            mode: 'personality',
-            description: 'Combine AI\'s knowledge delivery with human mentorship. Best of both worlds.',
-            difficulty: 'easy',
-            timeframe: '1-3 months',
-            quests: [
-                {mode: 'execution', task: 'Test 5 AI tutoring tools (Khanmigo, Synthesis, etc). Understand their strengths.', xp: 30},
-                {mode: 'ideas', task: 'Identify what human tutors provide that AI can\'t: accountability, emotional support, customization.', xp: 35},
-                {mode: 'execution', task: 'Design a hybrid session: AI handles drill, you handle strategy and motivation.', xp: 40},
-                {mode: 'personality', task: 'Run 5 free hybrid tutoring sessions. Get feedback on what works.', xp: 45},
-                {mode: 'execution', task: 'Refine your approach based on real student feedback.', xp: 40},
-                {mode: 'execution', task: 'Create a curriculum: what does week 1-8 look like for a student?', xp: 45},
-                {mode: 'personality', task: 'Get testimonials from your trial students.', xp: 40},
-                {mode: 'execution', task: 'Set your pricing. Research market rates.', xp: 35},
-                {mode: 'personality', task: 'Tell 30 people you\'re offering tutoring.', xp: 40},
-                {mode: 'execution', task: 'Get your first 5 paying students.', xp: 55}
-            ]
-        }
-    ]
-},
-
-{
     id: 'full-length-ai-movies',
     title: 'Full-length AI-generated movies become mainstream',
     source: 'Industry Consensus',
@@ -5701,171 +5676,6 @@ const FORECAST_DATABASE = [
                 {mode: 'personality', task: 'Connect with doctors who could refer patients needing support.', xp: 55},
                 {mode: 'execution', task: 'Get your first 3 paid clients.', xp: 55},
                 {mode: 'personality', task: 'Get testimonials and referrals.', xp: 50}
-            ]
-        }
-    ]
-},
-
-{
-    id: 'ai-surveillance-expansion',
-    title: 'AI surveillance expands significantly in democratic countries',
-    source: 'Larry Ellison / Industry Trend',
-    probability: 55,
-    timeframe: '3-5 years',
-    category: 'ai',
-    threatMode: 'personality',
-    threatReason: 'Privacy becomes luxury. Personal branding and public persona management become essential.',
-    atRisk: 'People without clear personal brand or who rely on anonymity',
-    opportunities: [
-        {
-            title: '🔒 Personal Privacy Consultant',
-            mode: 'ideas',
-            description: 'Help individuals protect their privacy in an increasingly surveilled world.',
-            difficulty: 'medium',
-            timeframe: '3-6 months',
-            quests: [
-                {mode: 'ideas', task: 'Research current privacy tools and best practices. Document top 20.', xp: 35},
-                {mode: 'execution', task: 'Implement privacy best practices in your own digital life. Document process.', xp: 40},
-                {mode: 'execution', task: 'Create a "Personal Privacy Audit" checklist anyone can use.', xp: 45},
-                {mode: 'personality', task: 'Offer free privacy audits to 5 friends. Learn what they struggle with.', xp: 45},
-                {mode: 'execution', task: 'Create a guide: "Privacy Basics for Normal People"', xp: 45},
-                {mode: 'personality', task: 'Share your guide publicly. See what resonates.', xp: 40},
-                {mode: 'execution', task: 'Develop tiered service offerings for different privacy needs.', xp: 45},
-                {mode: 'personality', task: 'Connect with lawyers and security professionals for referrals.', xp: 50},
-                {mode: 'execution', task: 'Get your first paid privacy consultation.', xp: 55},
-                {mode: 'execution', task: 'Create recurring revenue through ongoing privacy monitoring.', xp: 55}
-            ]
-        }
-    ]
-},
-
-{
-    id: 'ai-voice-cloning-ubiquitous',
-    title: 'Perfect voice cloning becomes trivially easy',
-    source: 'Industry Consensus',
-    probability: 90,
-    timeframe: 'Already happening',
-    category: 'ai',
-    threatMode: 'personality',
-    threatReason: 'Voice authenticity disappears. Trust and verification become crucial.',
-    atRisk: 'Anyone relying on voice as identity verification',
-    opportunities: [
-        {
-            title: '✅ Voice Verification Educator',
-            mode: 'execution',
-            description: 'Teach businesses and families how to verify voice authenticity and avoid scams.',
-            difficulty: 'easy',
-            timeframe: '1-3 months',
-            quests: [
-                {mode: 'ideas', task: 'Research voice cloning tools and scams. Document real examples.', xp: 30},
-                {mode: 'execution', task: 'Create a family safety protocol: code words, verification questions.', xp: 35},
-                {mode: 'execution', task: 'Create a business protocol for verifying voice communications.', xp: 40},
-                {mode: 'personality', task: 'Share your protocols publicly. Help others stay safe.', xp: 40},
-                {mode: 'execution', task: 'Create a short workshop: "Protecting Your Family from Voice Scams"', xp: 45},
-                {mode: 'personality', task: 'Offer workshop to local community groups, schools, senior centers.', xp: 50},
-                {mode: 'execution', task: 'Run 3 free workshops. Refine based on questions asked.', xp: 45},
-                {mode: 'personality', task: 'Get testimonials from workshop attendees.', xp: 40},
-                {mode: 'execution', task: 'Create paid corporate training on voice security.', xp: 50},
-                {mode: 'execution', task: 'Land your first paid corporate training gig.', xp: 55}
-            ]
-        }
-    ]
-},
-
-{
-    id: 'ai-realtime-translation',
-    title: 'Real-time perfect language translation eliminates barriers',
-    source: 'Industry Consensus',
-    probability: 85,
-    timeframe: '2-3 years',
-    category: 'ai',
-    threatMode: 'execution',
-    threatReason: 'Language skills devalue. Cultural understanding becomes the differentiator.',
-    atRisk: 'Translators focused on accuracy rather than cultural nuance',
-    opportunities: [
-        {
-            title: '🌍 Cultural Bridge Consultant',
-            mode: 'personality',
-            description: 'Help businesses navigate cultural nuances that translation AI misses.',
-            difficulty: 'medium',
-            timeframe: '3-6 months',
-            quests: [
-                {mode: 'ideas', task: 'Identify one culture you understand deeply. What do outsiders get wrong?', xp: 35},
-                {mode: 'execution', task: 'Document 10 cultural mistakes companies make with your culture.', xp: 40},
-                {mode: 'execution', task: 'Create a "Cultural Due Diligence Checklist" for that market.', xp: 45},
-                {mode: 'personality', task: 'Share examples publicly. Build credibility as cultural expert.', xp: 45},
-                {mode: 'personality', task: 'Connect with 5 companies doing business in your cultural area.', xp: 50},
-                {mode: 'execution', task: 'Offer free cultural audit to one company. Build case study.', xp: 50},
-                {mode: 'execution', task: 'Develop service package with clear deliverables.', xp: 45},
-                {mode: 'personality', task: 'Get testimonials from your free engagement.', xp: 45},
-                {mode: 'execution', task: 'Land your first paid cultural consulting client.', xp: 55},
-                {mode: 'personality', task: 'Build referral partnerships with international business consultants.', xp: 55}
-            ]
-        }
-    ]
-},
-
-{
-    id: 'ai-music-indistinguishable',
-    title: 'AI generates music indistinguishable from human artists',
-    source: 'Industry Consensus',
-    probability: 80,
-    timeframe: '1-2 years',
-    category: 'ai',
-    threatMode: 'execution',
-    threatReason: 'Music production becomes commodity. Live performance, brand, and story become the value.',
-    atRisk: 'Session musicians and producers focused on technical skill alone',
-    opportunities: [
-        {
-            title: '🎵 AI Music Director',
-            mode: 'ideas',
-            description: 'Direct AI music tools to create the right sound. Be the creative vision.',
-            difficulty: 'easy',
-            timeframe: '2-4 months',
-            quests: [
-                {mode: 'execution', task: 'Try 5 AI music tools (Suno, Udio, etc). Create 20 tracks.', xp: 35},
-                {mode: 'ideas', task: 'Study music production concepts: arrangement, mixing. Learn vocabulary.', xp: 40},
-                {mode: 'execution', task: 'Create a playlist of your best AI-generated tracks.', xp: 40},
-                {mode: 'personality', task: 'Share your music publicly. Get feedback.', xp: 40},
-                {mode: 'ideas', task: 'Develop your signature sound. What makes your direction distinctive?', xp: 45},
-                {mode: 'execution', task: 'Create music for specific use cases: YouTube intros, podcasts, ads.', xp: 45},
-                {mode: 'personality', task: 'Offer free music to 5 content creators.', xp: 50},
-                {mode: 'execution', task: 'Build portfolio with diverse examples.', xp: 45},
-                {mode: 'personality', task: 'List services on freelance platforms.', xp: 45},
-                {mode: 'execution', task: 'Land your first paid music creation gig.', xp: 55}
-            ]
-        }
-    ]
-},
-
-{
-    id: 'ai-legal-automation',
-    title: 'AI handles 80% of routine legal work',
-    source: 'Industry Analysis',
-    probability: 45,
-    timeframe: '5-10 years',
-    category: 'ai',
-    threatMode: 'execution',
-    threatReason: 'Legal research becomes automated. Strategy and client relationships remain human.',
-    atRisk: 'Junior lawyers focused on research and documentation',
-    opportunities: [
-        {
-            title: '⚖️ AI Legal Tools Trainer',
-            mode: 'execution',
-            description: 'Train lawyers to use AI tools effectively. Most are overwhelmed.',
-            difficulty: 'medium',
-            timeframe: '3-6 months',
-            quests: [
-                {mode: 'execution', task: 'Test 5 AI legal tools. Document capabilities.', xp: 40},
-                {mode: 'ideas', task: 'Identify what legal AI does well vs where it fails.', xp: 40},
-                {mode: 'execution', task: 'Create training curriculum for lawyers on AI tools.', xp: 50},
-                {mode: 'personality', task: 'Offer free training to one small firm. Get feedback.', xp: 50},
-                {mode: 'execution', task: 'Refine based on real user experience.', xp: 45},
-                {mode: 'personality', task: 'Connect with bar associations and legal education providers.', xp: 55},
-                {mode: 'execution', task: 'Create CLE-eligible content if possible.', xp: 55},
-                {mode: 'personality', task: 'Speak at a legal tech event.', xp: 55},
-                {mode: 'execution', task: 'Land your first paid training engagement.', xp: 60},
-                {mode: 'execution', task: 'Build ongoing training relationships with 3 firms.', xp: 60}
             ]
         }
     ]
@@ -6035,39 +5845,6 @@ const FORECAST_DATABASE = [
                 {mode: 'execution', task: 'Set up coaching program with pricing.', xp: 45},
                 {mode: 'personality', task: 'Partner with communities of aspiring freelancers.', xp: 50},
                 {mode: 'execution', task: 'Get 5 paid coaching clients.', xp: 55}
-            ]
-        }
-    ]
-},
-
-{
-    id: 'resume-obsolete',
-    title: 'Traditional resumes become obsolete',
-    source: 'Industry Trend',
-    probability: 65,
-    timeframe: '5-7 years',
-    category: 'work',
-    threatMode: 'execution',
-    threatReason: 'Past credentials matter less. Demonstrated current ability matters more.',
-    atRisk: 'People with impressive credentials but no visible work',
-    opportunities: [
-        {
-            title: '📂 Portfolio Builder',
-            mode: 'execution',
-            description: 'Help professionals build portfolios that show, not tell.',
-            difficulty: 'easy',
-            timeframe: '2-4 months',
-            quests: [
-                {mode: 'ideas', task: 'Research portfolio best practices for 3 professions.', xp: 30},
-                {mode: 'execution', task: 'Build your own portfolio showcasing your work.', xp: 40},
-                {mode: 'execution', task: 'Create template others can use.', xp: 40},
-                {mode: 'personality', task: 'Help 3 friends build portfolios. Note struggles.', xp: 45},
-                {mode: 'execution', task: 'Refine template based on feedback.', xp: 40},
-                {mode: 'personality', task: 'Share portfolio tips publicly.', xp: 45},
-                {mode: 'execution', task: 'Create service package: review + creation.', xp: 45},
-                {mode: 'execution', task: 'Price your service.', xp: 40},
-                {mode: 'personality', task: 'Partner with career coaches for referrals.', xp: 50},
-                {mode: 'execution', task: 'Get 10 paid portfolio clients.', xp: 55}
             ]
         }
     ]
@@ -6346,39 +6123,6 @@ const FORECAST_DATABASE = [
 },
 
 {
-    id: 'creator-middle-class-gone',
-    title: 'Creator middle class disappears — top 1% capture most value',
-    source: 'Li Jin / Industry Analysis',
-    probability: 55,
-    timeframe: 'Already happening',
-    category: 'media',
-    threatMode: 'personality',
-    threatReason: 'Attention concentrates. Community becomes the moat.',
-    atRisk: 'Creators focused on content alone without building relationships',
-    opportunities: [
-        {
-            title: '🏠 Community Builder',
-            mode: 'personality',
-            description: 'Build community around a topic. Community > content.',
-            difficulty: 'medium',
-            timeframe: '6-12 months',
-            quests: [
-                {mode: 'ideas', task: 'Identify group that needs community but doesn\'t have great one.', xp: 35},
-                {mode: 'execution', task: 'Set up simple community space.', xp: 35},
-                {mode: 'personality', task: 'Personally invite 20 potential great members.', xp: 45},
-                {mode: 'execution', task: 'Create simple structure: channels, welcome, events.', xp: 40},
-                {mode: 'personality', task: 'Host first event. Get people talking to each other.', xp: 50},
-                {mode: 'personality', task: 'Make 3 introductions between members.', xp: 45},
-                {mode: 'execution', task: 'Reach 50 active members.', xp: 50},
-                {mode: 'personality', task: 'Identify and empower community leaders.', xp: 50},
-                {mode: 'execution', task: 'Create membership tier.', xp: 50},
-                {mode: 'execution', task: 'Get first 10 paying members.', xp: 55}
-            ]
-        }
-    ]
-},
-
-{
     id: 'ai-news-generation',
     title: 'AI generates majority of news content',
     source: 'Industry Trend',
@@ -6482,39 +6226,6 @@ const FORECAST_DATABASE = [
 },
 
 {
-    id: 'defi-100m-users',
-    title: 'DeFi reaches 100M+ users globally',
-    source: 'Industry Projections',
-    probability: 55,
-    timeframe: '3-5 years',
-    category: 'crypto',
-    threatMode: 'execution',
-    threatReason: 'Financial services go permissionless. Early movers in onboarding win.',
-    atRisk: 'Traditional banking focused on gatekeeping',
-    opportunities: [
-        {
-            title: '🚪 DeFi Onboarding Guide',
-            mode: 'execution',
-            description: 'Help regular people use DeFi safely. Most are scared or confused.',
-            difficulty: 'medium',
-            timeframe: '3-6 months',
-            quests: [
-                {mode: 'execution', task: 'Use 5 DeFi protocols yourself. Document experience.', xp: 35},
-                {mode: 'ideas', task: 'Identify top 5 barriers preventing normal people from using DeFi.', xp: 35},
-                {mode: 'execution', task: 'Create step-by-step guide for using one protocol safely.', xp: 45},
-                {mode: 'personality', task: 'Walk 3 non-crypto friends through DeFi.', xp: 50},
-                {mode: 'execution', task: 'Refine guide based on feedback.', xp: 40},
-                {mode: 'execution', task: 'Create video tutorials.', xp: 45},
-                {mode: 'personality', task: 'Share in crypto-curious communities.', xp: 45},
-                {mode: 'execution', task: 'Build reputation as "safe DeFi guide"', xp: 50},
-                {mode: 'personality', task: 'Offer paid 1:1 onboarding sessions.', xp: 50},
-                {mode: 'execution', task: 'Get 10 paid clients.', xp: 55}
-            ]
-        }
-    ]
-},
-
-{
     id: 'satoshi-moves-bitcoin',
     title: 'Satoshi moves Bitcoin in 2026',
     source: 'Polymarket',
@@ -6579,39 +6290,6 @@ const FORECAST_DATABASE = [
                 {mode: 'execution', task: 'Reach 500 followers.', xp: 50},
                 {mode: 'personality', task: 'Interview longevity expert.', xp: 55},
                 {mode: 'execution', task: 'Monetize through courses or sponsorships.', xp: 55}
-            ]
-        }
-    ]
-},
-
-{
-    id: 'human-ai-merge-begins',
-    title: 'Humans begin merging with AI through brain interfaces',
-    source: 'Elon Musk / Neuralink',
-    probability: 40,
-    timeframe: '10-15 years',
-    category: 'ai',
-    threatMode: 'ideas',
-    threatReason: 'Cognitive enhancement becomes possible. New ethical questions emerge.',
-    atRisk: 'Those who refuse enhancement competing against enhanced humans',
-    opportunities: [
-        {
-            title: '🧠 Enhancement Ethics Educator',
-            mode: 'ideas',
-            description: 'Help people think through ethics of human enhancement.',
-            difficulty: 'hard',
-            timeframe: '6-12 months',
-            quests: [
-                {mode: 'ideas', task: 'Read foundational texts on enhancement ethics.', xp: 40},
-                {mode: 'ideas', task: 'Create framework: questions before enhancement.', xp: 45},
-                {mode: 'execution', task: 'Write accessible article on enhancement ethics.', xp: 45},
-                {mode: 'personality', task: 'Share framework. Engage with responses.', xp: 40},
-                {mode: 'ideas', task: 'Follow Neuralink, Synchron developments.', xp: 35},
-                {mode: 'personality', task: 'Create discussion group on enhancement ethics.', xp: 50},
-                {mode: 'execution', task: 'Develop workshop on enhancement decisions.', xp: 55},
-                {mode: 'personality', task: 'Pilot workshop with small group.', xp: 50},
-                {mode: 'execution', task: 'Create resources for companies.', xp: 50},
-                {mode: 'personality', task: 'Get invited to speak on enhancement ethics.', xp: 60}
             ]
         }
     ]
@@ -7851,39 +7529,6 @@ const FORECAST_DATABASE = [
     ]
 },
 
-{
-    id: 'lifelong-learning-essential',
-    title: 'Continuous learning becomes essential for career survival',
-    source: 'Industry Consensus',
-    probability: 95,
-    timeframe: 'Already happening',
-    category: 'work',
-    threatMode: 'ideas',
-    threatReason: 'Skills expire faster. Continuous learning is the new job security.',
-    atRisk: 'Anyone who stopped learning after formal education',
-    opportunities: [
-        {
-            title: '📚 Learning Coach',
-            mode: 'ideas',
-            description: 'Help professionals develop effective learning habits and strategies.',
-            difficulty: 'medium',
-            timeframe: '3-6 months',
-            quests: [
-                {mode: 'ideas', task: 'Study learning science: spaced repetition, active recall, etc.', xp: 40},
-                {mode: 'execution', task: 'Develop your own learning system. Test it on a new skill.', xp: 45},
-                {mode: 'execution', task: 'Create "Learn Anything Fast" framework.', xp: 45},
-                {mode: 'personality', task: 'Share your learning system publicly.', xp: 40},
-                {mode: 'execution', task: 'Design coaching program around learning skills.', xp: 50},
-                {mode: 'personality', task: 'Coach 5 people on learning for free.', xp: 50},
-                {mode: 'execution', task: 'Track results. How much faster do clients learn?', xp: 45},
-                {mode: 'personality', task: 'Get testimonials from successful clients.', xp: 45},
-                {mode: 'execution', task: 'Create paid learning coaching offer.', xp: 50},
-                {mode: 'execution', task: 'Get first 5 paying clients.', xp: 55}
-            ]
-        }
-    ]
-},
-
 // MORE FORECASTS PLACEHOLDER 2
 // ============================================================================
 // ₿ CRYPTO - Continued
@@ -8626,39 +8271,6 @@ const FORECAST_DATABASE = [
                 {mode: 'execution', task: 'Track client results. Build case studies.', xp: 50},
                 {mode: 'execution', task: 'Create paid course or coaching program.', xp: 50},
                 {mode: 'execution', task: 'Get 10 paying clients.', xp: 55}
-            ]
-        }
-    ]
-},
-
-{
-    id: 'housing-unaffordable',
-    title: 'Housing affordability crisis worsens in major metros',
-    source: 'Industry Analysis',
-    probability: 80,
-    timeframe: '2026',
-    category: 'finance',
-    threatMode: 'execution',
-    threatReason: 'Traditional homeownership path breaks. Alternative housing models emerge.',
-    atRisk: 'Young people following traditional "buy a house" advice',
-    opportunities: [
-        {
-            title: '🏠 Alternative Housing Consultant',
-            mode: 'ideas',
-            description: 'Help people find creative housing solutions: co-living, house hacking, nomad life.',
-            difficulty: 'medium',
-            timeframe: '3-6 months',
-            quests: [
-                {mode: 'ideas', task: 'Research alternative housing models: co-living, ADUs, house hacking, international living.', xp: 35},
-                {mode: 'ideas', task: 'Interview 10 people using non-traditional housing. What works?', xp: 45},
-                {mode: 'execution', task: 'Create "Housing Alternatives Guide" for your target demographic.', xp: 45},
-                {mode: 'personality', task: 'Share guide publicly. Build audience struggling with housing.', xp: 45},
-                {mode: 'execution', task: 'Develop decision framework: which alternative fits which situation?', xp: 45},
-                {mode: 'personality', task: 'Help 5 people find alternative housing solutions for free.', xp: 50},
-                {mode: 'execution', task: 'Document results and testimonials.', xp: 45},
-                {mode: 'execution', task: 'Create consulting service.', xp: 45},
-                {mode: 'personality', task: 'Partner with real estate agents who serve non-traditional buyers.', xp: 50},
-                {mode: 'execution', task: 'Get first paid consulting clients.', xp: 55}
             ]
         }
     ]
