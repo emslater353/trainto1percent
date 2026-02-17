@@ -1746,7 +1746,7 @@ function calculateDiagnosticScores(){
     return scores;
 }
 
-function loginH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Welcome back</h2><p class="card-subtitle">Continue your training</p><form id="login-form"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required></div><button type="submit" class="btn btn-primary btn-full">Sign In</button></form><p class="text-center mt-10"><a class="text-link text-small" id="forgot-pass">Forgot password?</a></p><p class="text-center text-secondary text-small mt-20">New? <a class="text-link" id="to-signup">Start training</a></p></div><div class="card mt-20 text-center" style="border-color:var(--accent)"><p class="text-small mb-10">Not sure yet?</p><button class="btn btn-secondary btn-full" id="take-free-quiz">Get My AI-Proof Score →</button><p class="text-secondary text-small mt-10">4 questions. 60 seconds.</p></div></div></div>`;}
+function loginH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Welcome back</h2><p class="card-subtitle">Continue your training</p><form id="login-form"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required></div><button type="submit" class="btn btn-primary btn-full">Sign In</button></form><p class="text-center mt-10"><a class="text-link text-small" id="forgot-pass">Forgot password?</a></p><p class="text-center text-secondary text-small mt-20">New? <a class="text-link" id="to-signup">Start training</a></p></div><div class="card mt-20 text-center" style="border-color:var(--accent)"><p class="text-small mb-10">Not sure yet?</p><button class="btn btn-secondary btn-full" id="take-free-quiz">Am I AI-Proof? →</button><p class="text-secondary text-small mt-10">Free. Takes 90 seconds.</p></div></div></div>`;}
 
 function freeResultsH(){
     const {ideas:i,personality:p,execution:e}=S.freeQuizScores||S.scores;
@@ -9277,9 +9277,9 @@ async function init(){
     const params=new URLSearchParams(location.search);
     const hash=location.hash.replace('#','');
     
-    // Check for diagnostic mode from landing page
-    if(params.get('mode') === 'diagnostic') {
-        history.replaceState({}, '', location.pathname + '#diagnostic');
+    // Check for diagnostic mode from landing page OR direct link
+    if(params.get('mode') === 'diagnostic' || hash === 'diagnostic') {
+        if(hash !== 'diagnostic') history.replaceState({}, '', location.pathname + '#diagnostic');
         S.diagnosticStep = 0;
         S.diagnosticEmail = '';
         S.diagnosticIndustry = '';
@@ -9304,7 +9304,7 @@ async function init(){
     }
     
     // Handle hash routes
-    const validScreens = ['signin','signup','login','forgot','pricing','onboarding','upload','quiz','results','dashboard','quests','coach','receipts','capsules','review','settings','forecasts'];
+    const validScreens = ['signin','signup','login','forgot','pricing','onboarding','upload','quiz','results','dashboard','quests','coach','receipts','capsules','review','settings','forecasts','diagnostic'];
     
     if(params.get('success')==='true'){
         history.replaceState({},'',location.pathname);
