@@ -858,13 +858,18 @@ const S = {
         goals: [],
         forecastInterests: []
     },
-    onboardSelectedForecasts: [], // forecasts selected during onboarding step 6
+    onboardSelectedForecasts: [], // forecasts selected during onboarding step 7
+    onboardSelectedOpps: [], // opportunities selected during onboarding step 8
     weeklyEmailOptIn: null, // {email, optedIn} for weekly quest emails
     freeQuizMode: false, // true if taking quiz from landing page (not logged in)
     freeQuizScores: null, // store scores from free quiz
-    diagnosticStep: 0, // 0=email/industry, 1-4=questions, 5=results (gated)
+    diagnosticStep: 0, // 0=email, 1=role+industry+responsibilities, 2=loading, 3=results
     diagnosticEmail: '',
     diagnosticIndustry: '',
+    diagnosticRole: '',
+    diagnosticResponsibilities: '',
+    diagnosticResult: null, // AI analysis result
+    diagLoadingStep: 0, // loading animation step
     diagnosticAnswers: [],
     // Forecasts
     forecasts: [],
@@ -1049,14 +1054,19 @@ const INDUSTRIES = [
     "Finance / Banking",
     "Healthcare",
     "E-commerce / Retail",
+    "Fashion / Luxury",
     "Media / Entertainment",
     "Consulting",
     "Education",
     "Real Estate",
     "Manufacturing",
+    "Legal",
     "Government / Non-profit",
     "Crypto / Web3",
     "AI / Machine Learning",
+    "Marketing / Advertising",
+    "Food & Hospitality",
+    "Transportation / Logistics",
     "Other"
 ];
 
@@ -1176,6 +1186,82 @@ function getSuggestedForecasts() {
     });
     
     return forecasts.slice(0, 10); // Return top 10
+}
+
+// Get personalized forecast recommendations based on goals, interests, scores, and industry
+function getPersonalizedForecasts() {
+    const interests = S.onboardData?.forecastInterests || [];
+    const goals = S.onboardData?.goals || [];
+    const weak = weakest();
+    const industry = S.onboardData?.industry || S.diagnosticIndustry || S.user?.industry || '';
+    
+    // Map interests to categories
+    const categoryMap = {
+        'ai': ['ai', 'tech'],
+        'work': ['work'],
+        'finance': ['finance'],
+        'crypto': ['crypto', 'finance'],
+        'media': ['media'],
+        'tech': ['tech', 'ai']
+    };
+    
+    let relevantCategories = [];
+    interests.forEach(interest => {
+        if(categoryMap[interest]) {
+            relevantCategories = [...relevantCategories, ...categoryMap[interest]];
+        }
+    });
+    relevantCategories = [...new Set(relevantCategories)];
+    if(relevantCategories.length === 0) relevantCategories = ['ai', 'tech', 'work', 'media'];
+    
+    // Get all matching forecasts
+    let forecasts = FORECAST_DATABASE.filter(f => relevantCategories.includes(f.category));
+    
+    // Add reason why we're recommending each forecast
+    forecasts = forecasts.map(f => {
+        let reason = '';
+        if(f.threatMode === weak) {
+            reason = `Targets your weakest mode (${weak}). `;
+        }
+        if(goals.includes('ai-prep') && f.category === 'ai') {
+            reason += 'Matches your goal to prepare for AI disruption. ';
+        }
+        if(goals.includes('business') && f.opportunities.some(o => o.difficulty !== 'hard')) {
+            reason += 'Has buildable business opportunities. ';
+        }
+        if(goals.includes('career') && f.category === 'work') {
+            reason += 'Directly impacts career trajectories. ';
+        }
+        if(!reason) reason = f.threatReason;
+        return {...f, recommendReason: reason.trim()};
+    });
+    
+    // Score and sort
+    forecasts.sort((a, b) => {
+        let aScore = 0, bScore = 0;
+        
+        // Boost forecasts matching weak mode
+        if(a.threatMode === weak) aScore += 3;
+        if(b.threatMode === weak) bScore += 3;
+        
+        // Boost non-"Already happening" (more exciting first impression)
+        if(a.timeframe !== 'Already happening') aScore += 2;
+        if(b.timeframe !== 'Already happening') bScore += 2;
+        
+        // Boost forecasts with more opportunities
+        if(a.opportunities.length >= 2) aScore += 1;
+        if(b.opportunities.length >= 2) bScore += 1;
+        
+        // Boost goal-aligned
+        if(goals.includes('ai-prep') && a.category === 'ai') aScore += 2;
+        if(goals.includes('ai-prep') && b.category === 'ai') bScore += 2;
+        if(goals.includes('business')) { aScore += 1; bScore += 1; }
+        
+        if(bScore !== aScore) return bScore - aScore;
+        return b.probability - a.probability;
+    });
+    
+    return forecasts.slice(0, 6);
 }
 
 // Get teaser quests from selected forecasts
@@ -1450,11 +1536,12 @@ function shouldRefreshQuests() {
 }
 
 function checkWeeklyProgress() {
-    // Only refresh if it's actually a new week
+    // Only refresh GENERIC quests if it's a new week — never touch forecast quests
     if (shouldRefreshQuests()) {
-        // Generate new quests for the new week
-        const newQuests = genQuests();
-        S.quests = newQuests;
+        // Only regenerate the generic quests (not forecast-linked ones)
+        const newGenericQuests = genQuests();
+        // Keep any undone quests that the user manually added or are custom
+        S.quests = newGenericQuests;
         S.user.lastQuestWeek = getWeekNumber();
         save();
     }
@@ -1492,16 +1579,16 @@ function render(){
     bindEvents();
 }
 
-// 4-question AI-Proof Score flow
+// AI-powered diagnostic - personalized job assessment
 function diagnosticH(){
     const step = S.diagnosticStep;
     
-    // Step 0: Email + Industry collection
+    // Step 0: Email collection
     if(step === 0){
         return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
         <div class="card">
-            <h2 class="card-title text-center">Get Your AI-Proof Score</h2>
-            <p class="card-subtitle text-center">4 quick questions to see where you stand</p>
+            <h2 class="card-title text-center">How AI-Proof Is Your Job?</h2>
+            <p class="card-subtitle text-center">Get a brutally honest assessment of where you stand</p>
             
             <div style="background:var(--bg-primary);padding:20px;margin:20px 0;text-align:center">
                 <div style="display:flex;gap:15px;justify-content:center;margin-bottom:15px">
@@ -1509,7 +1596,7 @@ function diagnosticH(){
                     <div><span style="font-size:24px">⚡</span><div style="font-size:10px;color:var(--personality)">Personality</div></div>
                     <div><span style="font-size:24px">🎯</span><div style="font-size:10px;color:var(--execution)">Execution</div></div>
                 </div>
-                <p class="text-secondary text-small">We measure the 3 modes that separate people who thrive with AI vs get replaced by it.</p>
+                <p class="text-secondary text-small">We score you on the 3 modes that separate people who thrive with AI from those who get replaced by it.</p>
             </div>
             
             <form id="diagnostic-start-form">
@@ -1517,44 +1604,80 @@ function diagnosticH(){
                     <label class="form-label">Your Email</label>
                     <input type="email" class="form-input" id="diag-email" required placeholder="you@email.com">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Your Industry</label>
-                    <select class="form-input" id="diag-industry" required>
-                        <option value="">Select your industry...</option>
-                        ${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary btn-full">Get My Score →</button>
+                <button type="submit" class="btn btn-primary btn-full">Continue →</button>
             </form>
-            <p class="text-center text-secondary text-small mt-15">Takes 60 seconds.</p>
+            <p class="text-center text-secondary text-small mt-15">Free. Takes 90 seconds.</p>
         </div>
         <p class="text-center mt-20"><a class="text-link text-small" id="back-to-login">← Back to login</a></p>
         </div></div>`;
     }
     
-    // Steps 1-4: Questions
-    if(step >= 1 && step <= 4){
-        const q = DiagnosticQs[step - 1];
-        return `<div class="screen-center"><div class="container-md">
-            <div class="logo">AI PROOF <span>CLUB</span></div>
-            <div class="progress-bar">${[1,2,3,4].map(i=>`<div class="progress-dot ${i<step?'done':i===step?'active':''}"></div>`).join('')}</div>
-            <div class="q-number">Question ${step} of 4</div>
-            <div class="q-text">${q.t}</div>
-            <div class="options">${q.o.map((o,i)=>`<button class="option diag-option" data-idx="${i}">${o.t}</button>`).join('')}</div>
+    // Step 1: Industry + Role + Responsibilities
+    if(step === 1){
+        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
+        <div class="card">
+            <h2 class="card-title">Tell us about your job</h2>
+            <p class="card-subtitle">Be specific — the more detail, the more accurate your score</p>
+            
+            <form id="diagnostic-role-form">
+                <div class="form-group">
+                    <label class="form-label">Industry</label>
+                    <select class="form-input" id="diag-industry" required>
+                        <option value="">Select your industry...</option>
+                        ${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Your Role / Job Title</label>
+                    <input type="text" class="form-input" id="diag-role" required placeholder="e.g. Marketing Manager, Software Engineer, Nurse">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">What do you actually do day-to-day?</label>
+                    <textarea class="form-input" id="diag-responsibilities" required maxlength="300" rows="3" placeholder="e.g. I write email campaigns, manage our social accounts, and report on weekly analytics" style="resize:vertical"></textarea>
+                    <div style="text-align:right;font-size:10px;color:var(--text-secondary);margin-top:4px"><span id="diag-char-count">0</span>/300</div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Analyze My Job →</button>
+            </form>
+        </div>
         </div></div>`;
     }
     
-    // Step 5: Results
-    if(step === 5){
-        const scores = calculateDiagnosticScores();
-        const {ideas:i,personality:p,execution:e} = scores;
+    // Step 2: Loading / AI Analysis
+    if(step === 2){
+        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
+        <div class="card text-center" style="padding:50px 30px">
+            <div class="spinner" style="margin:0 auto 20px"></div>
+            <h2 class="card-title">Analyzing your role...</h2>
+            <p class="text-secondary text-small">Comparing your responsibilities against current AI capabilities</p>
+            <div style="margin-top:25px;text-align:left">
+                <div class="diag-loading-step ${S.diagLoadingStep >= 1 ? 'active' : ''}" style="padding:8px 0;font-size:12px;color:${S.diagLoadingStep >= 1 ? 'var(--accent)' : 'var(--text-secondary)'}">
+                    ${S.diagLoadingStep >= 1 ? '✓' : '○'} Mapping your responsibilities to AI capabilities
+                </div>
+                <div class="diag-loading-step ${S.diagLoadingStep >= 2 ? 'active' : ''}" style="padding:8px 0;font-size:12px;color:${S.diagLoadingStep >= 2 ? 'var(--accent)' : 'var(--text-secondary)'}">
+                    ${S.diagLoadingStep >= 2 ? '✓' : '○'} Calculating automation risk by task
+                </div>
+                <div class="diag-loading-step ${S.diagLoadingStep >= 3 ? 'active' : ''}" style="padding:8px 0;font-size:12px;color:${S.diagLoadingStep >= 3 ? 'var(--accent)' : 'var(--text-secondary)'}">
+                    ${S.diagLoadingStep >= 3 ? '✓' : '○'} Scoring your AI-proof modes
+                </div>
+            </div>
+        </div>
+        </div></div>`;
+    }
+    
+    // Step 3: Results
+    if(step === 3){
+        const r = S.diagnosticResult;
+        if(!r) return diagnosticH(); // fallback
+        
+        const {ideas:i,personality:p,execution:e} = r.scores;
         const avgScore = Math.round((i+p+e)/3);
         const percentile = getPercentile(avgScore);
-        const weak = ['ideas','personality','execution'].reduce((a,b)=>scores[a]<scores[b]?a:b);
+        const weak = ['ideas','personality','execution'].reduce((a,b)=>r.scores[a]<r.scores[b]?a:b);
         
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
-        <div class="card text-center">
-            <h2 class="card-title">Your AI-Proof Score</h2>
+        <div class="card">
+            <h2 class="card-title text-center">Your AI-Proof Score</h2>
+            <p class="text-secondary text-small text-center mb-20">${S.diagnosticRole} in ${S.diagnosticIndustry}</p>
             
             <div class="results-meters">
                 <div class="meter"><div class="meter-circle ideas">${i}%</div><div class="meter-label">Ideas</div></div>
@@ -1563,18 +1686,28 @@ function diagnosticH(){
             </div>
             
             <div class="verdict">
-                <div class="verdict-title">Your Position</div>
-                <div class="verdict-text">You're in the <strong>${percentile}th percentile</strong>. The AI-Proof threshold is 85%+.</div>
+                <div class="verdict-title">Overall Risk: ${r.riskLevel}</div>
+                <div class="verdict-text" style="font-size:13px;line-height:1.7">${r.overallAssessment}</div>
             </div>
             
-            <div class="verdict" style="border-color:var(--${weak})">
-                <div class="verdict-title">Your Weakest Mode</div>
-                <div class="verdict-text"><strong style="text-transform:capitalize">${weak}</strong> is where AI will hit you hardest. This is where your training starts.</div>
+            <div class="verdict" style="border-color:var(--personality)">
+                <div class="verdict-title">What AI Can Already Do</div>
+                <div class="verdict-text" style="font-size:12px;line-height:1.7">${r.whatAICanDo}</div>
+            </div>
+            
+            <div class="verdict" style="border-color:var(--execution)">
+                <div class="verdict-title">Your Human Edge</div>
+                <div class="verdict-text" style="font-size:12px;line-height:1.7">${r.humanEdge}</div>
+            </div>
+            
+            <div class="verdict" style="border-color:var(--ideas)">
+                <div class="verdict-title">Timeline</div>
+                <div class="verdict-text" style="font-size:12px;line-height:1.7">${r.timeline}</div>
             </div>
             
             <div style="background:var(--bg-primary);padding:20px;margin-top:25px;text-align:left">
                 <h4 style="font-size:13px;margin-bottom:10px">What happens next?</h4>
-                <p class="text-secondary text-small">AI Proof Club gives you weekly quests based on your profile to build real-world proof that you can do what AI can't. Track forecasts. Level up. Become irreplaceable.</p>
+                <p class="text-secondary text-small">AI Proof Club gives you progressive quests tied to real AI forecasts — not generic advice. You'll track trends, spot opportunities, and build skills that make you irreplaceable in your industry.</p>
             </div>
             
             <div style="display:flex;flex-direction:column;gap:15px;margin-top:20px">
@@ -1587,6 +1720,15 @@ function diagnosticH(){
                     <div style="font-size:10px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Best Value — 2 Months Free</div>
                     <div style="font-size:24px;font-weight:700">$99<span style="font-size:12px;color:var(--text-secondary)">/year</span></div>
                     <a href="${STRIPE_ANNUAL}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}&client_reference_id=${encodeURIComponent(S.diagnosticEmail||'')}" class="btn btn-secondary btn-full mt-10" id="diag-to-signup-annual">Start Annual →</a>
+                </div>
+            </div>
+        </div>
+        <p class="text-center mt-20"><a class="text-link text-small" id="back-to-login">← Back to login</a></p>
+        </div></div>`;
+    }
+    
+    return loginH();
+}
                 </div>
             </div>
             <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
@@ -1661,7 +1803,7 @@ function pricingH(){return `<div class="screen-center"><div class="container-sm"
 
 function onboardingH(){
     const step = S.onboardStep;
-    const totalSteps = 6; // 1-email/industry, 2-quiz, 3-results+pay, 4-account, 5-goals, 6-interests
+    const totalSteps = 8; // 1-email/industry, 2-quiz, 3-results+pay, 4-account, 5-goals, 6-interests, 7-recommended forecasts, 8-pick opportunities
     
     // Progress bar
     const progressBar = `<div class="progress-bar" style="margin-bottom:30px">${Array(totalSteps).fill(0).map((_,i)=>`<div class="progress-dot ${i<step?'done':i===step-1?'active':''}"></div>`).join('')}</div>`;
@@ -1819,15 +1961,14 @@ function onboardingH(){
     }
     
     if(step === 6) {
-        // Interests + suggested forecasts (final step)
+        // Interests only (forecasts move to step 7)
         const selectedInterests = S.onboardData.forecastInterests || [];
-        const suggestedForecasts = getSuggestedForecasts();
         
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
         ${progressBar}
         <div class="card">
             <h2 class="card-title">What topics interest you?</h2>
-            <p class="card-subtitle">We'll show you relevant forecasts and opportunities</p>
+            <p class="card-subtitle">Select all that apply — we'll use this to personalize your experience</p>
             <div class="interest-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:20px 0">
                 ${FORECAST_INTERESTS.map(f=>`
                     <div class="choice-card interest-option ${selectedInterests.includes(f.id)?'selected':''}" data-interest="${f.id}" style="padding:15px;cursor:pointer">
@@ -1837,24 +1978,99 @@ function onboardingH(){
                 `).join('')}
             </div>
             
-            ${suggestedForecasts.length ? `
-            <div style="margin-top:25px">
-                <h3 style="font-size:14px;margin-bottom:15px">🔮 Suggested Forecasts</h3>
-                <div style="display:flex;flex-direction:column;gap:10px">
-                    ${suggestedForecasts.slice(0,3).map(f=>`
-                        <div class="suggested-forecast" data-fid="${f.id}" style="background:var(--bg-primary);border:1px solid var(--bg-tertiary);padding:15px;cursor:pointer;transition:all 0.3s;${S.onboardSelectedForecasts?.includes(f.id)?'border-color:var(--accent);':''}">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                                <span style="font-size:11px;color:var(--accent);text-transform:uppercase">${f.probability}% likely</span>
-                                <span style="font-size:10px;color:var(--text-secondary)">${f.timeframe}</span>
-                            </div>
-                            <div style="font-size:13px">${f.title}</div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            ` : ''}
+            <button class="btn btn-primary btn-full mt-10" id="interests-continue" ${selectedInterests.length===0?'disabled':''}>Continue →</button>
+        </div>
+        </div></div>`;
+    }
+    
+    if(step === 7) {
+        // AI-recommended forecasts based on goals + interests + scores
+        const recommended = getPersonalizedForecasts();
+        const selected = S.onboardSelectedForecasts || [];
+        
+        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
+        ${progressBar}
+        <div class="card">
+            <h2 class="card-title">🔮 Forecasts We Think You Should Follow</h2>
+            <p class="card-subtitle">These are real AI forecasts. Each one creates opportunities to build skills and get ahead. Select at least 1 (we recommend 3).</p>
             
-            <button class="btn btn-primary btn-full mt-20" id="finish-onboarding">Start Training →</button>
+            <div style="display:flex;flex-direction:column;gap:12px;margin:20px 0">
+                ${recommended.slice(0,6).map(f=>{
+                    const isSelected = selected.includes(f.id);
+                    return `
+                    <div class="onboard-forecast-card ${isSelected?'selected':''}" data-fid="${f.id}" style="background:var(--bg-primary);border:2px solid ${isSelected?'var(--accent)':'var(--bg-tertiary)'};padding:16px;cursor:pointer;transition:all 0.3s">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                            <span style="font-size:11px;color:var(--accent);text-transform:uppercase;font-weight:600">${f.probability}% likely</span>
+                            <span style="font-size:10px;color:var(--text-secondary)">${f.timeframe}</span>
+                        </div>
+                        <div style="font-size:14px;font-weight:600;margin-bottom:6px">${f.title}</div>
+                        <div style="font-size:11px;color:var(--text-secondary);line-height:1.5">${f.recommendReason || f.threatReason}</div>
+                        <div style="font-size:10px;margin-top:8px;color:var(--accent)">${f.opportunities.length} opportunit${f.opportunities.length===1?'y':'ies'} inside ${isSelected?'✓':''}</div>
+                    </div>`;
+                }).join('')}
+            </div>
+            
+            <div style="display:flex;gap:10px">
+                <button class="btn btn-primary" id="forecasts-continue" style="flex:1" ${selected.length===0?'disabled':''}>${selected.length > 0 ? `Continue with ${selected.length} forecast${selected.length>1?'s':''} →` : 'Select at least 1 →'}</button>
+                <button class="btn btn-secondary" id="forecasts-skip" style="flex:0 0 auto">Skip</button>
+            </div>
+        </div>
+        </div></div>`;
+    }
+    
+    if(step === 8) {
+        // Pick opportunities from selected forecasts
+        const selected = S.onboardSelectedForecasts || [];
+        const selectedOpps = S.onboardSelectedOpps || [];
+        
+        if(selected.length === 0) {
+            // Skipped forecasts — go straight to finish
+            return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
+            ${progressBar}
+            <div class="card text-center" style="padding:40px 30px">
+                <div style="font-size:48px;margin-bottom:15px">🚀</div>
+                <h2 class="card-title">You're all set!</h2>
+                <p class="text-secondary text-small mb-20">You can always follow forecasts and add skill paths later from the Forecasts page.</p>
+                <button class="btn btn-primary btn-full" id="finish-onboarding">Start Training →</button>
+            </div>
+            </div></div>`;
+        }
+        
+        const forecasts = selected.map(id => FORECAST_DATABASE.find(f=>f.id===id)).filter(Boolean);
+        
+        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
+        ${progressBar}
+        <div class="card">
+            <h2 class="card-title">Pick Your Skill Paths</h2>
+            <p class="card-subtitle">Each opportunity has a progressive quest path (10 steps) that builds real skills. Pick at least 1 to start.</p>
+            
+            ${forecasts.map(f=>`
+                <div style="margin-bottom:20px">
+                    <div style="font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">🔮 ${f.title}</div>
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                        ${f.opportunities.map((opp, oi)=>{
+                            const oppKey = f.id + '-' + oi;
+                            const isSelected = selectedOpps.includes(oppKey);
+                            return `
+                            <div class="onboard-opp-card ${isSelected?'selected':''}" data-oppkey="${oppKey}" data-fid="${f.id}" data-oid="${oi}" style="background:var(--bg-primary);border:2px solid ${isSelected?'var(--accent)':'var(--bg-tertiary)'};padding:14px;cursor:pointer;transition:all 0.3s">
+                                <div style="display:flex;justify-content:space-between;align-items:center">
+                                    <div>
+                                        <div style="font-size:13px;font-weight:600">${opp.title}</div>
+                                        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px">${opp.description.substring(0,100)}${opp.description.length>100?'...':''}</div>
+                                        <div style="font-size:10px;color:var(--text-secondary);margin-top:6px">${opp.quests.length} quests · ${opp.difficulty} · ${opp.timeframe}</div>
+                                    </div>
+                                    <div style="font-size:18px;margin-left:10px">${isSelected?'✓':'○'}</div>
+                                </div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+            `).join('')}
+            
+            <div style="display:flex;gap:10px;margin-top:20px">
+                <button class="btn btn-primary" id="finish-onboarding" style="flex:1" ${selectedOpps.length===0?'disabled':''}>${selectedOpps.length > 0 ? `Start with ${selectedOpps.length} skill path${selectedOpps.length>1?'s':''} →` : 'Select at least 1 →'}</button>
+                <button class="btn btn-secondary" id="opps-skip" style="flex:0 0 auto">Skip</button>
+            </div>
         </div>
         </div></div>`;
     }
@@ -1994,31 +2210,48 @@ function questsH(){
     const custom=S.customQuests.filter(q=>!q.done);
     const forecastQuests=getFollowedForecastQuests();
     const done=[...S.quests.filter(q=>q.done), ...S.customQuests.filter(q=>q.done)];
-    const allOpen = [...active, ...custom, ...forecastQuests];
+    const allOpen = [...forecastQuests, ...active, ...custom];
     
     return `<div class="page-header"><h1 class="page-title">IRL Quests</h1><p class="page-subtitle">Focus: ${weakest()} mode</p></div>
     
+    ${forecastQuests.length ? `<div class="card mb-20">
+        <div class="card-header">
+            <span class="card-header-title">🔮 Skill-Building Quests</span>
+            <span class="card-badge">${forecastQuests.length}</span>
+        </div>
+        <p class="text-secondary text-small" style="padding:0 15px 10px">Progressive quests from your forecasts — each step builds on the last</p>
+        ${forecastQuests.map(q=>{
+            const pct = Math.round((q.step - 1) / q.totalSteps * 100);
+            return `<div class="quest forecast-quest">
+            <div class="quest-header"><span class="quest-mode ${q.mode}">${q.mode}</span><span class="quest-diff forecast">🔮 ${q.oppTitle || q.forecastTitle?.substring(0,30)+'...'}</span></div>
+            <div class="quest-title">${q.t}</div>
+            <div style="background:var(--bg-tertiary);height:4px;margin:8px 0;border-radius:2px"><div style="background:var(--accent);height:100%;width:${pct}%;border-radius:2px;transition:width 0.3s"></div></div>
+            <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span><span class="quest-progress">Step ${q.step} of ${q.totalSteps}</span></div>
+            <div class="quest-actions">
+                <button class="btn btn-small btn-success complete-forecast-q" data-fid="${q.forecastId}" data-oid="${q.oppId}">✓ Complete</button>
+            </div>
+        </div>`}).join('')}
+    </div>` : `<div class="card mb-20" style="border-color:var(--accent)">
+        <div style="padding:20px;text-align:center">
+            <div style="font-size:24px;margin-bottom:10px">🔮</div>
+            <h3 style="font-size:14px;margin-bottom:8px">No Skill Paths Active</h3>
+            <p class="text-secondary text-small mb-15">Follow a forecast and pick an opportunity to start building real skills step-by-step</p>
+            <button class="btn btn-primary btn-small" id="go-to-forecasts-from-quests">Browse Forecasts →</button>
+        </div>
+    </div>`}
+    
     <div class="card mb-20">
         <div class="card-header">
-            <span class="card-header-title">Open Quests</span>
-            <span class="card-badge">${allOpen.length}</span>
+            <span class="card-header-title">⚡ Daily Warm-ups</span>
+            <span class="card-badge">${active.length + custom.length}</span>
         </div>
-        
-        ${forecastQuests.length ? forecastQuests.map(q=>`<div class="quest forecast-quest">
-            <div class="quest-header"><span class="quest-mode ${q.mode}">${q.mode}</span><span class="quest-diff forecast">🔮 ${q.forecastTitle?.substring(0,30)}...</span></div>
-            <div class="quest-title">${q.t}</div>
-            <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span><span class="quest-progress">Step ${q.step}/${q.totalSteps}</span></div>
-            <div class="quest-actions">
-                <button class="btn btn-small btn-success complete-forecast-q" data-fid="${q.forecastId}" data-oid="${q.oppId}">○ Done</button>
-            </div>
-        </div>`).join('') : ''}
         
         ${custom.length ? custom.map(q=>`<div class="quest custom-quest">
             <div class="quest-header"><span class="quest-mode ${q.mode}">${q.mode}</span><span class="quest-diff">Custom</span></div>
             <div class="quest-title">${q.t}</div>
             <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span></div>
             <div class="quest-actions">
-                <button class="btn btn-small btn-success complete-custom-q" data-id="${q.id}">○ Done</button>
+                <button class="btn btn-small btn-success complete-custom-q" data-id="${q.id}">✓ Done</button>
                 <button class="btn btn-small btn-secondary delete-custom-q" data-id="${q.id}">✕</button>
             </div>
         </div>`).join('') : ''}
@@ -2032,12 +2265,12 @@ function questsH(){
             <div class="quest-meta"><span class="quest-xp">+${q.xp} XP</span></div>
             ${q.tip?`<div class="quest-tip">💡 ${q.tip}</div>`:''}
             <div class="quest-actions">
-                <button class="btn btn-small btn-success complete-q" data-id="${q.id}">○ Done</button>
+                <button class="btn btn-small btn-success complete-q" data-id="${q.id}">✓ Done</button>
                 <button class="btn btn-small btn-secondary skip-q" data-id="${q.id}">Skip</button>
             </div>
         </div>`).join('') : ''}
         
-        ${allOpen.length === 0 ? '<p class="text-secondary text-small" style="padding:15px">No open quests. Get more below!</p>' : ''}
+        ${active.length === 0 && custom.length === 0 ? '<p class="text-secondary text-small" style="padding:15px">All done! Get more below.</p>' : ''}
     </div>
     
     <div class="flex gap-10 mb-20">
@@ -2049,33 +2282,42 @@ function questsH(){
     
     ${done.length?`<div class="card"><div class="card-header"><span class="card-header-title">Completed</span></div>${done.slice(-5).map(q=>`<div class="quest done"><div class="quest-title">${q.t}</div><div class="quest-meta">✓ +${q.xp} XP</div></div>`).join('')}</div>`:''}`;}
 
-// Get quests from followed forecasts
+// Get quests from followed forecasts - these are the MAIN progressive quests
 function getFollowedForecastQuests() {
     const quests = [];
     S.followedForecasts.forEach(fId => {
         const forecast = FORECAST_DATABASE.find(f => f.id === fId);
         if (!forecast) return;
         
-        // Get first opportunity with incomplete quests
+        // Get quests from opportunities the user has started or all if none started
         forecast.opportunities.forEach((opp, oppIndex) => {
             const progress = S.forecastProgress[fId]?.[oppIndex] || 0;
+            // Only show quests for opportunities the user has engaged with (progress > 0)
+            // OR show the first quest of each opportunity if they haven't started any
+            const hasStartedAny = forecast.opportunities.some((_, oi) => (S.forecastProgress[fId]?.[oi] || 0) > 0);
+            
             if (progress < opp.quests.length) {
+                // Show current quest
                 const quest = opp.quests[progress];
-                quests.push({
-                    ...quest,
-                    t: quest.task,
-                    forecastId: fId,
-                    oppId: oppIndex,
-                    forecastTitle: forecast.title,
-                    oppTitle: opp.title,
-                    step: progress + 1,
-                    totalSteps: opp.quests.length,
-                    id: `${fId}-${oppIndex}-${progress}`
-                });
+                const isActive = hasStartedAny ? progress > 0 : true; // Show all if none started, only active ones if some started
+                
+                if (isActive || !hasStartedAny) {
+                    quests.push({
+                        ...quest,
+                        t: quest.task,
+                        forecastId: fId,
+                        oppId: oppIndex,
+                        forecastTitle: forecast.title,
+                        oppTitle: opp.title,
+                        step: progress + 1,
+                        totalSteps: opp.quests.length,
+                        id: `${fId}-${oppIndex}-${progress}`
+                    });
+                }
             }
         });
     });
-    return quests.slice(0, 3); // Max 3 forecast quests at a time
+    return quests.slice(0, 6); // Show up to 6 forecast quests
 }
 function coachH(){
     const mode = S.coachMode;
@@ -2266,19 +2508,21 @@ function bindEvents(){
     document.getElementById('forgot-pass')?.addEventListener('click',()=>{S.screen='forgot';render();});
     document.getElementById('back-login')?.addEventListener('click',()=>{S.screen='login';S.freeQuizMode=false;render();});
     
-    // Free diagnostic flow (4 questions with email gate)
+    // Free diagnostic flow - AI-powered job assessment
     document.getElementById('take-free-quiz')?.addEventListener('click',()=>{
         S.diagnosticStep=0;
         S.diagnosticEmail='';
         S.diagnosticIndustry='';
-        S.diagnosticAnswers=[];
+        S.diagnosticRole='';
+        S.diagnosticResponsibilities='';
+        S.diagnosticResult=null;
+        S.diagLoadingStep=0;
         S.screen='diagnostic';
         render();
     });
     document.getElementById('diagnostic-start-form')?.addEventListener('submit',async e=>{
         e.preventDefault();
         S.diagnosticEmail = document.getElementById('diag-email').value;
-        S.diagnosticIndustry = document.getElementById('diag-industry').value;
         
         // Create Auth user with random password (they'll set real password if they convert)
         const tempPassword = 'temp_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -2286,20 +2530,105 @@ function bindEvents(){
         
         if (authResult.error && authResult.error.message !== 'User already registered') {
             console.error('Lead capture error:', authResult.error);
-            // Still let them continue the quiz even if auth fails
         }
         
-        // Also save industry info to users table (Auth doesn't store custom fields)
+        S.diagnosticStep = 1;
+        render();
+    });
+    document.getElementById('diagnostic-role-form')?.addEventListener('submit',async e=>{
+        e.preventDefault();
+        S.diagnosticIndustry = document.getElementById('diag-industry').value;
+        S.diagnosticRole = document.getElementById('diag-role').value;
+        S.diagnosticResponsibilities = document.getElementById('diag-responsibilities').value;
+        
+        // Save lead data to users table
         await db('users', 'POST', {
             email: S.diagnosticEmail,
             industry: S.diagnosticIndustry,
+            role: S.diagnosticRole,
+            responsibilities: S.diagnosticResponsibilities,
             source: 'diagnostic_quiz',
             start_date: new Date().toISOString(),
             plan: 'lead'
         });
         
-        S.diagnosticStep = 1;
+        // Show loading screen
+        S.diagnosticStep = 2;
+        S.diagLoadingStep = 0;
         render();
+        
+        // Animate loading steps
+        setTimeout(()=>{ S.diagLoadingStep=1; render(); }, 800);
+        setTimeout(()=>{ S.diagLoadingStep=2; render(); }, 2000);
+        setTimeout(()=>{ S.diagLoadingStep=3; render(); }, 3500);
+        
+        // Call AI for analysis
+        try {
+            const prompt = `You are an AI career risk analyst. Be brutally honest. Analyze this person's job for AI replacement risk.
+
+Industry: ${S.diagnosticIndustry}
+Role: ${S.diagnosticRole}
+Day-to-day responsibilities: ${S.diagnosticResponsibilities}
+
+Return ONLY valid JSON (no markdown, no backticks):
+{
+  "scores": {
+    "ideas": <number 15-85 — how much their job requires original thinking, creative problem-solving, strategic decisions that AI can't replicate>,
+    "personality": <number 15-85 — how much their job depends on human relationships, trust, persuasion, emotional intelligence>,
+    "execution": <number 15-85 — how much their job requires physical presence, real-world action, accountability that AI can't do>
+  },
+  "riskLevel": "<High Risk / Moderate Risk / Lower Risk>",
+  "overallAssessment": "<2-3 sentences. Be brutally specific about their role. Don't be generic. Reference their actual responsibilities. State the percentage of their tasks AI can handle today.>",
+  "whatAICanDo": "<2-3 sentences about exactly which of their specific responsibilities AI can already do or will do within 2 years. Name specific tools where relevant (ChatGPT, Midjourney, Jasper, etc).>",
+  "humanEdge": "<2-3 sentences about what parts of their specific role AI genuinely cannot replace. Be honest — if there's very little, say so.>",
+  "timeline": "<1-2 sentences. When will AI seriously threaten this specific role? Be specific: 'Within 12 months' or '3-5 years' or 'Already happening'.>"
+}
+
+IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jobs score above 70. If their responsibilities are highly automatable, scores should be low (20-40). Do NOT be encouraging — be accurate.`;
+
+            const result = await ai([{role:'user',content:prompt}], 800, 'diagnostic');
+            if(result) {
+                const parsed = JSON.parse(result.replace(/```json|```/g, '').trim());
+                // Apply skewing to make weakest mode feel more urgent
+                parsed.scores = skewScores(parsed.scores);
+                S.diagnosticResult = parsed;
+                S.scores = parsed.scores;
+                S.freeQuizScores = parsed.scores;
+            } else {
+                // Fallback scores if AI fails
+                S.diagnosticResult = {
+                    scores: {ideas: 45, personality: 50, execution: 40},
+                    riskLevel: 'Moderate Risk',
+                    overallAssessment: 'Based on your role, approximately 40-60% of your daily tasks could be augmented or replaced by AI within the next 2-3 years.',
+                    whatAICanDo: 'AI tools are already capable of handling many routine aspects of this role including data processing, basic analysis, and content generation.',
+                    humanEdge: 'Your advantage lies in relationship building, contextual judgment, and creative problem-solving that requires understanding nuance.',
+                    timeline: 'Significant disruption expected within 2-3 years as AI tools become more specialized for your industry.'
+                };
+                S.scores = S.diagnosticResult.scores;
+                S.freeQuizScores = S.diagnosticResult.scores;
+            }
+        } catch(err) {
+            console.error('Diagnostic AI error:', err);
+            S.diagnosticResult = {
+                scores: skewScores({ideas: 45, personality: 50, execution: 40}),
+                riskLevel: 'Moderate Risk',
+                overallAssessment: 'Based on your role, approximately 40-60% of your daily tasks could be augmented or replaced by AI within the next 2-3 years.',
+                whatAICanDo: 'AI tools are already capable of handling many routine aspects of this role.',
+                humanEdge: 'Your advantage lies in relationship building, contextual judgment, and creative problem-solving.',
+                timeline: 'Significant disruption expected within 2-3 years.'
+            };
+            S.scores = S.diagnosticResult.scores;
+            S.freeQuizScores = S.diagnosticResult.scores;
+        }
+        
+        S.diagnosticStep = 3;
+        render();
+    });
+    // Character counter for responsibilities
+    document.getElementById('diag-responsibilities')?.addEventListener('input', e => {
+        const count = e.target.value.length;
+        const counter = document.getElementById('diag-char-count');
+        if(counter) counter.textContent = count;
     });
     document.querySelectorAll('.diag-option').forEach(o=>o.addEventListener('click',()=>{
         const idx = parseInt(o.dataset.idx);
@@ -2457,10 +2786,12 @@ function bindEvents(){
     
     // Diagnostic results - save pending data for both monthly and annual
     document.getElementById('diag-to-signup-link')?.addEventListener('click',()=>{
-        const scores = calculateDiagnosticScores();
+        const scores = S.diagnosticResult?.scores || S.scores || {ideas:50,personality:50,execution:50};
         const pendingUser = {
             email: S.diagnosticEmail,
             industry: S.diagnosticIndustry,
+            role: S.diagnosticRole,
+            responsibilities: S.diagnosticResponsibilities,
             scores: scores,
             baseline_scores: scores,
             onboardStep: 4,
@@ -2470,10 +2801,12 @@ function bindEvents(){
         localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
     });
     document.getElementById('diag-to-signup-annual')?.addEventListener('click',()=>{
-        const scores = calculateDiagnosticScores();
+        const scores = S.diagnosticResult?.scores || S.scores || {ideas:50,personality:50,execution:50};
         const pendingUser = {
             email: S.diagnosticEmail,
             industry: S.diagnosticIndustry,
+            role: S.diagnosticRole,
+            responsibilities: S.diagnosticResponsibilities,
             scores: scores,
             baseline_scores: scores,
             onboardStep: 4,
@@ -2481,6 +2814,53 @@ function bindEvents(){
             onboardSelectedForecasts: []
         };
         localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
+    });
+    
+    // Interests continue button (step 6 → step 7)
+    document.getElementById('interests-continue')?.addEventListener('click',()=>{
+        S.onboardStep = 7;
+        render();
+    });
+    
+    // Forecast selection during onboarding (step 7)
+    document.querySelectorAll('.onboard-forecast-card').forEach(el=>el.addEventListener('click',()=>{
+        const fid = el.dataset.fid;
+        if(!S.onboardSelectedForecasts) S.onboardSelectedForecasts = [];
+        const idx = S.onboardSelectedForecasts.indexOf(fid);
+        if(idx === -1){
+            S.onboardSelectedForecasts.push(fid);
+        } else {
+            S.onboardSelectedForecasts.splice(idx, 1);
+        }
+        render();
+    }));
+    document.getElementById('forecasts-continue')?.addEventListener('click',()=>{
+        if(S.onboardSelectedForecasts.length > 0) {
+            S.onboardStep = 8;
+            S.onboardSelectedOpps = [];
+            render();
+        }
+    });
+    document.getElementById('forecasts-skip')?.addEventListener('click',()=>{
+        S.onboardSelectedForecasts = [];
+        S.onboardStep = 8; // Will show "You're all set" screen
+        render();
+    });
+    
+    // Opportunity selection during onboarding (step 8)
+    document.querySelectorAll('.onboard-opp-card').forEach(el=>el.addEventListener('click',()=>{
+        const oppKey = el.dataset.oppkey;
+        if(!S.onboardSelectedOpps) S.onboardSelectedOpps = [];
+        const idx = S.onboardSelectedOpps.indexOf(oppKey);
+        if(idx === -1){
+            S.onboardSelectedOpps.push(oppKey);
+        } else {
+            S.onboardSelectedOpps.splice(idx, 1);
+        }
+        render();
+    }));
+    document.getElementById('opps-skip')?.addEventListener('click',async()=>{
+        await completeOnboarding();
     });
     
     // Finish onboarding
@@ -2549,6 +2929,10 @@ function bindEvents(){
     document.querySelectorAll('.skip-q').forEach(b=>b.addEventListener('click',()=>skipQuest(b.dataset.id)));
     document.querySelectorAll('[data-setdiff]').forEach(b=>b.addEventListener('click',()=>{S.diff=b.dataset.setdiff;S.quests=genQuests();save();render();}));
     // Get Quests modal
+    document.getElementById('go-to-forecasts-from-quests')?.addEventListener('click',()=>{
+        S.screen='forecasts';
+        render();
+    });
     document.getElementById('get-quests-btn')?.addEventListener('click',()=>{
         S.modal='getQuests';
         S.getQuestsExpandedOpp=null;
@@ -2811,6 +3195,10 @@ async function login(){
             S.receipts = users[0].receipts || [];
             S.quests = users[0].quests?.length ? users[0].quests : genQuests();
             S.diff = users[0].diff || 'standard';
+            S.hiddenQuests = users[0].hiddenQuests || [];
+            S.customQuests = users[0].customQuests || [];
+            S.followedForecasts = users[0].followedForecasts || [];
+            S.forecastProgress = users[0].forecastProgress || {};
             localStorage.setItem('apc_session', JSON.stringify({...S.user, authToken: accessToken}));
             
             if (S.user.plan === 'paid' || S.user.onboarded) {
@@ -2854,6 +3242,10 @@ async function login(){
         S.receipts = users[0].receipts || [];
         S.quests = users[0].quests?.length ? users[0].quests : genQuests();
         S.diff = users[0].diff || 'standard';
+        S.hiddenQuests = users[0].hiddenQuests || [];
+        S.customQuests = users[0].customQuests || [];
+        S.followedForecasts = users[0].followedForecasts || [];
+        S.forecastProgress = users[0].forecastProgress || {};
         localStorage.setItem('apc_session', JSON.stringify(S.user));
         
         if (S.user.plan === 'paid' || S.user.onboarded) {
@@ -2963,32 +3355,67 @@ function answerQuiz(i){
 }
 
 async function completeOnboarding(){
-    // This is called after payment, at the end of onboarding step 5
-    // Include onboarding data in user object
+    // This is called at the end of onboarding
     S.user = S.user || {};
-    S.user.email = S.onboardData.email;
-    S.user.industry = S.onboardData.industry;
+    S.user.email = S.onboardData?.email || S.user?.email;
+    S.user.industry = S.onboardData?.industry || S.diagnosticIndustry;
+    S.user.role = S.diagnosticRole || S.user?.role;
+    S.user.responsibilities = S.diagnosticResponsibilities || S.user?.responsibilities;
     S.user.onboarded = true;
     S.user.baseline_scores = {...S.scores};
     S.user.scores = S.scores;
     S.user.diff = S.diff || 'standard';
-    S.user.goals = S.onboardData.goals;
-    S.user.forecast_interests = S.onboardData.forecastInterests;
+    S.user.goals = S.onboardData?.goals || [];
+    S.user.forecast_interests = S.onboardData?.forecastInterests || [];
     
     // Follow selected forecasts
     if(S.onboardSelectedForecasts?.length){
         S.followedForecasts = [...S.onboardSelectedForecasts];
     }
     
-    S.quests = genQuests();
-    const res = await db('users','POST',S.user);
-    if(res?.length){
-        S.user = res[0];
-        localStorage.setItem('apc_session',JSON.stringify(S.user));
-        localStorage.removeItem('apc_pending');
-        // Send welcome email (don't await - fire and forget)
-        sendWelcomeEmail(S.user.name || 'there', S.user.email);
+    // Set up quest paths from selected opportunities
+    if(S.onboardSelectedOpps?.length){
+        S.onboardSelectedOpps.forEach(oppKey => {
+            const [forecastId, oppIdx] = oppKey.split('-');
+            const oi = parseInt(oppIdx);
+            if(!S.forecastProgress[forecastId]) S.forecastProgress[forecastId] = {};
+            // Initialize at 0 (first quest) if not already started
+            if(S.forecastProgress[forecastId][oi] === undefined) {
+                S.forecastProgress[forecastId][oi] = 0;
+            }
+            // Make sure this forecast is followed
+            if(!S.followedForecasts.includes(forecastId)){
+                S.followedForecasts.push(forecastId);
+            }
+        });
     }
+    
+    S.quests = genQuests();
+    
+    // Try to update existing user first, create if not found
+    const existing = await db('users','GET',null,`?email=eq.${encodeURIComponent(S.user.email)}`);
+    let res;
+    if(existing?.length){
+        res = await db('users','PATCH',{
+            ...S.user,
+            followedForecasts: S.followedForecasts,
+            forecastProgress: S.forecastProgress,
+            quests: S.quests
+        },`?email=eq.${encodeURIComponent(S.user.email)}`);
+        if(res?.length) S.user = res[0];
+    } else {
+        S.user.followedForecasts = S.followedForecasts;
+        S.user.forecastProgress = S.forecastProgress;
+        S.user.quests = S.quests;
+        res = await db('users','POST',S.user);
+        if(res?.length) S.user = res[0];
+    }
+    
+    localStorage.setItem('apc_session',JSON.stringify(S.user));
+    localStorage.removeItem('apc_pending');
+    // Send welcome email (don't await - fire and forget)
+    if(S.user.name && S.user.email) sendWelcomeEmail(S.user.name, S.user.email);
+    
     S.screen = 'dashboard';
     render();
 }
@@ -8866,6 +9293,10 @@ async function init(){
         S.diagnosticStep = 0;
         S.diagnosticEmail = '';
         S.diagnosticIndustry = '';
+        S.diagnosticRole = '';
+        S.diagnosticResponsibilities = '';
+        S.diagnosticResult = null;
+        S.diagLoadingStep = 0;
         S.diagnosticAnswers = [];
         S.screen = 'diagnostic';
         render();
