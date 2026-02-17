@@ -874,6 +874,8 @@ const S = {
     // Forecasts
     forecasts: [],
     forecastFilter: 'all', // all, ai, tech, crypto, politics, science
+    forecastIndustryFilter: '', // industry filter
+    forecastTimelineFilter: '', // timeline filter
     forecastPerson: 'all',
     selectedForecast: null,
     expandedOpp: null, // which opportunity is expanded in modal
@@ -3009,6 +3011,9 @@ IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jo
     
     // Forecasts
     document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{S.forecastFilter=b.dataset.filter;render();}));
+    document.getElementById('industry-filter')?.addEventListener('change',e=>{S.forecastIndustryFilter=e.target.value;if(!S.forecastFilter||S.forecastFilter==='suggested')S.forecastFilter='all';render();});
+    document.getElementById('timeline-filter')?.addEventListener('change',e=>{S.forecastTimelineFilter=e.target.value;if(!S.forecastFilter||S.forecastFilter==='suggested')S.forecastFilter='all';render();});
+    document.getElementById('clear-filters')?.addEventListener('click',()=>{S.forecastIndustryFilter='';S.forecastTimelineFilter='';render();});
     document.querySelectorAll('.view-forecast-detail').forEach(b=>b.addEventListener('click',()=>{
         S.selectedForecast = FORECAST_DATABASE.find(f => f.id === b.dataset.id);
         S.expandedOpp = null; // Reset expanded opportunity
@@ -3692,6 +3697,29 @@ const CATEGORIES = {
     'media': {name: 'Media & Content', icon: '🎬'}
 };
 
+const INDUSTRY_TAGS = {
+    'fashion': {name: 'Fashion & Luxury', icon: '👗'},
+    'healthcare': {name: 'Healthcare', icon: '🏥'},
+    'finance-ind': {name: 'Finance & Banking', icon: '🏦'},
+    'education': {name: 'Education', icon: '🎓'},
+    'legal': {name: 'Legal', icon: '⚖️'},
+    'marketing': {name: 'Marketing & Advertising', icon: '📣'},
+    'retail': {name: 'Retail & E-commerce', icon: '🛒'},
+    'food': {name: 'Food & Hospitality', icon: '🍽️'},
+    'real-estate': {name: 'Real Estate', icon: '🏠'},
+    'manufacturing': {name: 'Manufacturing', icon: '🏭'},
+    'software': {name: 'Software & Engineering', icon: '⌨️'},
+    'creative': {name: 'Creative & Design', icon: '🎨'},
+    'transportation-ind': {name: 'Transportation & Logistics', icon: '🚚'}
+};
+
+const TIMELINE_FILTERS = [
+    {id: 'happening', label: 'Already Happening', match: t => t === 'Already happening'},
+    {id: 'near', label: 'Within 1 Year', match: t => /^(1-|2-4 months|3-6|3-9|6-12|Q1|1-6)/.test(t) || t === '2026'},
+    {id: 'mid', label: '1-3 Years', match: t => /^(2026-|2027|12-24|2-3 year|2-4 year|2-5 year)/.test(t)},
+    {id: 'far', label: '3+ Years', match: t => /^(3-5|5-10|10-|2028|2029|2030|203)/.test(t)}
+];
+
 // COMPREHENSIVE FORECAST DATABASE
 // Real odds from Polymarket + Metaculus + Billionaire predictions
 // Last updated: February 2026
@@ -3711,6 +3739,7 @@ const FORECAST_DATABASE = [
     probability: 65,
     timeframe: '2028-2035',
     category: 'ai',
+    industries: ['education', 'real-estate', 'software'],
     threatMode: 'ideas',
     threatReason: 'When humans can download skills and amplify cognition, your natural thinking speed and knowledge depth become commoditized. The differentiator shifts to what you choose NOT to augment.',
     atRisk: 'Knowledge workers, educators, therapists, coaches, consultants — anyone whose value is "what they know" rather than "who they are"',
@@ -3905,6 +3934,7 @@ const FORECAST_DATABASE = [
     probability: 68,
     timeframe: '2027-2030',
     category: 'crypto',
+    industries: ['finance-ind', 'legal', 'creative'],
     threatMode: 'execution',
     threatReason: 'Traditional finance jobs get automated by smart contracts. The winners build the bridges that make DeFi feel like normal banking — without the jargon, gas fees, or seed phrases.',
     atRisk: 'Bank tellers, loan officers, compliance staff at traditional institutions, payment processors, remittance companies, anyone whose job is being a trusted middleman',
@@ -4099,6 +4129,7 @@ const FORECAST_DATABASE = [
     probability: 75,
     timeframe: '2027-2029',
     category: 'ai',
+    industries: ['education', 'food', 'transportation-ind'],
     threatMode: 'ideas',
     threatReason: 'When AI can teach facts and skills better than humans, the value of teachers shifts entirely to motivation, identity formation, and human connection. Knowledge transfer becomes free.',
     atRisk: 'Traditional teachers focused on content delivery, test prep companies, tutoring centers, educational publishers, anyone selling "what to learn" instead of "who to become"',
@@ -4181,6 +4212,7 @@ const FORECAST_DATABASE = [
     probability: 82,
     timeframe: '2026-2027',
     category: 'ai',
+    industries: ['software'],
     threatMode: 'execution',
     threatReason: 'Coding as a skill becomes commoditized. The value shifts from "can you write code" to "can you architect systems, review AI output, and translate business problems into technical specs."',
     atRisk: 'Junior developers, coding bootcamp grads, offshore development shops, anyone whose value is "lines of code" rather than "problems solved"',
@@ -4263,6 +4295,7 @@ const FORECAST_DATABASE = [
     probability: 70,
     timeframe: '2030-2040',
     category: 'work',
+    industries: ['creative'],
     threatMode: 'execution',
     threatReason: 'The nature of work changes faster than humans can retrain. Those who build transferable meta-skills and multiple income streams survive. Those who optimize for one job don\'t.',
     atRisk: 'Single-skill workers, mid-career professionals in automatable roles, anyone who hasn\'t updated skills in 5+ years, employees whose value is "reliable execution" vs "creative problem-solving"',
@@ -4344,6 +4377,7 @@ const FORECAST_DATABASE = [
     probability: 85,
     timeframe: 'Already happening',
     category: 'media',
+    industries: ['real-estate'],
     threatMode: 'personality',
     threatReason: 'AI floods the zone with infinite content. Algorithms reward the top of the power law. Being "pretty good" earns nothing. You either build a monopoly on attention or you lose.',
     atRisk: 'Mid-tier YouTubers, hobby creators hoping to go full-time, anyone whose strategy is "consistent content" without differentiation',
@@ -4425,6 +4459,7 @@ const FORECAST_DATABASE = [
     probability: 90,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['healthcare', 'education'],
     threatMode: 'personality',
     threatReason: 'Loneliness is the new smoking. It\'s a health crisis, a productivity crisis, and a meaning crisis. Those who build real connection infrastructure — not apps — win.',
     atRisk: 'Remote workers, single adults, elderly without community, anyone whose social life depends on work or school structures',
@@ -4506,6 +4541,7 @@ const FORECAST_DATABASE = [
     probability: 72,
     timeframe: '2028-2032',
     category: 'work',
+    industries: ['finance-ind'],
     threatMode: 'personality',
     threatReason: 'Resumes measure the past. AI can fake credentials. The only thing that matters is demonstrated ability. Those who can SHOW their work beat those who DESCRIBE it.',
     atRisk: 'Job seekers relying on credentials, resume writers, traditional recruiters, anyone whose career strategy is "build the perfect resume"',
@@ -4668,6 +4704,7 @@ const FORECAST_DATABASE = [
     probability: 80,
     timeframe: '2026-2028',
     category: 'ai',
+    industries: ['education'],
     threatMode: 'ideas',
     threatReason: 'Language stops being a moat. Anyone can sell anywhere, hire anyone, access any market. The winners understand that culture — not language — becomes the real barrier.',
     atRisk: 'Translators, language teachers, companies whose moat was local-language expertise, anyone who thinks knowing English is a competitive advantage',
@@ -4749,6 +4786,7 @@ const FORECAST_DATABASE = [
     probability: 88,
     timeframe: '2026-2027',
     category: 'media',
+    industries: ['finance-ind', 'marketing', 'creative'],
     threatMode: 'personality',
     threatReason: 'When anyone can generate a hit song, the music itself becomes worthless. The value shifts to artist identity, story, live performance, and human connection.',
     atRisk: 'Session musicians, jingle writers, stock music creators, artists without strong personal brands, anyone whose value is "making sounds"',
@@ -4830,6 +4868,7 @@ const FORECAST_DATABASE = [
     probability: 70,
     timeframe: '2030-2035',
     category: 'ai',
+    industries: ['finance-ind', 'legal'],
     threatMode: 'execution',
     threatReason: 'Routine legal work becomes automated — contracts, research, compliance, discovery. Human lawyers become strategists and relationship managers, not document processors.',
     atRisk: 'Junior associates, paralegals, document review attorneys, legal researchers, solo practitioners competing on price',
@@ -4911,6 +4950,7 @@ const FORECAST_DATABASE = [
     probability: 92,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['retail'],
     threatMode: 'execution',
     threatReason: 'People want memories, not things. Those who can create transformative experiences win. Those selling commodities lose.',
     atRisk: 'Retailers focused on products, service businesses without experiential elements, anyone competing on price alone',
@@ -4992,6 +5032,7 @@ const FORECAST_DATABASE = [
     probability: 95,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['healthcare', 'software'],
     threatMode: 'personality',
     threatReason: 'There aren\'t enough therapists. Period. Technology and new models must extend care to millions who can\'t access traditional therapy.',
     atRisk: 'Traditional private practice therapists competing on availability, mental health systems that don\'t scale, anyone ignoring the crisis',
@@ -5073,6 +5114,7 @@ const FORECAST_DATABASE = [
     probability: 88,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['education'],
     threatMode: 'ideas',
     threatReason: 'When college costs $200K and AI can teach for free, the degree loses its monopoly. Those who build alternative paths win.',
     atRisk: 'Traditional universities slow to adapt, students blindly following the degree path, education debt-dependent businesses',
@@ -5235,6 +5277,7 @@ const FORECAST_DATABASE = [
     probability: 90,
     timeframe: 'Already happening',
     category: 'finance',
+    industries: ['finance-ind', 'real-estate', 'creative'],
     threatMode: 'execution',
     threatReason: 'Traditional homeownership becomes impossible for most. Those who build alternative housing models, creative financing, and new ways to live win.',
     atRisk: 'Traditional real estate agents, mortgage-dependent businesses, anyone whose model assumes people can afford houses',
@@ -5316,6 +5359,7 @@ const FORECAST_DATABASE = [
     probability: 72,
     timeframe: '2030-2035',
     category: 'work',
+    industries: ['finance-ind', 'creative'],
     threatMode: 'execution',
     threatReason: 'Employment becomes a minority arrangement. Those who build infrastructure for independent workers — benefits, finance, community — win.',
     atRisk: 'Traditional employers competing for talent, HR departments, anyone whose model assumes employees',
@@ -5397,6 +5441,7 @@ const FORECAST_DATABASE = [
     probability: 85,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['healthcare', 'marketing'],
     threatMode: 'personality',
     threatReason: 'Constant connectivity becomes recognized as harmful. Those who provide genuine offline experiences, analog products, and digital boundaries win.',
     atRisk: 'Businesses dependent on screen time, social media companies, anyone whose model is more engagement',
@@ -5478,6 +5523,7 @@ const FORECAST_DATABASE = [
     probability: 92,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['education', 'real-estate'],
     threatMode: 'execution',
     threatReason: 'Everyone went to college, no one became a plumber. Skilled trades become scarce and expensive. Those who train, organize, or support tradespeople win.',
     atRisk: 'Homeowners needing repairs, businesses needing construction, anyone competing for trade labor',
@@ -5559,6 +5605,7 @@ const FORECAST_DATABASE = [
     probability: 78,
     timeframe: '2026-2028',
     category: 'work',
+    industries: ['healthcare', 'finance-ind', 'food'],
     threatMode: 'execution',
     threatReason: 'Robots flip burgers and AI takes orders. Human restaurant value shifts to hospitality, experience, and high-touch service that machines can\'t replicate.',
     atRisk: 'Fast food workers, QSR franchisees slow to automate, anyone whose value is speed not experience',
@@ -5640,6 +5687,7 @@ const FORECAST_DATABASE = [
     probability: 80,
     timeframe: '2026-2030',
     category: 'ai',
+    industries: ['fashion'],
     threatMode: 'personality',
     threatReason: 'Privacy becomes a luxury, not a right. Those who help people protect their privacy, manage their digital footprint, and navigate surveillance win.',
     atRisk: 'Anyone with something to hide, activists, journalists, people who value privacy, anyone who thinks "I have nothing to hide"',
@@ -5721,6 +5769,7 @@ const FORECAST_DATABASE = [
     probability: 95,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['education', 'software'],
     threatMode: 'ideas',
     threatReason: 'Skills expire in years, not decades. Those who can\'t keep learning get left behind. Those who build learning systems and habits win.',
     atRisk: 'Workers who stopped learning after school, anyone who thinks their skills are "done," people in rapidly changing fields without learning habits',
@@ -5803,6 +5852,7 @@ const FORECAST_DATABASE = [
     probability: 87,
     timeframe: '2026',
     category: 'ai',
+    industries: ['real-estate', 'software'],
     threatMode: 'ideas',
     threatReason: 'Google\'s dominance means their ecosystem becomes the default. Those not building on Google AI infrastructure may find themselves at a disadvantage.',
     atRisk: 'Developers locked into other AI ecosystems; companies betting heavily on OpenAI or Anthropic',
@@ -5939,6 +5989,7 @@ const FORECAST_DATABASE = [
     probability: 59,
     timeframe: '2026',
     category: 'ai',
+    industries: ['retail', 'software'],
     threatMode: 'execution',
     threatReason: 'AI moving into physical devices changes the game. Software-only AI companies may lose ground.',
     atRisk: 'Companies betting AI stays software-only',
@@ -5973,6 +6024,7 @@ const FORECAST_DATABASE = [
     probability: 15,
     timeframe: '2026',
     category: 'ai',
+    industries: ['real-estate', 'creative'],
     threatMode: 'execution',
     threatReason: 'If the bubble bursts, AI-dependent businesses fail. Diversified skills become essential.',
     atRisk: 'Startups with AI as only differentiator; employees at AI-only companies',
@@ -6006,6 +6058,7 @@ const FORECAST_DATABASE = [
     probability: 60,
     timeframe: '2026-2027',
     category: 'ai',
+    industries: ['software', 'creative'],
     threatMode: 'execution',
     threatReason: 'Coding becomes directing. Junior developer roles transform completely.',
     atRisk: 'Developers who compete on syntax rather than system design and problem-solving',
@@ -6039,6 +6092,7 @@ const FORECAST_DATABASE = [
     probability: 45,
     timeframe: '2-3 years',
     category: 'ai',
+    industries: ['real-estate', 'manufacturing', 'creative'],
     threatMode: 'execution',
     threatReason: 'Film production costs collapse. Story, taste, and distribution become the differentiators.',
     atRisk: 'Technical film roles (VFX, editing) without creative direction skills',
@@ -6072,6 +6126,7 @@ const FORECAST_DATABASE = [
     probability: 75,
     timeframe: '2-3 years',
     category: 'ai',
+    industries: ['healthcare', 'real-estate'],
     threatMode: 'execution',
     threatReason: 'Diagnostic accuracy becomes commodity. Patient care and communication become differentiators.',
     atRisk: 'Diagnostic specialists without strong patient relationship skills',
@@ -6208,6 +6263,7 @@ const FORECAST_DATABASE = [
     probability: 85,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['real-estate'],
     threatMode: 'personality',
     threatReason: 'Casual relationship-building disappears. Intentional networking essential.',
     atRisk: 'People who relied on office proximity for advancement',
@@ -6311,6 +6367,7 @@ const FORECAST_DATABASE = [
     probability: 23,
     timeframe: '2026',
     category: 'finance',
+    industries: ['finance-ind'],
     threatMode: 'execution',
     threatReason: 'Economic uncertainty makes diversified income streams essential.',
     atRisk: 'Those dependent on single income source in vulnerable industry',
@@ -6377,6 +6434,7 @@ const FORECAST_DATABASE = [
     probability: 65,
     timeframe: '2026',
     category: 'finance',
+    industries: ['finance-ind', 'software', 'creative'],
     threatMode: 'execution',
     threatReason: 'High rates favor savers and established businesses. Startups face headwinds.',
     atRisk: 'Growth-stage companies dependent on cheap capital',
@@ -6410,6 +6468,7 @@ const FORECAST_DATABASE = [
     probability: 48,
     timeframe: '2026',
     category: 'finance',
+    industries: ['finance-ind'],
     threatMode: 'execution',
     threatReason: 'Compute becomes critical infrastructure. GPU access determines capability.',
     atRisk: 'Companies without compute strategy',
@@ -6443,6 +6502,7 @@ const FORECAST_DATABASE = [
     probability: 65,
     timeframe: '5-10 years',
     category: 'finance',
+    industries: ['finance-ind', 'software'],
     threatMode: 'execution',
     threatReason: 'Capital and skills compound faster. Those without AI leverage fall behind.',
     atRisk: 'Middle-income workers without AI skills or capital access',
@@ -6476,6 +6536,7 @@ const FORECAST_DATABASE = [
     probability: 30,
     timeframe: '10-20 years',
     category: 'finance',
+    industries: ['finance-ind', 'creative'],
     threatMode: 'ideas',
     threatReason: 'When intelligence is free, scarcity shifts to wisdom, judgment, and connection.',
     atRisk: 'Anyone selling "smarts" rather than judgment or human connection',
@@ -6513,6 +6574,7 @@ const FORECAST_DATABASE = [
     probability: 70,
     timeframe: '3-5 years',
     category: 'media',
+    industries: ['real-estate'],
     threatMode: 'execution',
     threatReason: 'Mass content loses value. Deep audience understanding essential.',
     atRisk: 'Creators making generic content for general audiences',
@@ -6546,6 +6608,7 @@ const FORECAST_DATABASE = [
     probability: 60,
     timeframe: '3-5 years',
     category: 'media',
+    industries: ['finance-ind', 'real-estate'],
     threatMode: 'execution',
     threatReason: 'Basic reporting automated. Original investigation becomes differentiator.',
     atRisk: 'Reporters rewriting press releases',
@@ -6579,6 +6642,7 @@ const FORECAST_DATABASE = [
     probability: 70,
     timeframe: '2-3 years',
     category: 'media',
+    industries: ['marketing'],
     threatMode: 'personality',
     threatReason: 'Generic influence loses value. Deep niche authority becomes premium.',
     atRisk: 'Influencers promoting anything for money',
@@ -6616,6 +6680,7 @@ const FORECAST_DATABASE = [
     probability: 50,
     timeframe: '5-10 years',
     category: 'crypto',
+    industries: ['finance-ind'],
     threatMode: 'ideas',
     threatReason: 'Financial infrastructure changes. Understanding old and new systems valuable.',
     atRisk: 'Finance professionals dismissing crypto entirely',
@@ -6686,6 +6751,7 @@ const FORECAST_DATABASE = [
     probability: 35,
     timeframe: '10-20 years',
     category: 'ai',
+    industries: ['software'],
     threatMode: 'execution',
     threatReason: 'Lifespan extends. Career planning over 60+ years requires new approaches.',
     atRisk: 'People planning for traditional retirement at 65',
@@ -6790,6 +6856,7 @@ const FORECAST_DATABASE = [
     probability: 40,
     timeframe: '2026-2027',
     category: 'tech',
+    industries: ['creative'],
     threatMode: 'execution',
     threatReason: 'Apple entering AI hardware legitimizes the category and sets design standards.',
     atRisk: 'AI hardware startups that can\'t compete with Apple\'s ecosystem',
@@ -6823,6 +6890,7 @@ const FORECAST_DATABASE = [
     probability: 70,
     timeframe: '2026',
     category: 'tech',
+    industries: ['software'],
     threatMode: 'ideas',
     threatReason: 'VR/AR timelines extend. AI becomes the near-term opportunity.',
     atRisk: 'VR developers who bet everything on near-term metaverse adoption',
@@ -6856,6 +6924,7 @@ const FORECAST_DATABASE = [
     probability: 55,
     timeframe: '2026',
     category: 'tech',
+    industries: ['legal'],
     threatMode: 'execution',
     threatReason: 'Creator platforms are fragile. Diversification across platforms essential.',
     atRisk: 'Creators dependent entirely on TikTok for income',
@@ -6922,6 +6991,7 @@ const FORECAST_DATABASE = [
     probability: 75,
     timeframe: '2026',
     category: 'tech',
+    industries: ['retail'],
     threatMode: 'execution',
     threatReason: 'E-commerce AI changes shopping forever. Product discovery goes conversational.',
     atRisk: 'E-commerce sellers not optimizing for AI-driven discovery',
@@ -6992,6 +7062,7 @@ const FORECAST_DATABASE = [
     probability: 70,
     timeframe: '2026-2027',
     category: 'tech',
+    industries: ['transportation-ind'],
     threatMode: 'execution',
     threatReason: 'Transportation becomes a service, not ownership. Massive ripple effects.',
     atRisk: 'Car dealerships, parking garages, gas stations in urban areas',
@@ -7029,6 +7100,7 @@ const FORECAST_DATABASE = [
     probability: 72,
     timeframe: '2028-2030',
     category: 'transportation',
+    industries: ['finance-ind', 'creative', 'transportation-ind'],
     threatMode: 'execution',
     threatReason: 'Driving becomes obsolete, but the commute doesn\'t disappear — it transforms. Winners design the experience inside the vehicle, not the vehicle itself.',
     atRisk: 'Professional drivers, driving instructors, auto insurance agents, parking lot operators, car dealership sales, traffic enforcement, body shops dependent on human error accidents',
@@ -7203,6 +7275,7 @@ const FORECAST_DATABASE = [
     probability: 50,
     timeframe: '3-5 years',
     category: 'tech',
+    industries: ['food', 'transportation-ind'],
     threatMode: 'execution',
     threatReason: 'Last-mile delivery transforms. Local delivery jobs change significantly.',
     atRisk: 'Delivery drivers, local courier services',
@@ -7236,6 +7309,7 @@ const FORECAST_DATABASE = [
     probability: 45,
     timeframe: '2026-2027',
     category: 'tech',
+    industries: ['real-estate', 'transportation-ind'],
     threatMode: 'ideas',
     threatReason: 'New transportation layer emerges. Early infrastructure positions win big.',
     atRisk: 'Urban real estate without vertical takeoff potential',
@@ -7273,6 +7347,7 @@ const FORECAST_DATABASE = [
     probability: 85,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['education'],
     threatMode: 'execution',
     threatReason: 'Everyone went to college. Skilled trades face massive labor shortage.',
     atRisk: 'White-collar workers competing in oversupplied job markets',
@@ -7306,6 +7381,7 @@ const FORECAST_DATABASE = [
     probability: 80,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['software'],
     threatMode: 'execution',
     threatReason: 'Outdoor work is hard but increasingly valuable. Supply/demand imbalance grows.',
     atRisk: 'Those competing in oversupplied indoor/office job markets',
@@ -7339,6 +7415,7 @@ const FORECAST_DATABASE = [
     probability: 75,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['real-estate'],
     threatMode: 'personality',
     threatReason: 'People have stuff and no time. Marie Kondo created demand, few can fulfill it.',
     atRisk: 'No one — this is pure opportunity in undersupplied market',
@@ -7372,6 +7449,7 @@ const FORECAST_DATABASE = [
     probability: 95,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['healthcare'],
     threatMode: 'personality',
     threatReason: 'Baby boomers aging. Massive demand for patient, trustworthy service providers.',
     atRisk: 'No one — demographics guarantee this market',
@@ -7405,6 +7483,7 @@ const FORECAST_DATABASE = [
     probability: 90,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['real-estate'],
     threatMode: 'execution',
     threatReason: 'Pets are family now. Spending on pet services increasingly exceeds logic.',
     atRisk: 'No one — pet parents spend irrationally',
@@ -7442,6 +7521,7 @@ const FORECAST_DATABASE = [
     probability: 65,
     timeframe: '2-4 years',
     category: 'tech',
+    industries: ['food'],
     threatMode: 'execution',
     threatReason: 'Fast food and fast casual automate. Human servers become premium, not default.',
     atRisk: 'Fast food workers; restaurants slow to adopt technology',
@@ -7475,6 +7555,7 @@ const FORECAST_DATABASE = [
     probability: 70,
     timeframe: '2-4 years',
     category: 'tech',
+    industries: ['food', 'transportation-ind'],
     threatMode: 'execution',
     threatReason: 'Restaurant economics favor delivery-only. Physical dining becomes premium experience.',
     atRisk: 'Mediocre dine-in restaurants competing with delivery-optimized ghost kitchens',
@@ -7508,6 +7589,7 @@ const FORECAST_DATABASE = [
     probability: 70,
     timeframe: '2-4 years',
     category: 'tech',
+    industries: ['healthcare', 'food'],
     threatMode: 'personality',
     threatReason: 'Hotels know everything about you. Human hospitality must exceed AI personalization.',
     atRisk: 'Hotel staff who don\'t add value beyond what AI can deliver',
@@ -7545,6 +7627,7 @@ const FORECAST_DATABASE = [
     probability: 60,
     timeframe: '2-3 years',
     category: 'media',
+    industries: ['marketing'],
     threatMode: 'personality',
     threatReason: 'AI content floods platforms. Human authenticity becomes rare and valuable.',
     atRisk: 'Creators who could be mistaken for AI; generic content producers',
@@ -7578,6 +7661,7 @@ const FORECAST_DATABASE = [
     probability: 25,
     timeframe: '5-10 years',
     category: 'media',
+    industries: ['fashion', 'marketing'],
     threatMode: 'personality',
     threatReason: 'If AI companions satisfy social needs, human connection becomes scarce luxury.',
     atRisk: 'Businesses built entirely on social media engagement',
@@ -7714,6 +7798,7 @@ const FORECAST_DATABASE = [
     probability: 90,
     timeframe: 'Already happening',
     category: 'ai',
+    industries: ['finance-ind', 'creative'],
     threatMode: 'execution',
     threatReason: 'AI generates infinite images. Human curation and direction become the skill.',
     atRisk: 'Stock photographers, generic illustrators',
@@ -7780,6 +7865,7 @@ const FORECAST_DATABASE = [
     probability: 80,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['retail'],
     threatMode: 'personality',
     threatReason: 'People want memories, not stuff. Experience creators win.',
     atRisk: 'Retailers selling commodity products',
@@ -7817,6 +7903,7 @@ const FORECAST_DATABASE = [
     probability: 85,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['healthcare'],
     threatMode: 'personality',
     threatReason: 'Digital connection doesn\'t satisfy. Real human connection becomes premium service.',
     atRisk: 'No one — this is massive opportunity',
@@ -7850,6 +7937,7 @@ const FORECAST_DATABASE = [
     probability: 95,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['healthcare', 'software'],
     threatMode: 'personality',
     threatReason: 'Everyone needs mental health support. Therapists are overwhelmed.',
     atRisk: 'No one — demand far exceeds supply',
@@ -7883,6 +7971,7 @@ const FORECAST_DATABASE = [
     probability: 75,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['fashion', 'retail'],
     threatMode: 'execution',
     threatReason: 'People are burned out on screens. Offline becomes luxury.',
     atRisk: 'No one — this is opportunity in contrast to digital overload',
@@ -7920,6 +8009,7 @@ const FORECAST_DATABASE = [
     probability: 80,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['finance-ind', 'education'],
     threatMode: 'ideas',
     threatReason: 'Credentials matter less. Demonstrated skills matter more.',
     atRisk: 'People with expensive degrees but no portfolio',
@@ -7958,6 +8048,7 @@ const FORECAST_DATABASE = [
     probability: 75,
     timeframe: '2026',
     category: 'crypto',
+    industries: ['real-estate', 'software'],
     threatMode: 'execution',
     threatReason: 'Cheap transactions enable new use cases. Builders on L2s have advantage.',
     atRisk: 'Developers only building on expensive L1s',
@@ -7991,6 +8082,7 @@ const FORECAST_DATABASE = [
     probability: 70,
     timeframe: '2026',
     category: 'crypto',
+    industries: ['finance-ind', 'education'],
     threatMode: 'ideas',
     threatReason: 'Traditional finance embraces crypto. New investor education opportunities.',
     atRisk: 'Crypto natives who don\'t understand traditional finance crossover',
@@ -8057,6 +8149,7 @@ const FORECAST_DATABASE = [
     probability: 40,
     timeframe: '3-5 years',
     category: 'crypto',
+    industries: ['software'],
     threatMode: 'execution',
     threatReason: 'Gaming + crypto creates new economies. Early expertise valuable.',
     atRisk: 'Game developers ignoring blockchain integration possibilities',
@@ -8090,6 +8183,7 @@ const FORECAST_DATABASE = [
     probability: 55,
     timeframe: '3-5 years',
     category: 'crypto',
+    industries: ['finance-ind'],
     threatMode: 'ideas',
     threatReason: 'Traditional assets move on-chain. Bridge between TradFi and DeFi becomes valuable.',
     atRisk: 'Financial professionals ignoring tokenization trends',
@@ -8127,6 +8221,7 @@ const FORECAST_DATABASE = [
     probability: 90,
     timeframe: 'Already happening',
     category: 'media',
+    industries: ['creative'],
     threatMode: 'execution',
     threatReason: 'Attention spans shrink. Short-form skills become essential.',
     atRisk: 'Long-form creators who can\'t adapt',
@@ -8160,6 +8255,7 @@ const FORECAST_DATABASE = [
     probability: 75,
     timeframe: '2-4 years',
     category: 'media',
+    industries: ['retail'],
     threatMode: 'personality',
     threatReason: 'Live commerce blurs entertainment and shopping. Personality-driven sales explode.',
     atRisk: 'Traditional e-commerce without personality',
@@ -8226,6 +8322,7 @@ const FORECAST_DATABASE = [
     probability: 80,
     timeframe: 'Already happening',
     category: 'media',
+    industries: ['creative'],
     threatMode: 'personality',
     threatReason: 'Audio is intimate. Voice builds trust faster than text.',
     atRisk: 'Creators only doing visual content',
@@ -8259,6 +8356,7 @@ const FORECAST_DATABASE = [
     probability: 85,
     timeframe: 'Already happening',
     category: 'media',
+    industries: ['marketing', 'manufacturing'],
     threatMode: 'execution',
     threatReason: 'Brands need authentic content. UGC creators fill the gap.',
     atRisk: 'Expensive production studios losing to authentic creators',
@@ -8428,6 +8526,7 @@ const FORECAST_DATABASE = [
     probability: 80,
     timeframe: 'Already happening',
     category: 'work',
+    industries: ['creative'],
     threatMode: 'execution',
     threatReason: 'Companies hire expertise part-time. High-skill fractional work expands.',
     atRisk: 'Full-time employees who could offer more value fractionally',
@@ -8531,6 +8630,7 @@ const FORECAST_DATABASE = [
     probability: 65,
     timeframe: '2-3 years',
     category: 'ai',
+    industries: ['transportation-ind'],
     threatMode: 'execution',
     threatReason: 'AI agents do your busywork. Value shifts to directing and reviewing.',
     atRisk: 'Those doing repetitive multi-step tasks that can be automated',
@@ -8597,6 +8697,7 @@ const FORECAST_DATABASE = [
     probability: 75,
     timeframe: '2-4 years',
     category: 'ai',
+    industries: ['retail'],
     threatMode: 'execution',
     threatReason: 'Basic support goes AI. Human support becomes premium escalation.',
     atRisk: 'Entry-level customer service roles',
@@ -8630,6 +8731,7 @@ const FORECAST_DATABASE = [
     probability: 90,
     timeframe: '2-3 years',
     category: 'ai',
+    industries: ['education', 'software'],
     threatMode: 'execution',
     threatReason: 'Every tool has AI. Knowing how to use AI features becomes baseline skill.',
     atRisk: 'People not learning AI features of their tools',
@@ -8667,6 +8769,7 @@ const FORECAST_DATABASE = [
     probability: 35,
     timeframe: '2026',
     category: 'finance',
+    industries: ['finance-ind'],
     threatMode: 'execution',
     threatReason: 'Persistent inflation favors asset owners over wage earners. Multiple income streams essential.',
     atRisk: 'People on fixed incomes or single salary',
@@ -8700,6 +8803,7 @@ const FORECAST_DATABASE = [
     probability: 75,
     timeframe: 'Already happening',
     category: 'finance',
+    industries: ['finance-ind', 'retail', 'creative'],
     threatMode: 'ideas',
     threatReason: 'Everyone is an investor now. Financial literacy becomes essential.',
     atRisk: 'Uninformed retail investors making emotional decisions',
@@ -8733,6 +8837,7 @@ const FORECAST_DATABASE = [
     probability: 70,
     timeframe: '3-5 years',
     category: 'finance',
+    industries: ['finance-ind'],
     threatMode: 'execution',
     threatReason: 'Banking moves digital. Traditional bank branches and roles transform.',
     atRisk: 'Bank employees in redundant roles; people loyal to legacy banks',
@@ -8766,6 +8871,7 @@ const FORECAST_DATABASE = [
     probability: 70,
     timeframe: '2026',
     category: 'finance',
+    industries: ['finance-ind'],
     threatMode: 'ideas',
     threatReason: 'Uncertainty drives safe haven demand. Understanding portfolio protection matters.',
     atRisk: 'Investors 100% in growth assets without hedges',
@@ -8799,6 +8905,7 @@ const FORECAST_DATABASE = [
     probability: 65,
     timeframe: '2026-2027',
     category: 'finance',
+    industries: ['finance-ind', 'retail', 'real-estate'],
     threatMode: 'execution',
     threatReason: 'Office and retail space transforms. Opportunities in distressed assets and conversions.',
     atRisk: 'Commercial landlords slow to adapt; office-dependent businesses',
@@ -8832,6 +8939,7 @@ const FORECAST_DATABASE = [
     probability: 75,
     timeframe: '2026',
     category: 'finance',
+    industries: ['finance-ind'],
     threatMode: 'ideas',
     threatReason: 'Alternative lending expands. Understanding private credit becomes valuable.',
     atRisk: 'Investors only in public markets missing private opportunities',
@@ -8865,6 +8973,7 @@ const FORECAST_DATABASE = [
     probability: 65,
     timeframe: '2-4 years',
     category: 'finance',
+    industries: ['finance-ind'],
     threatMode: 'execution',
     threatReason: 'Tax prep gets automated. Complex tax strategy remains human domain.',
     atRisk: 'Basic tax preparers',
@@ -8886,6 +8995,271 @@ const FORECAST_DATABASE = [
                 {mode: 'execution', task: 'Create paid training service.', xp: 50},
                 {mode: 'personality', task: 'Partner with accountants for referrals.', xp: 50},
                 {mode: 'execution', task: 'Get first paid training clients.', xp: 55}
+            ]
+        }
+    ]
+},
+
+// ============================================================================
+// 👗 FASHION & LUXURY - INDUSTRY-SPECIFIC FORECASTS
+// ============================================================================
+
+{
+    id: 'brain-ai-fashion-taste',
+    title: 'Taste becomes the ultimate differentiator as AI commoditizes design',
+    source: 'Industry Analysis',
+    probability: 78,
+    timeframe: '2-3 years',
+    category: 'ai',
+    industries: ['fashion', 'creative', 'retail'],
+    threatMode: 'ideas',
+    threatReason: 'AI can generate infinite designs. When execution is cheap and design is abundant, aesthetic judgment, cultural context, and vibe become the scarce resource.',
+    atRisk: 'Fashion designers relying purely on technical skill without a unique point of view',
+    opportunities: [
+        {
+            title: '🎨 Taste-as-a-Service Platform',
+            mode: 'ideas',
+            description: 'Build AI-enhanced personal style operating systems. Curated identity layers for people merging digital + physical selves. Your AI suggests options — but you train it on your taste philosophy.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Define your taste philosophy in 500 words. What do you reject? What do you elevate? Be specific.', xp: 40},
+                {mode: 'ideas', task: 'Audit 10 AI styling tools (Stitch Fix AI, Amazon Style, etc). What do they get wrong about taste?', xp: 45},
+                {mode: 'execution', task: 'Create a "Taste Profile" framework — 10 dimensions of aesthetic judgment that AI can\'t replicate.', xp: 50},
+                {mode: 'ideas', task: 'Interview 5 people with distinctive style. How do they make choices? What\'s their internal algorithm?', xp: 45},
+                {mode: 'execution', task: 'Build a prototype taste quiz — users answer 15 questions, get a unique taste archetype.', xp: 55},
+                {mode: 'personality', task: 'Post your taste philosophy publicly. See who resonates. Build a small following around it.', xp: 50},
+                {mode: 'execution', task: 'Curate 5 outfits for 5 different people using only your framework. Document results.', xp: 50},
+                {mode: 'personality', task: 'Partner with 1 AI tool and show how human taste curation improves their output by 10x.', xp: 55},
+                {mode: 'execution', task: 'Launch a paid "Taste Profile" service — even if it\'s just a Google Form + personal curation.', xp: 55},
+                {mode: 'execution', task: 'Get 10 paying customers. Iterate based on feedback. Document what scales and what doesn\'t.', xp: 60}
+            ]
+        },
+        {
+            title: '👑 Neural-Compatible Luxury Wearables',
+            mode: 'execution',
+            description: 'High-fashion tech accessories. Brain-interface compatible headwear that is luxury, not medical. Think Hermès for headsets.',
+            difficulty: 'hard',
+            timeframe: '12-24 months',
+            quests: [
+                {mode: 'ideas', task: 'Research every wearable tech product that failed aesthetically (Google Glass, etc). Why did fashion reject them?', xp: 45},
+                {mode: 'ideas', task: 'Study luxury tech crossovers that worked (Apple Watch Hermès, Tag Heuer Connected). What made them succeed?', xp: 40},
+                {mode: 'execution', task: 'Sketch 10 concepts for luxury headwear that could house neural interfaces. Focus on form factor.', xp: 50},
+                {mode: 'personality', task: 'Interview 3 people in wearable tech and 3 in luxury fashion. Find the gap between their worlds.', xp: 55},
+                {mode: 'execution', task: 'Create a mood board + material study for neural-luxury fusion. What materials bridge tech and fashion?', xp: 45},
+                {mode: 'ideas', task: 'Define the brand positioning: how do you make brain tech feel aspirational, not clinical?', xp: 50},
+                {mode: 'execution', task: 'Build a physical prototype — even if it\'s just the fashion shell with no tech inside.', xp: 60},
+                {mode: 'personality', task: 'Show the prototype to 20 potential customers. Get honest feedback. Iterate.', xp: 50},
+                {mode: 'execution', task: 'Create a landing page with renderings. Test demand with pre-orders or waitlist.', xp: 55},
+                {mode: 'personality', task: 'Pitch to 3 tech companies as a fashion design partner for their next wearable.', xp: 60}
+            ]
+        }
+    ]
+},
+
+{
+    id: 'tokenized-fashion',
+    title: 'Tokenized fashion and digital ownership become standard',
+    source: 'DeFi + Fashion Industry Convergence',
+    probability: 55,
+    timeframe: '2-4 years',
+    category: 'crypto',
+    industries: ['fashion', 'retail', 'creative'],
+    threatMode: 'execution',
+    threatReason: 'Clothing will include digital twin NFTs, on-chain proof of ownership, and resale markets embedded at purchase. Brands that don\'t adapt lose the secondary market.',
+    atRisk: 'Traditional fashion brands with no digital strategy',
+    opportunities: [
+        {
+            title: '🏷️ Tokenized Fashion Brand',
+            mode: 'execution',
+            description: 'Launch clothing that includes digital twins. On-chain proof of ownership. Resale markets embedded at point of purchase. Fans invest early, receive exclusive pieces + upside.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Research 5 existing tokenized fashion projects (RTFKT, Tribute Brand, DressX, etc). What worked? What flopped?', xp: 40},
+                {mode: 'ideas', task: 'Map the full lifecycle: physical garment → digital twin → resale → royalties. Where does value leak?', xp: 45},
+                {mode: 'execution', task: 'Design a simple capsule collection (3-5 pieces) with digital twin concept. Sketch both physical and digital.', xp: 50},
+                {mode: 'execution', task: 'Learn to mint on one platform (Manifold, Zora, or Base). Create a test NFT linked to a physical item.', xp: 50},
+                {mode: 'personality', task: 'Build a community of 50 people interested in tokenized fashion. Discord or Telegram.', xp: 50},
+                {mode: 'execution', task: 'Create a proof of concept: 1 physical piece + 1 digital twin. Document the full flow.', xp: 55},
+                {mode: 'personality', task: 'Pre-sell 10 pieces to your community. Use token-gated access as the hook.', xp: 55},
+                {mode: 'execution', task: 'Set up automated royalties so you earn on every resale. Test the full loop.', xp: 50},
+                {mode: 'personality', task: 'Get press coverage or social media attention for your tokenized drop.', xp: 55},
+                {mode: 'execution', task: 'Launch your second drop with lessons learned. Scale to 50+ pieces.', xp: 60}
+            ]
+        },
+        {
+            title: '🔄 Subscription Wardrobe / Closet Liquidity',
+            mode: 'ideas',
+            description: 'Instead of ownership: wardrobe liquidity pools. Token-gated access to rotating luxury closets. Fashion shifts from accumulation to access.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Study Rent the Runway, Nuuly, and Hurr. What works? What do customers hate? Read 50 reviews.', xp: 35},
+                {mode: 'ideas', task: 'Design a "wardrobe pool" model: how would 20 people share a luxury closet? Define the economics.', xp: 45},
+                {mode: 'execution', task: 'Create a simple inventory system for 20 luxury items. Track check-in/check-out.', xp: 40},
+                {mode: 'personality', task: 'Recruit 10 friends to test a shared wardrobe for 1 month. Document everything.', xp: 50},
+                {mode: 'execution', task: 'Build a simple booking system (even just a shared calendar or Airtable).', xp: 45},
+                {mode: 'ideas', task: 'Calculate unit economics: cleaning, damage, depreciation, logistics. Is this profitable?', xp: 50},
+                {mode: 'personality', task: 'Survey 50 potential customers. Would they pay $X/month for rotating luxury access?', xp: 45},
+                {mode: 'execution', task: 'Launch a paid pilot with 20 members and 50 items. Run for 3 months.', xp: 55},
+                {mode: 'execution', task: 'Add token-gating: members hold a token for access. Test if crypto-native users prefer this.', xp: 50},
+                {mode: 'personality', task: 'Create content about the pilot. Document results publicly. Attract investors or partners.', xp: 55}
+            ]
+        }
+    ]
+},
+
+{
+    id: 'fashion-social-infrastructure',
+    title: 'Fashion retail becomes social infrastructure as loneliness epidemic intensifies',
+    source: 'Surgeon General Report on Loneliness + Retail Trends',
+    probability: 72,
+    timeframe: 'Already happening',
+    category: 'work',
+    industries: ['fashion', 'retail', 'food'],
+    threatMode: 'personality',
+    threatReason: 'When loneliness rises, third places become premium. Retail cannot survive as racks-on-walls. Fashion brands that build community win.',
+    atRisk: 'Any retail brand that treats stores as transaction points instead of gathering spaces',
+    opportunities: [
+        {
+            title: '🏠 Fashion as Social Infrastructure',
+            mode: 'personality',
+            description: 'Members-only creative clubs. Style workshops + live AI styling sessions. Co-creation studios where customers design with AI. Retail becomes belonging.',
+            difficulty: 'medium',
+            timeframe: '3-6 months',
+            quests: [
+                {mode: 'ideas', task: 'Visit 5 experiential retail spaces (Showfields, Neighborhood Goods, etc). What creates community vs. what\'s gimmicky?', xp: 40},
+                {mode: 'personality', task: 'Host a small styling workshop (even at home) for 8 people. What happens when fashion becomes social?', xp: 45},
+                {mode: 'ideas', task: 'Design a "Fashion Club" concept: weekly events, membership tiers, space requirements. Write the full plan.', xp: 50},
+                {mode: 'execution', task: 'Run a 4-week pop-up styling event series. Track attendance, engagement, and revenue.', xp: 55},
+                {mode: 'personality', task: 'Partner with a local boutique or café to host fashion community events.', xp: 45},
+                {mode: 'execution', task: 'Add AI styling to events: let attendees get AI-generated outfit suggestions, then critique them together.', xp: 50},
+                {mode: 'personality', task: 'Build a mailing list of 200 people who want regular fashion community events.', xp: 50},
+                {mode: 'execution', task: 'Create a membership model: $X/month for weekly styling events + community access.', xp: 50},
+                {mode: 'personality', task: 'Get 25 paying members for your fashion community. Focus on retention.', xp: 55},
+                {mode: 'execution', task: 'Document the model. Create a playbook that could replicate in other cities.', xp: 55}
+            ]
+        },
+        {
+            title: '💛 Identity Support Fashion Brand',
+            mode: 'personality',
+            description: 'Clothing lines tied to life transitions: divorce, motherhood, career pivots, weight changes. Fashion as emotional scaffolding, not just aesthetics.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Interview 10 people going through major life transitions. How did their relationship with clothing change?', xp: 45},
+                {mode: 'ideas', task: 'Pick ONE transition to focus on (post-divorce, new mom, career pivot). Define the emotional journey in 5 stages.', xp: 45},
+                {mode: 'execution', task: 'Design a 5-piece capsule collection that maps to the 5 stages of that transition.', xp: 50},
+                {mode: 'personality', task: 'Tell the story publicly. Post about why fashion matters during transitions. Build an audience.', xp: 45},
+                {mode: 'execution', task: 'Create mockups or samples of the first 2 pieces. Show them to 20 potential customers.', xp: 50},
+                {mode: 'personality', task: 'Partner with a therapist, coach, or support group that serves your target transition.', xp: 50},
+                {mode: 'execution', task: 'Launch pre-orders for the capsule collection. Set a minimum order threshold.', xp: 55},
+                {mode: 'personality', task: 'Create content that connects fashion to identity during transitions. Build community.', xp: 50},
+                {mode: 'execution', task: 'Fulfill first orders. Get customer photos and testimonials.', xp: 55},
+                {mode: 'execution', task: 'Expand to the next life transition. Repeat the process with lessons learned.', xp: 55}
+            ]
+        }
+    ]
+},
+
+{
+    id: 'experience-economy-fashion',
+    title: 'Experience economy explodes — retail becomes theater',
+    source: 'McKinsey Retail Report + Consumer Behavior Data',
+    probability: 82,
+    timeframe: 'Already happening',
+    category: 'media',
+    industries: ['fashion', 'retail', 'marketing', 'food'],
+    threatMode: 'execution',
+    threatReason: 'Product drops become immersive events. AI-themed concept stores do real-time outfit simulations. Brands that can\'t create experiences lose to those that can.',
+    atRisk: 'Traditional retailers with no experiential strategy',
+    opportunities: [
+        {
+            title: '🎭 AI-Themed Concept Store',
+            mode: 'execution',
+            description: 'Real-time outfit simulations. Personality-mode styling. AI stylist that learns your body, calendar, and goals. Drop-as-event with gamified, invite-only product releases.',
+            difficulty: 'hard',
+            timeframe: '6-12 months',
+            quests: [
+                {mode: 'ideas', task: 'Visit 5 concept stores or experiential retail spaces. Rate each on a 1-10 scale for memorable experience.', xp: 35},
+                {mode: 'ideas', task: 'Design an AI styling experience flow: customer walks in → what happens at each touchpoint?', xp: 45},
+                {mode: 'execution', task: 'Build a simple AI styling demo: take a photo, get outfit suggestions. Use existing APIs.', xp: 50},
+                {mode: 'personality', task: 'Host a "Drop as Event" night: invite-only, gamified product release for 30 people.', xp: 55},
+                {mode: 'execution', task: 'Create a pop-up concept with AI styling mirrors or screens. Test for 1 weekend.', xp: 55},
+                {mode: 'ideas', task: 'Study how gaming psychology applies to retail. What makes drops addictive?', xp: 40},
+                {mode: 'execution', task: 'Build a loyalty/gamification layer: XP, levels, exclusive access based on engagement.', xp: 50},
+                {mode: 'personality', task: 'Partner with a brand for a co-branded experiential event. Split costs, share audience.', xp: 55},
+                {mode: 'execution', task: 'Run a full concept store experience for 1 month. Track foot traffic, conversion, social shares.', xp: 60},
+                {mode: 'personality', task: 'Document results and pitch the model to 5 fashion brands as a service.', xp: 55}
+            ]
+        }
+    ]
+},
+
+{
+    id: 'capsule-wardrobe-housing',
+    title: 'Housing crisis drives capsule wardrobe revolution',
+    source: 'Housing Affordability Data + Consumer Trends',
+    probability: 68,
+    timeframe: '2-3 years',
+    category: 'work',
+    industries: ['fashion', 'retail', 'real-estate'],
+    threatMode: 'execution',
+    threatReason: 'Smaller living spaces mean less closet space. Fashion shifts from accumulation to optimization. Hyper-modular clothing where 10 pieces create 40 outfits.',
+    atRisk: 'Fast fashion brands built on volume over versatility',
+    opportunities: [
+        {
+            title: '📦 Capsule Wardrobe Infrastructure',
+            mode: 'execution',
+            description: 'Hyper-modular clothing systems. 10 pieces → 40 outfits. Built for 1-bedroom city dwellers. Climate-adaptive fashion. One coat that handles 3 seasons.',
+            difficulty: 'medium',
+            timeframe: '3-9 months',
+            quests: [
+                {mode: 'ideas', task: 'Study existing capsule wardrobe brands (Cladwell, Encircled, Eileen Fisher). What\'s missing?', xp: 35},
+                {mode: 'ideas', task: 'Calculate the math: what\'s the minimum number of pieces for maximum outfit combinations? Research modular design.', xp: 40},
+                {mode: 'execution', task: 'Design a 10-piece system with at least 30 distinct outfit combinations. Show the matrix.', xp: 50},
+                {mode: 'ideas', task: 'Research climate-adaptive fabrics. What materials work across 3 seasons? Talk to textile suppliers.', xp: 45},
+                {mode: 'execution', task: 'Prototype 3 key pieces from your system. Focus on versatility and modularity.', xp: 55},
+                {mode: 'personality', task: 'Wear only your capsule system for 30 days. Document daily on social media. Show outfit variety.', xp: 50},
+                {mode: 'execution', task: 'Create a "Capsule Score" tool: users input their closet, get a score on modularity and versatility.', xp: 50},
+                {mode: 'personality', task: 'Get 50 people to take the Capsule Score quiz. Use data to validate which pieces matter most.', xp: 45},
+                {mode: 'execution', task: 'Launch pre-orders for your capsule system. Target urban dwellers in expensive cities.', xp: 55},
+                {mode: 'execution', task: 'Fulfill first orders. Get customer feedback on real-world modular use.', xp: 55}
+            ]
+        }
+    ]
+},
+
+{
+    id: 'self-driving-fashion',
+    title: 'Self-driving cars transform fashion and mobile retail',
+    source: 'Autonomous Vehicle Forecasts + Retail Innovation',
+    probability: 60,
+    timeframe: '3-5 years',
+    category: 'transportation',
+    industries: ['fashion', 'retail', 'transportation-ind'],
+    threatMode: 'ideas',
+    threatReason: 'Cars become living rooms. Autonomous fashion lounges come to your door. Clothing designed for commuters who now have free time and a private space.',
+    atRisk: 'Brick-and-mortar retailers who don\'t adapt to mobile commerce',
+    opportunities: [
+        {
+            title: '🚗 Mobile Retail Pods',
+            mode: 'ideas',
+            description: 'Autonomous fashion lounges that come to your apartment. Private styling sessions inside. Car-integrated fashion designed for autonomous commuters.',
+            difficulty: 'hard',
+            timeframe: '12-24 months',
+            quests: [
+                {mode: 'ideas', task: 'Research existing mobile retail concepts (fashion trucks, pop-up vans). What works? What doesn\'t scale?', xp: 35},
+                {mode: 'ideas', task: 'Design the interior of a mobile styling pod. What fits in a vehicle? What\'s the customer experience?', xp: 45},
+                {mode: 'execution', task: 'Test the concept with a regular van: offer mobile styling to 10 customers. Document the experience.', xp: 50},
+                {mode: 'ideas', task: 'Study what people wear when commuting. How does wrinkle-resistance, comfort, and versatility factor in?', xp: 40},
+                {mode: 'execution', task: 'Design 5 pieces optimized for car-to-meeting transitions. Comfort that looks professional.', xp: 50},
+                {mode: 'personality', task: 'Survey 100 commuters: would they use a mobile styling service? What would they pay?', xp: 45},
+                {mode: 'execution', task: 'Create a booking system for mobile styling visits. Test with 20 appointments.', xp: 50},
+                {mode: 'personality', task: 'Partner with a car service or co-working space to offer styling add-ons.', xp: 50},
+                {mode: 'execution', task: 'Run a 4-week pilot of mobile styling. Track economics: is it profitable per visit?', xp: 55},
+                {mode: 'ideas', task: 'Write a vision document for the autonomous version. What changes when the car drives itself?', xp: 45}
             ]
         }
     ]
@@ -8974,9 +9348,36 @@ function forecastsH() {
     // Apply filter if one is selected
     const showSuggested = S.forecastFilter === 'suggested' || (!S.forecastFilter && hasProfile);
     const showFollowing = S.forecastFilter === 'following';
-    const filtered = S.forecastFilter && S.forecastFilter !== 'all' && S.forecastFilter !== 'suggested' && S.forecastFilter !== 'following'
-        ? forecasts.filter(f => f.category === S.forecastFilter)
-        : S.forecastFilter === 'all' ? forecasts : null;
+    
+    // Build filtered list
+    let filtered = null;
+    if(S.forecastFilter && S.forecastFilter !== 'all' && S.forecastFilter !== 'suggested' && S.forecastFilter !== 'following') {
+        filtered = forecasts.filter(f => f.category === S.forecastFilter);
+    } else if(S.forecastFilter === 'all') {
+        filtered = [...forecasts];
+    }
+    
+    // Apply industry filter
+    if(S.forecastIndustryFilter && filtered) {
+        filtered = filtered.filter(f => f.industries && f.industries.includes(S.forecastIndustryFilter));
+    } else if(S.forecastIndustryFilter && !filtered) {
+        filtered = forecasts.filter(f => f.industries && f.industries.includes(S.forecastIndustryFilter));
+    }
+    
+    // Apply timeline filter
+    if(S.forecastTimelineFilter) {
+        const tf = TIMELINE_FILTERS.find(t => t.id === S.forecastTimelineFilter);
+        if(tf) {
+            if(filtered) {
+                filtered = filtered.filter(f => tf.match(f.timeframe));
+            } else {
+                filtered = forecasts.filter(f => tf.match(f.timeframe));
+            }
+        }
+    }
+    
+    // Show count if filtered
+    const filterCount = filtered ? filtered.length : 0;
     
     return `
         <div class="page-header">
@@ -8992,13 +9393,29 @@ function forecastsH() {
         ` : ''}
         
         <div class="card mb-20" style="padding:15px">
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
                 ${hasProfile ? `<button class="btn btn-small ${showSuggested && !S.forecastFilter ? 'btn-primary' : S.forecastFilter === 'suggested' ? 'btn-primary' : 'btn-secondary'}" data-filter="suggested">✨ For You</button>` : ''}
                 ${followedForecasts.length > 0 ? `<button class="btn btn-small ${S.forecastFilter === 'following' ? 'btn-primary' : 'btn-secondary'}" data-filter="following">Following (${followedForecasts.length})</button>` : ''}
                 <button class="btn btn-small ${S.forecastFilter==='all'?'btn-primary':'btn-secondary'}" data-filter="all">All</button>
                 ${Object.entries(CATEGORIES).map(([k,v]) => 
                     `<button class="btn btn-small ${S.forecastFilter===k?'btn-primary':'btn-secondary'}" data-filter="${k}">${v.icon} ${v.name}</button>`
                 ).join('')}
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <span style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px">Filter:</span>
+                <select class="form-input" id="industry-filter" style="padding:4px 8px;font-size:11px;width:auto;min-width:140px;background:var(--bg-primary)">
+                    <option value="">All Industries</option>
+                    ${Object.entries(INDUSTRY_TAGS).map(([k,v]) => 
+                        `<option value="${k}" ${S.forecastIndustryFilter===k?'selected':''}>${v.icon} ${v.name}</option>`
+                    ).join('')}
+                </select>
+                <select class="form-input" id="timeline-filter" style="padding:4px 8px;font-size:11px;width:auto;min-width:130px;background:var(--bg-primary)">
+                    <option value="">All Timelines</option>
+                    ${TIMELINE_FILTERS.map(t => 
+                        `<option value="${t.id}" ${S.forecastTimelineFilter===t.id?'selected':''}>${t.label}</option>`
+                    ).join('')}
+                </select>
+                ${S.forecastIndustryFilter || S.forecastTimelineFilter ? '<button class="btn btn-small btn-secondary" id="clear-filters">✕ Clear</button>' : ''}
             </div>
         </div>
         
@@ -9032,8 +9449,10 @@ function forecastsH() {
         ` : ''}
         
         ${filtered ? `
+        ${filterCount > 0 ? `<div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px">${filterCount} forecast${filterCount!==1?'s':''} found</div>` : ''}
         <div class="forecast-list">
-            ${filtered.map(f => renderForecastCard(f)).join('')}
+            ${filtered.length > 0 ? filtered.map(f => renderForecastCard(f)).join('') : 
+            '<div class="card" style="padding:30px;text-align:center"><p class="text-secondary">No forecasts match these filters. Try adjusting your filters.</p></div>'}
         </div>
         ` : ''}
         
@@ -9072,6 +9491,7 @@ function renderForecastCard(f) {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px">
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <span style="font-size:10px;padding:3px 8px;background:var(--bg-tertiary);color:var(--text-secondary)">${CATEGORIES[f.category]?.icon} ${CATEGORIES[f.category]?.name}</span>
+                ${f.industries ? f.industries.slice(0,2).map(ind => INDUSTRY_TAGS[ind] ? `<span style="font-size:10px;padding:3px 8px;background:var(--bg-tertiary);color:var(--text-secondary)">${INDUSTRY_TAGS[ind].icon} ${INDUSTRY_TAGS[ind].name}</span>` : '').join('') : ''}
                 <span style="font-size:10px;padding:3px 8px;background:rgba(255,68,68,0.2);color:${risk.color}">YOUR RISK: ${risk.label}</span>
                 ${isThreatToWeakest ? '<span style="font-size:10px;padding:3px 8px;background:var(--danger);color:white">⚠️ TARGETS YOUR WEAKNESS</span>' : ''}
             </div>
