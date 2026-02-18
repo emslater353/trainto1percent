@@ -3710,41 +3710,58 @@ async function completePasswordReset() {
         return;
     }
     
-    // Find user with this token
-    const users = await db('users','GET',null,`?reset_token=eq.${S.resetToken}`);
-    
-    if(!users?.length) {
-        alert('Invalid or expired reset link. Please request a new one.');
+    // Use Supabase Auth access token if available (new flow)
+    if (S.resetAccessToken) {
+        const result = await authUpdatePassword(S.resetAccessToken, newPass);
+        if (result.error) {
+            alert('Failed to reset password. The link may have expired. Please request a new one.');
+            S.modal = null;
+            S.resetAccessToken = null;
+            S.screen = 'forgot';
+            render();
+            return;
+        }
+        
+        alert('Password set successfully! You can now sign in.');
         S.modal = null;
-        S.screen = 'forgot';
+        S.resetAccessToken = null;
+        S.screen = 'login';
+        history.replaceState({}, '', location.pathname);
         render();
         return;
     }
     
-    const user = users[0];
-    
-    // Check if token expired
-    if(new Date(user.reset_expiry) < new Date()) {
-        alert('Reset link has expired. Please request a new one.');
+    // Legacy fallback: old token-based reset via public table
+    if (S.resetToken) {
+        const users = await db('users','GET',null,`?reset_token=eq.${S.resetToken}`);
+        if(!users?.length) {
+            alert('Invalid or expired reset link. Please request a new one.');
+            S.modal = null;
+            S.screen = 'forgot';
+            render();
+            return;
+        }
+        const user = users[0];
+        if(new Date(user.reset_expiry) < new Date()) {
+            alert('Reset link has expired. Please request a new one.');
+            S.modal = null;
+            S.screen = 'forgot';
+            render();
+            return;
+        }
+        await db('users','PATCH',{ 
+            password: newPass, 
+            reset_token: null, 
+            reset_expiry: null 
+        },`?email=eq.${encodeURIComponent(user.email)}`);
+        
+        alert('Password reset successfully! You can now log in.');
         S.modal = null;
-        S.screen = 'forgot';
+        S.resetToken = null;
+        S.screen = 'login';
+        history.replaceState({}, '', location.pathname);
         render();
-        return;
     }
-    
-    // Update password and clear token
-    await db('users','PATCH',{ 
-        password: newPass, 
-        reset_token: null, 
-        reset_expiry: null 
-    },`?email=eq.${encodeURIComponent(user.email)}`);
-    
-    alert('Password reset successfully! You can now log in.');
-    S.modal = null;
-    S.resetToken = null;
-    S.screen = 'login';
-    history.replaceState({}, '', location.pathname);
-    render();
 }
 
 async function save(){
@@ -12339,7 +12356,21 @@ async function init(){
         return;
     }
     
-    // Check for password reset token
+    // Check for Supabase Auth recovery token (comes as hash fragment)
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const tokenType = hashParams.get('type');
+    
+    if (accessToken && tokenType === 'recovery') {
+        S.modal = 'resetPassword';
+        S.resetAccessToken = accessToken;
+        S.screen = 'login';
+        history.replaceState({}, '', location.pathname);
+        render();
+        return;
+    }
+    
+    // Legacy reset token check (old format)
     const resetToken = params.get('token');
     if(resetToken && hash === 'reset') {
         S.modal = 'resetPassword';
