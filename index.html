@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Proof Club — Become AI Proof</title>
+    <script>
+    // Redirect password reset tokens to reset.html
+    if (window.location.hash.includes('type=recovery')) {
+        window.location.href = 'reset.html' + window.location.hash;
+    }
+    </script>
     <meta name="description" content="Get weekly quests to survive AGI. Build the skills AI can't replace.">
     
     <!-- Open Graph / Social Media -->
@@ -579,7 +585,7 @@
         <h1>Become AI Proof</h1>
         <p class="hero-subhead">Get weekly quests to survive AGI</p>
         <p class="hero-tagline">"To be forewarned is to be forearmed." AI is projected to take 80% of jobs. The question now becomes how can you adapt faster than AI and reshape before you become erased.</p>
-        <a href="app.html#diagnostic" class="btn-primary">Am I AI-Proof? →</a>
+        <a href="app.html?mode=diagnostic" class="btn-primary">Become AI Proof →</a>
     </section>
 
     <section class="how-it-works">
