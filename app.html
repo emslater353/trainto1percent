@@ -876,6 +876,7 @@ const S = {
     forecastFilter: 'all', // all, ai, tech, crypto, politics, science
     forecastIndustryFilter: '', // industry filter
     forecastTimelineFilter: '', // timeline filter
+    forecastViewMode: 'forecasts', // 'forecasts' or 'opportunities'
     forecastPerson: 'all',
     selectedForecast: null,
     expandedOpp: null, // which opportunity is expanded in modal
@@ -3011,9 +3012,39 @@ IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jo
     
     // Forecasts
     document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{S.forecastFilter=b.dataset.filter;render();}));
-    document.getElementById('industry-filter')?.addEventListener('change',e=>{S.forecastIndustryFilter=e.target.value;if(!S.forecastFilter||S.forecastFilter==='suggested')S.forecastFilter='all';render();});
-    document.getElementById('timeline-filter')?.addEventListener('change',e=>{S.forecastTimelineFilter=e.target.value;if(!S.forecastFilter||S.forecastFilter==='suggested')S.forecastFilter='all';render();});
+    document.getElementById('industry-filter')?.addEventListener('change',e=>{S.forecastIndustryFilter=e.target.value;if(S.forecastViewMode==='forecasts'&&(!S.forecastFilter||S.forecastFilter==='suggested'))S.forecastFilter='all';render();});
+    document.getElementById('timeline-filter')?.addEventListener('change',e=>{S.forecastTimelineFilter=e.target.value;if(S.forecastViewMode==='forecasts'&&(!S.forecastFilter||S.forecastFilter==='suggested'))S.forecastFilter='all';render();});
     document.getElementById('clear-filters')?.addEventListener('click',()=>{S.forecastIndustryFilter='';S.forecastTimelineFilter='';render();});
+    // View mode toggle
+    document.querySelectorAll('.view-mode-btn').forEach(b=>b.addEventListener('click',()=>{S.forecastViewMode=b.dataset.view;S.forecastIndustryFilter='';S.forecastTimelineFilter='';render();}));
+    // Opportunity card - see quests
+    document.querySelectorAll('.opp-card-start').forEach(b=>b.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        const fid = b.dataset.forecastId;
+        const oppIdx = parseInt(b.dataset.oppIdx);
+        S.selectedForecast = FORECAST_DATABASE.find(f => f.id === fid);
+        S.expandedOpp = oppIdx;
+        S.modal = 'forecast-detail';
+        render();
+    }));
+    // Opportunity card - follow forecast
+    document.querySelectorAll('.opp-card-follow').forEach(b=>b.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        const fid = b.dataset.forecastId;
+        if(!S.followedForecasts.includes(fid)){S.followedForecasts.push(fid);}
+        saveState();render();
+    }));
+    // Opportunity card - click anywhere to open detail
+    document.querySelectorAll('.opp-card').forEach(c=>c.addEventListener('click',()=>{
+        const fid = c.dataset.oppForecast;
+        const oppIdx = parseInt(c.dataset.oppIdx);
+        if(fid && !isNaN(oppIdx)){
+            S.selectedForecast = FORECAST_DATABASE.find(f => f.id === fid);
+            S.expandedOpp = oppIdx;
+            S.modal = 'forecast-detail';
+            render();
+        }
+    }));
     document.querySelectorAll('.view-forecast-detail').forEach(b=>b.addEventListener('click',()=>{
         S.selectedForecast = FORECAST_DATABASE.find(f => f.id === b.dataset.id);
         S.expandedOpp = null; // Reset expanded opportunity
@@ -10795,13 +10826,12 @@ function getUrgency(forecast) {
 
 function forecastsH() {
     const forecasts = FORECAST_DATABASE;
+    const viewMode = S.forecastViewMode || 'forecasts';
     
     // Get user's profile for personalization
     const occupation = S.user?.occupation || S.onboardData?.occupation || '';
     const interests = S.user?.forecastInterests || S.user?.forecast_interests || S.onboardData?.forecastInterests || [];
     const goals = S.user?.goals || S.onboardData?.goals || [];
-    
-    // Check if user has set up their profile
     const hasProfile = occupation || interests.length > 0;
     
     // Map occupations to relevant categories
@@ -10819,81 +10849,56 @@ function forecastsH() {
         'manufacturing': ['ai', 'work', 'tech', 'transportation'],
         'other': ['ai', 'work', 'tech', 'transportation']
     };
-    
-    // Map interests to categories
     const interestCategories = {
-        'ai': ['ai', 'tech'],
-        'crypto': ['crypto', 'finance'],
-        'finance': ['finance', 'work'],
-        'media': ['media', 'ai'],
-        'health': ['work', 'ai', 'transportation'],
-        'climate': ['tech', 'work', 'transportation'],
-        'transportation': ['transportation', 'tech', 'ai']
+        'ai': ['ai', 'tech'], 'crypto': ['crypto', 'finance'], 'finance': ['finance', 'work'],
+        'media': ['media', 'ai'], 'health': ['work', 'ai', 'transportation'],
+        'climate': ['tech', 'work', 'transportation'], 'transportation': ['transportation', 'tech', 'ai']
     };
-    
-    // Build relevant categories based on profile
     let relevantCategories = new Set();
-    
-    if (occupation && occupationCategories[occupation]) {
-        occupationCategories[occupation].forEach(c => relevantCategories.add(c));
-    }
-    
-    interests.forEach(interest => {
-        if (interestCategories[interest]) {
-            interestCategories[interest].forEach(c => relevantCategories.add(c));
-        }
-    });
-    
-    // Get suggested forecasts based on profile
+    if (occupation && occupationCategories[occupation]) occupationCategories[occupation].forEach(c => relevantCategories.add(c));
+    interests.forEach(interest => { if (interestCategories[interest]) interestCategories[interest].forEach(c => relevantCategories.add(c)); });
     let suggestedForecasts = [];
     if (relevantCategories.size > 0) {
-        suggestedForecasts = forecasts.filter(f => 
-            relevantCategories.has(f.category) || f.threatMode === weakest()
-        ).slice(0, 6);
+        suggestedForecasts = forecasts.filter(f => relevantCategories.has(f.category) || f.threatMode === weakest()).slice(0, 6);
+    }
+    const followedForecasts = forecasts.filter(f => S.followedForecasts.includes(f.id));
+
+    // ============ OPPORTUNITIES VIEW ============
+    if (viewMode === 'opportunities') {
+        return forecastsOpportunityView(forecasts, followedForecasts, hasProfile);
     }
     
-    // Get followed forecasts
-    const followedForecasts = forecasts.filter(f => S.followedForecasts.includes(f.id));
-    
-    // Apply filter if one is selected
+    // ============ FORECASTS VIEW (default) ============
     const showSuggested = S.forecastFilter === 'suggested' || (!S.forecastFilter && hasProfile);
     const showFollowing = S.forecastFilter === 'following';
     
-    // Build filtered list
     let filtered = null;
     if(S.forecastFilter && S.forecastFilter !== 'all' && S.forecastFilter !== 'suggested' && S.forecastFilter !== 'following') {
         filtered = forecasts.filter(f => f.category === S.forecastFilter);
     } else if(S.forecastFilter === 'all') {
         filtered = [...forecasts];
     }
-    
-    // Apply industry filter
     if(S.forecastIndustryFilter && filtered) {
         filtered = filtered.filter(f => f.industries && f.industries.includes(S.forecastIndustryFilter));
     } else if(S.forecastIndustryFilter && !filtered) {
         filtered = forecasts.filter(f => f.industries && f.industries.includes(S.forecastIndustryFilter));
     }
-    
-    // Apply timeline filter
     if(S.forecastTimelineFilter) {
         const tf = TIMELINE_FILTERS.find(t => t.id === S.forecastTimelineFilter);
         if(tf) {
-            if(filtered) {
-                filtered = filtered.filter(f => tf.match(f.timeframe));
-            } else {
-                filtered = forecasts.filter(f => tf.match(f.timeframe));
-            }
+            if(filtered) filtered = filtered.filter(f => tf.match(f.timeframe));
+            else filtered = forecasts.filter(f => tf.match(f.timeframe));
         }
     }
-    
-    // Show count if filtered
     const filterCount = filtered ? filtered.length : 0;
     
     return `
         <div class="page-header">
-            <h1 class="page-title">Forecasts</h1>
+            <h1 class="page-title">Forecasts & Opportunities</h1>
             <p class="page-subtitle">Follow predictions that matter to your career. Get quests to prepare.</p>
         </div>
+        
+        ${renderViewToggle(viewMode)}
         
         ${followedForecasts.length > 0 ? `
         <div class="card mb-20" style="padding:15px;background:var(--bg-primary);border-color:var(--accent)">
@@ -10971,6 +10976,166 @@ function forecastsH() {
             .forecast-item:hover { border-color: var(--text-secondary); }
             .threat-to-weakest { background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255,68,68,0.05) 100%); }
         </style>
+    `;
+}
+
+function renderViewToggle(viewMode) {
+    return `
+        <div class="card mb-20" style="padding:4px;display:flex;gap:4px">
+            <button class="btn btn-small view-mode-btn ${viewMode === 'forecasts' ? 'btn-primary' : 'btn-secondary'}" data-view="forecasts" style="flex:1;text-align:center">
+                🔮 By Forecast
+            </button>
+            <button class="btn btn-small view-mode-btn ${viewMode === 'opportunities' ? 'btn-primary' : 'btn-secondary'}" data-view="opportunities" style="flex:1;text-align:center">
+                💼 By Industry
+            </button>
+        </div>
+    `;
+}
+
+function forecastsOpportunityView(forecasts, followedForecasts, hasProfile) {
+    const indFilter = S.forecastIndustryFilter;
+    const tlFilter = S.forecastTimelineFilter;
+    
+    // Build flat list of all opportunities with parent forecast context
+    let allOpps = [];
+    forecasts.forEach(f => {
+        if (!f.opportunities) return;
+        f.opportunities.forEach((opp, idx) => {
+            // Get industry tags for this opp - inherit from parent forecast
+            const industries = f.industries || [];
+            allOpps.push({
+                opp,
+                oppIdx: idx,
+                forecast: f,
+                industries
+            });
+        });
+    });
+    
+    // Apply industry filter
+    if (indFilter) {
+        allOpps = allOpps.filter(o => o.industries.includes(indFilter));
+    }
+    
+    // Apply timeline filter on the opportunity timeframe
+    if (tlFilter) {
+        const tf = TIMELINE_FILTERS.find(t => t.id === tlFilter);
+        if (tf) {
+            allOpps = allOpps.filter(o => tf.match(o.opp.timeframe || o.forecast.timeframe));
+        }
+    }
+    
+    // Sort: followed forecast opps first, then by difficulty
+    const diffOrder = {easy: 0, medium: 1, hard: 2};
+    allOpps.sort((a, b) => {
+        const aFollowed = S.followedForecasts.includes(a.forecast.id) ? 0 : 1;
+        const bFollowed = S.followedForecasts.includes(b.forecast.id) ? 0 : 1;
+        if (aFollowed !== bFollowed) return aFollowed - bFollowed;
+        return (diffOrder[a.opp.difficulty] || 1) - (diffOrder[b.opp.difficulty] || 1);
+    });
+    
+    // Group by industry for display if no filter selected
+    const industryLabel = indFilter && INDUSTRY_TAGS[indFilter] ? `${INDUSTRY_TAGS[indFilter].icon} ${INDUSTRY_TAGS[indFilter].name}` : 'All Industries';
+    
+    return `
+        <div class="page-header">
+            <h1 class="page-title">Forecasts & Opportunities</h1>
+            <p class="page-subtitle">Browse skill paths by industry. Find opportunities hidden inside forecasts you might not expect.</p>
+        </div>
+        
+        ${renderViewToggle('opportunities')}
+        
+        <div class="card mb-20" style="padding:15px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <span style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px">Industry:</span>
+                <select class="form-input" id="industry-filter" style="padding:4px 8px;font-size:11px;width:auto;min-width:160px;background:var(--bg-primary)">
+                    <option value="">All Industries (${allOpps.length} opportunities)</option>
+                    ${Object.entries(INDUSTRY_TAGS).map(([k,v]) => {
+                        const count = forecasts.reduce((sum, f) => sum + ((f.industries || []).includes(k) ? (f.opportunities || []).length : 0), 0);
+                        return count > 0 ? `<option value="${k}" ${indFilter===k?'selected':''}>${v.icon} ${v.name} (${count})</option>` : '';
+                    }).join('')}
+                </select>
+                <select class="form-input" id="timeline-filter" style="padding:4px 8px;font-size:11px;width:auto;min-width:130px;background:var(--bg-primary)">
+                    <option value="">All Timelines</option>
+                    ${TIMELINE_FILTERS.map(t => 
+                        `<option value="${t.id}" ${tlFilter===t.id?'selected':''}>${t.label}</option>`
+                    ).join('')}
+                </select>
+                ${indFilter || tlFilter ? '<button class="btn btn-small btn-secondary" id="clear-filters">✕ Clear</button>' : ''}
+            </div>
+        </div>
+        
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:15px">
+            ${allOpps.length} opportunit${allOpps.length !== 1 ? 'ies' : 'y'} found
+            ${indFilter ? ` in ${industryLabel}` : ''}
+        </div>
+        
+        ${allOpps.length > 0 ? allOpps.map(o => renderOpportunityCard(o)).join('') : `
+        <div class="card" style="padding:30px;text-align:center">
+            <p class="text-secondary">No opportunities match these filters. Try a different industry or timeline.</p>
+        </div>
+        `}
+        
+        <style>
+            .opp-card { transition: all 0.2s; cursor: pointer; }
+            .opp-card:hover { border-color: var(--accent); }
+        </style>
+    `;
+}
+
+function renderOpportunityCard(o) {
+    const {opp, oppIdx, forecast, industries} = o;
+    const isFollowed = S.followedForecasts.includes(forecast.id);
+    const hasProgress = S.forecastProgress?.[forecast.id]?.[oppIdx] > 0;
+    const progress = S.forecastProgress?.[forecast.id]?.[oppIdx] || 0;
+    const totalQuests = opp.quests ? opp.quests.length : 0;
+    const modeColors = {ideas: 'var(--ideas)', personality: 'var(--personality)', execution: 'var(--execution)'};
+    const modeColor = modeColors[opp.mode] || 'var(--text-secondary)';
+    
+    return `
+    <div class="card mb-15 opp-card" style="${isFollowed ? 'border-color:var(--accent);' : ''}" data-opp-forecast="${forecast.id}" data-opp-idx="${oppIdx}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <span style="font-size:9px;padding:2px 6px;background:${modeColor};color:white;text-transform:uppercase;letter-spacing:0.5px">${opp.mode}</span>
+                <span style="font-size:9px;padding:2px 6px;background:var(--bg-tertiary);color:var(--text-secondary)">${opp.difficulty}</span>
+                <span style="font-size:9px;padding:2px 6px;background:var(--bg-tertiary);color:var(--text-secondary)">${opp.timeframe || forecast.timeframe}</span>
+            </div>
+            ${isFollowed ? '<span style="font-size:9px;padding:2px 6px;background:var(--accent);color:white">FOLLOWING</span>' : ''}
+        </div>
+        
+        <h3 style="font-size:15px;line-height:1.4;margin-bottom:8px">${opp.title}</h3>
+        
+        <p style="font-size:12px;line-height:1.5;color:var(--text-secondary);margin-bottom:12px">${opp.description ? (opp.description.length > 160 ? opp.description.substring(0, 160) + '...' : opp.description) : ''}</p>
+        
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;padding:8px;background:var(--bg-primary);border-left:3px solid var(--bg-tertiary)">
+            <span style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">From forecast:</span>
+            <span style="font-size:11px;color:var(--text-secondary)">${forecast.title.length > 60 ? forecast.title.substring(0, 60) + '...' : forecast.title}</span>
+            <span style="font-size:10px;color:var(--warning);font-weight:700;margin-left:auto;white-space:nowrap">${forecast.probability}%</span>
+        </div>
+        
+        ${industries.length > 0 ? `
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">
+            ${industries.slice(0, 3).map(ind => INDUSTRY_TAGS[ind] ? `<span style="font-size:9px;padding:2px 6px;background:var(--bg-tertiary);color:var(--text-secondary)">${INDUSTRY_TAGS[ind].icon} ${INDUSTRY_TAGS[ind].name}</span>` : '').join('')}
+        </div>
+        ` : ''}
+        
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            ${hasProgress ? `
+                <div style="flex:1;min-width:100px">
+                    <div style="height:4px;background:var(--bg-tertiary);border-radius:2px;overflow:hidden">
+                        <div style="height:100%;width:${Math.round((progress/totalQuests)*100)}%;background:var(--accent)"></div>
+                    </div>
+                    <div style="font-size:9px;color:var(--text-muted);margin-top:3px">${progress}/${totalQuests} quests done</div>
+                </div>
+            ` : `
+                <span style="font-size:10px;color:var(--text-muted)">${totalQuests} quests</span>
+            `}
+            <button class="btn btn-small btn-primary opp-card-start" data-forecast-id="${forecast.id}" data-opp-idx="${oppIdx}">
+                ${hasProgress ? 'Continue →' : 'See Quests →'}
+            </button>
+            ${!isFollowed ? `<button class="btn btn-small btn-secondary opp-card-follow" data-forecast-id="${forecast.id}">+ Follow</button>` : ''}
+        </div>
+    </div>
     `;
 }
 
@@ -11055,7 +11220,14 @@ function forecastDetailModalH() {
                     <button style="background:none;border:none;color:var(--text-secondary);font-size:20px;cursor:pointer" id="close-forecast-modal">×</button>
                 </div>
                 
-                <h3 style="font-size:18px;line-height:1.4;margin-bottom:15px">${f.title}</h3>
+                <h3 style="font-size:18px;line-height:1.4;margin-bottom:10px">${f.title}</h3>
+                
+                ${f.industries && f.industries.length > 0 ? `
+                <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:15px">
+                    <span style="font-size:10px;padding:3px 8px;background:var(--bg-tertiary);color:var(--text-secondary)">${CATEGORIES[f.category]?.icon} ${CATEGORIES[f.category]?.name}</span>
+                    ${f.industries.map(ind => INDUSTRY_TAGS[ind] ? `<span style="font-size:10px;padding:3px 8px;background:var(--bg-tertiary);color:var(--text-secondary)">${INDUSTRY_TAGS[ind].icon} ${INDUSTRY_TAGS[ind].name}</span>` : '').join('')}
+                </div>
+                ` : `<div style="margin-bottom:15px"><span style="font-size:10px;padding:3px 8px;background:var(--bg-tertiary);color:var(--text-secondary)">${CATEGORIES[f.category]?.icon} ${CATEGORIES[f.category]?.name}</span></div>`}
                 
                 <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap">
                     <div style="background:var(--bg-primary);padding:12px 16px;text-align:center">
