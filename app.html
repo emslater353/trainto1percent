@@ -837,6 +837,26 @@ async function authUpdateUserType(accessToken, userType) {
     }
 }
 
+async function authUpdateMetadata(accessToken, metadata) {
+    const url = `${SUPABASE_URL}/auth/v1/user`;
+    try {
+        const r = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ data: metadata })
+        });
+        const result = await r.json();
+        if (!r.ok) return { error: result };
+        return result;
+    } catch (e) {
+        return { error: { message: e.message } };
+    }
+}
+
 const S = {
     screen: 'login', user: null, scores: {ideas:50,personality:50,execution:50},
     quests: [], receipts: [], chat: [], loading: false, modal: null, selectedQuest: null,
@@ -2571,6 +2591,12 @@ function bindEvents(){
             console.error('Lead capture error:', authResult.error);
         }
         
+        // Sign in to get token for metadata updates
+        const signIn = await authSignIn(S.diagnosticEmail, tempPassword);
+        if (signIn.access_token) {
+            localStorage.setItem('apc_auth_token', signIn.access_token);
+        }
+        
         S.diagnosticStep = 1;
         render();
     });
@@ -2590,6 +2616,15 @@ function bindEvents(){
             start_date: new Date().toISOString(),
             plan: 'lead'
         });
+        
+        // Also save industry/role to Supabase Auth metadata
+        const authToken = localStorage.getItem('apc_auth_token');
+        if (authToken) {
+            await authUpdateMetadata(authToken, {
+                industry: S.diagnosticIndustry,
+                role: S.diagnosticRole
+            });
+        }
         
         // Show loading screen
         S.diagnosticStep = 2;
@@ -3248,6 +3283,16 @@ function handleOnboardOccupation(){
     S.onboardData.occupation = document.getElementById('ob-occupation').value;
     S.onboardData.industry = document.getElementById('ob-industry').value;
     S.onboardData.experience = document.getElementById('ob-experience').value;
+    
+    // Save industry/role to Supabase Auth metadata
+    const authToken = localStorage.getItem('apc_auth_token');
+    if (authToken) {
+        authUpdateMetadata(authToken, {
+            industry: S.onboardData.industry,
+            role: S.onboardData.occupation
+        });
+    }
+    
     S.onboardStep = 3;
     render();
 }
