@@ -11240,7 +11240,7 @@ function renderForecastCard(f) {
         </div>
         
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-            <button class="btn btn-small btn-primary view-forecast-detail" data-id="${f.id}">See Skill Paths →</button>
+            <button class="btn btn-small btn-primary view-forecast-detail" data-id="${f.id}">See Emerging Opportunities →</button>
             <button class="btn btn-small ${S.followedForecasts.includes(f.id)?'btn-success':'btn-secondary'} follow-forecast" data-id="${f.id}">
                 ${S.followedForecasts.includes(f.id)?'✓ Tracking':'+ Track This'}
             </button>
@@ -11299,7 +11299,7 @@ function forecastDetailModalH() {
                 ` : ''}
                 
                 <div style="margin-bottom:20px">
-                    <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Skill Paths to Prepare (${f.opportunities.length})</div>
+                    <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Emerging Opportunities (${f.opportunities.length})</div>
                     
                     ${f.opportunities.map((opp, i) => {
                         const progress = S.forecastProgress[f.id]?.[i] || 0;
