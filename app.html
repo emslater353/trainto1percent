@@ -2710,7 +2710,7 @@ IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jo
         const password = document.getElementById('ob-pass').value;
         const email = S.onboardData?.email || S.user?.email;
         
-        // Create Supabase Auth account
+        // Create Supabase Auth account (payment already confirmed)
         const authResult = await authSignUp(email, password, 'member');
         if (authResult.error && authResult.error.message !== 'User already registered') {
             console.error('Auth signup error:', authResult.error);
@@ -2720,11 +2720,11 @@ IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jo
             return;
         }
         
-        // Sign in to get access token, then upgrade lead → member if needed
+        // Sign in to get access token
         const signInResult = await authSignIn(email, password);
         if (signInResult.access_token) {
             localStorage.setItem('apc_auth_token', signInResult.access_token);
-            // Upgrade user_type from lead to member (in case they took the quiz first)
+            // Ensure user_type is member (in case they were a lead from earlier)
             await authUpdateUserType(signInResult.access_token, 'member');
         }
         
@@ -3220,8 +3220,8 @@ async function handleOnboardAccount(){
     const email = document.getElementById('ob-email').value;
     const pass = document.getElementById('ob-pass').value;
     
-    // Create Supabase Auth account
-    const authResult = await authSignUp(email, pass, 'member');
+    // Create Supabase Auth account (as lead until payment)
+    const authResult = await authSignUp(email, pass, 'lead');
     if (authResult.error) {
         if (authResult.error.message === 'User already registered') {
             alert('Email already exists. Please sign in.');
@@ -3295,7 +3295,7 @@ async function login(){
         // Old password matches! Migrate them to Supabase Auth
         console.log('Migrating user to Supabase Auth...');
         
-        const signupResult = await authSignUp(email, pass, 'member');
+        const signupResult = await authSignUp(email, pass, users[0].plan === 'paid' ? 'member' : 'lead');
         
         if (signupResult.error && signupResult.error.message !== 'User already registered') {
             console.error('Migration signup failed:', signupResult.error);
@@ -3349,8 +3349,8 @@ async function signup(){
         return;
     }
     
-    // Create Supabase Auth account
-    const authResult = await authSignUp(email, pass, 'member');
+    // Create Supabase Auth account (as lead until payment)
+    const authResult = await authSignUp(email, pass, 'lead');
     if (authResult.error && authResult.error.message !== 'User already registered') {
         console.error('Signup error:', authResult.error);
         alert('Signup failed: ' + (authResult.error.message || 'Unknown error'));
@@ -12415,6 +12415,12 @@ async function init(){
                 } else {
                     const res = await db('users','POST', S.user);
                     if(res?.length) S.user = res[0];
+                }
+                
+                // Upgrade Supabase Auth user_type from lead to member (payment confirmed)
+                const authToken = localStorage.getItem('apc_auth_token');
+                if (authToken) {
+                    await authUpdateUserType(authToken, 'member');
                 }
                 
                 localStorage.setItem('apc_session', JSON.stringify(S.user));
