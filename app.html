@@ -1830,16 +1830,28 @@ function companyH(){
         return `<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm">
             <div class="logo">AI PROOF <span>CLUB</span></div>
             <div class="card" style="margin-bottom:15px">
-                <h2 class="card-title" style="font-size:18px;margin-bottom:4px">AI Risk Report</h2>
-                <p class="text-secondary text-small">${S.companyUrl.replace(/https?:\/\//, '').replace(/\/$/, '')} · ${S.companyIndustry}</p>
+                <h2 class="card-title" style="font-size:18px;margin-bottom:6px">AI Opportunity Report</h2>
+                <p style="font-size:13px;color:var(--text-primary);margin-bottom:4px">${S.companyUrl.replace(/https?:\/\//, '').replace(/\/$/, '')}</p>
+                ${r.company_description ? `<p class="text-secondary text-small" style="line-height:1.5">${r.company_description}</p>` : ''}
             </div>
             
-            <div class="card" style="margin-bottom:15px;border-left:3px solid var(--danger)">
-                <h3 style="font-size:13px;color:var(--danger);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Top Threats</h3>
-                ${(r.threats || []).map(t => `
-                    <div style="padding:10px 0;border-bottom:1px solid var(--bg-tertiary)">
+            <div class="card" style="margin-bottom:15px;border-left:3px solid var(--accent)">
+                <h3 style="font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Opportunities</h3>
+                ${(r.opportunities || []).map((o, i) => `
+                    <div style="padding:12px 0;${i < (r.opportunities||[]).length - 1 ? 'border-bottom:1px solid var(--bg-tertiary)' : ''}">
+                        <span style="font-size:14px;font-weight:700;color:var(--text-primary)">${o.title}</span>
+                        ${o.prediction ? `<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-top:4px">↗ ${o.prediction}</div>` : ''}
+                        <p class="text-small text-secondary" style="margin-top:6px;line-height:1.6">${o.description}</p>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="card" style="margin-bottom:15px;border-left:3px solid var(--warning)">
+                <h3 style="font-size:13px;color:var(--warning);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Risks to Watch</h3>
+                ${(r.threats || []).map((t, i) => `
+                    <div style="padding:10px 0;${i < (r.threats||[]).length - 1 ? 'border-bottom:1px solid var(--bg-tertiary)' : ''}">
                         <div style="display:flex;justify-content:space-between;align-items:baseline">
-                            <span style="font-size:13px;font-weight:600;color:var(--text-primary)">${t.title}</span>
+                            <span style="font-size:13px;font-weight:600;color:var(--text-primary)">${t.prediction || t.title}</span>
                             <span style="font-size:12px;font-weight:700;color:var(--warning)">${t.probability}%</span>
                         </div>
                         <p class="text-small text-secondary" style="margin-top:4px;line-height:1.5">${t.impact}</p>
@@ -1847,25 +1859,15 @@ function companyH(){
                 `).join('')}
             </div>
             
-            <div class="card" style="margin-bottom:15px;border-left:3px solid var(--success)">
-                <h3 style="font-size:13px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Top Opportunities</h3>
-                ${(r.opportunities || []).map(o => `
-                    <div style="padding:10px 0;border-bottom:1px solid var(--bg-tertiary)">
-                        <span style="font-size:13px;font-weight:600;color:var(--text-primary)">${o.title}</span>
-                        <p class="text-small text-secondary" style="margin-top:4px;line-height:1.5">${o.description}</p>
-                    </div>
-                `).join('')}
-            </div>
-            
             <div class="card" style="margin-bottom:15px">
-                <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Summary</h3>
-                <p class="text-small" style="line-height:1.6">${r.summary || ''}</p>
+                <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">The Bottom Line</h3>
+                <p class="text-small" style="line-height:1.7">${r.summary || ''}</p>
             </div>
             
             <div class="card text-center" style="border-color:var(--accent)">
-                <p style="font-size:13px;margin-bottom:12px">Want to prepare for these threats?</p>
-                <a href="app.html?mode=diagnostic" class="btn btn-primary btn-full">Get Your Personal AI-Proof Plan →</a>
-                <p class="text-secondary text-small mt-10">Takes 90 seconds. Completely free.</p>
+                <p style="font-size:14px;font-weight:600;margin-bottom:6px">Ready to act on these opportunities?</p>
+                <p class="text-secondary text-small" style="margin-bottom:15px">Get a personalized plan with weekly quests to build the skills you need.</p>
+                <a href="app.html?mode=diagnostic" class="btn btn-primary btn-full">Get Your AI-Proof Plan →</a>
             </div>
         </div></div>`;
     }
@@ -2926,34 +2928,45 @@ IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jo
         
         // Build forecast summaries for the AI
         const forecastSummaries = FORECAST_DATABASE.map(f => 
-            `[${f.id}] ${f.title} (${f.probability}%, ${f.timeframe}) - Industries: ${(f.industries||[]).join(', ')} - Opportunities: ${(f.opportunities||[]).map(o=>o.title.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{FE00}-\u{FEFF}]\s*/u,'')).join('; ')}`
+            `- ${f.title} (${f.probability}%, ${f.timeframe}): ${(f.opportunities||[]).map(o=>o.title.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{FE00}-\u{FEFF}]\s*/u,'')).join('; ')}`
         ).join('\n');
         
         try {
-            const prompt = `You are an AI business risk analyst. Analyze this company for AI-related threats and opportunities.
+            const prompt = `You are a brilliant AI strategist who sees connections others miss. Your job is to look at a company and creatively connect AI mega-trends to their specific business.
 
 Company URL: ${S.companyUrl}
-Industry: ${S.companyIndustry}
+Industry they selected: ${S.companyIndustry}
 
-Here are real AI predictions and their opportunities:
+First, figure out what this company actually DOES based on the URL. The domain name itself is a clue. Think about their likely products, audience, culture, and business model.
+
+Here are real AI predictions happening in the next 1-10 years:
 ${forecastSummaries}
 
-Based on the company URL and industry, identify which predictions are most relevant.
+Now think CREATIVELY. Don't just match on industry tags. Think about:
+- How could self-driving cars create new contexts for this company's product?
+- How could the loneliness epidemic create demand this company could fill?
+- How could AI-generated content (movies, music, games) intersect with what they do?
+- How could human-AI merging create demand for their uniquely human skills?
+- What skills or experiences does this company offer that become MORE valuable as AI advances?
+- What new product lines or services could they launch based on these trends?
+
+For example: A meme company could make games for self-driving car passengers. A meme company could build community features to fight loneliness. A meme company could produce AI-generated comedy films. A meme company's humor expertise becomes more valuable because humor is hard to download into AI.
 
 Return ONLY valid JSON (no markdown, no backticks):
 {
-    "threats": [
-        {"title": "<prediction title>", "probability": <number>, "impact": "<1-2 sentence explanation of how this specifically threatens this company>"}
-    ],
+    "company_description": "<1 sentence — what this company likely does>",
     "opportunities": [
-        {"title": "<opportunity title>", "description": "<1-2 sentence explanation of how this company could pursue this>"}
+        {"prediction": "<which AI prediction this connects to>", "title": "<creative opportunity name>", "description": "<2-3 sentences explaining the specific, creative opportunity for THIS company. Be concrete and exciting, not generic.>"}
     ],
-    "summary": "<3-4 sentence executive summary of this company's AI risk profile and recommended next steps>"
+    "threats": [
+        {"prediction": "<which AI prediction this relates to>", "probability": <number 1-100>, "impact": "<1-2 sentence explanation of how this specifically threatens THIS company>"}
+    ],
+    "summary": "<3-4 sentence executive summary. Lead with the exciting opportunities, then mention the risks to watch. Be specific to this company.>"
 }
 
-Return exactly 4 threats and 4 opportunities. Be specific to the company, not generic.`;
+Return exactly 5 opportunities and 3 threats. Opportunities FIRST — that's what matters most. Be wildly specific and creative, not generic. Every item should feel like it was written specifically for THIS company.`;
             
-            const result = await ai([{role:'user', content: prompt}], 1000, 'company_risk');
+            const result = await ai([{role:'user', content: prompt}], 2000, 'company_risk');
             
             if (result) {
                 const cleaned = result.replace(/```json|```/g, '').trim();
