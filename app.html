@@ -883,7 +883,17 @@ const S = {
     companyDesc: '',
     companyResult: null,
     companyLoadingStep: 0,
-    companyUnlocked: false // true after $29 purchase
+    companyUnlocked: false, // true after $29 purchase
+    // Threat assessment (/google, /claude, /openai)
+    threatProvider: null, // 'google' | 'claude' | 'openai'
+    threatStep: 0, // 0=input, 1=loading, 2=results
+    threatUrl: '',
+    threatEmail: '',
+    threatIndustry: '',
+    threatDesc: '',
+    threatResult: null,
+    threatLoadingStep: 0,
+    threatUnlocked: false
 };
 
 async function db(table, method, data=null, query='') {
@@ -1490,7 +1500,7 @@ function render(){
     const screens={
         login:loginH, signup:signupH, forgot:forgotH, pricing:pricingH,
         // Free diagnostic flow (from landing page) - 4 questions with email gate
-        diagnostic:diagnosticH, company:companyH, freeQuiz:quizH, freeResults:freeResultsH,
+        diagnostic:diagnosticH, company:companyH, threat:threatH, freeQuiz:quizH, freeResults:freeResultsH,
         // Onboarding flow
         onboarding:onboardingH, upload:uploadH, analyzing:analyzingH, quiz:quizH, results:resultsH,
         // App screens
@@ -1780,6 +1790,263 @@ function companyH(){
                 <p style="font-size:16px;font-weight:700;margin-bottom:6px">Unlock Your Full 15 Opportunity Report</p>
                 <p class="text-secondary text-small" style="margin-bottom:15px">See the next ${lockedCount} shifts that will impact your company and how to act on them before competitors do.</p>
                 <button class="btn btn-primary btn-full" id="unlock-company-report">Unlock Full Report — $${COMPANY_REPORT_PRICE}</button>
+                <a href="${STRATEGY_CALL_URL}" target="_blank" style="display:block;margin-top:12px;font-size:12px;color:var(--text-secondary);text-decoration:none">or <span style="color:var(--accent);text-decoration:underline">book a strategy call</span></a>
+            </div>`;
+        }
+        
+        html += '</div></div>';
+        return html;
+    }
+    
+    return '';
+}
+
+// ==================== THREAT ASSESSMENT (/google, /claude, /openai) ====================
+
+const THREAT_PROVIDERS = {
+    google: {
+        name: 'Google',
+        color: '#4285F4',
+        tagline: 'Google is launching AI products faster than any company in history.',
+        products: [
+            {name:'Gemini 2.5 Pro', date:'Mar 2025', desc:'Most capable reasoning model, beating competitors on coding and math benchmarks'},
+            {name:'AI Overviews in Search', date:'2024–2025', desc:'AI-generated answers at the top of every search — replacing clicks to your website'},
+            {name:'NotebookLM / Audio Overviews', date:'2024', desc:'AI that reads all your docs and creates podcast-style summaries'},
+            {name:'Gemini in Workspace', date:'2024–2025', desc:'AI writing emails, creating presentations, analyzing spreadsheets inside Gmail/Docs/Sheets'},
+            {name:'Google Veo 2', date:'2025', desc:'AI video generation — full HD videos from text prompts'},
+            {name:'Project Astra', date:'2025', desc:'Real-time AI assistant that sees through your camera and understands the world'},
+            {name:'AlphaFold / AI Science', date:'2024–2025', desc:'AI solving protein folding, drug discovery, materials science'},
+            {name:'Waymo Expansion', date:'2025', desc:'Autonomous ride-hailing expanding to 10+ US cities'},
+            {name:'Gemini Code Assist', date:'2025', desc:'AI pair-programmer embedded in every developer workflow'},
+            {name:'AI-Powered Ads', date:'2025', desc:'Fully automated ad creation, targeting, and optimization — less need for agencies'}
+        ],
+        timelineIntro: 'Google has launched more AI products in the last 12 months than in the previous 5 years combined.',
+        defaultMonths: 18
+    },
+    claude: {
+        name: 'Anthropic (Claude)',
+        color: '#D97706',
+        tagline: 'Anthropic is building the most trusted AI — and it\'s coming for knowledge work.',
+        products: [
+            {name:'Claude Opus 4', date:'2025', desc:'Most capable AI model for complex reasoning, analysis, and extended thinking'},
+            {name:'Claude Computer Use', date:'2025', desc:'AI that can operate your computer — clicking, typing, navigating software autonomously'},
+            {name:'Claude for Enterprise', date:'2024–2025', desc:'Enterprise AI assistant with team collaboration and company knowledge'},
+            {name:'Claude Code', date:'2025', desc:'AI coding agent that writes, tests, and deploys code from your terminal'},
+            {name:'Claude in Excel / Chrome', date:'2025', desc:'AI agents embedded directly in spreadsheets and browsers'},
+            {name:'MCP (Model Context Protocol)', date:'2024–2025', desc:'Open standard letting AI connect to any tool, database, or API'},
+            {name:'Extended Thinking', date:'2025', desc:'AI that reasons step-by-step through complex problems for minutes before answering'},
+            {name:'Claude API Batch Processing', date:'2025', desc:'Process thousands of documents, emails, or data points automatically'}
+        ],
+        timelineIntro: 'Anthropic\'s Claude is becoming the default AI for enterprises. Every capability it gains is one less task that requires a human.',
+        defaultMonths: 14
+    },
+    openai: {
+        name: 'OpenAI',
+        color: '#10A37F',
+        tagline: 'OpenAI is racing to build AGI — and every product they ship reshapes your industry.',
+        products: [
+            {name:'GPT-4o & ChatGPT', date:'2024–2025', desc:'Most widely-used AI assistant — 200M+ weekly users doing work that used to require specialists'},
+            {name:'Sora', date:'2025', desc:'AI video generation — minutes-long HD videos from text, threatening content studios'},
+            {name:'GPT Store / Custom GPTs', date:'2024–2025', desc:'Anyone can build an AI tool for any niche — marketplace of millions of AI apps'},
+            {name:'o3 / Reasoning Models', date:'2025', desc:'AI that thinks through complex problems, approaching PhD-level on science and math'},
+            {name:'Operator / AI Agents', date:'2025', desc:'AI that can browse the web, fill forms, and complete tasks autonomously'},
+            {name:'Codex / AI Coding', date:'2024–2025', desc:'AI writing production code, reviewing PRs, fixing bugs — reshaping software engineering'},
+            {name:'DALL-E & Image Gen', date:'2024–2025', desc:'AI-generated images indistinguishable from photos — impacting design, marketing, advertising'},
+            {name:'Enterprise API', date:'2024–2025', desc:'Companies building AI into every product and workflow via API'},
+            {name:'Voice Mode', date:'2024–2025', desc:'Natural voice conversations with AI — replacing phone support, coaching, tutoring'},
+            {name:'OpenAI for Education', date:'2025', desc:'AI tutor for every student — personalized learning threatening traditional education models'}
+        ],
+        timelineIntro: 'OpenAI ships new capabilities monthly. Each one eliminates another category of human-only work.',
+        defaultMonths: 12
+    }
+};
+
+function threatH(){
+    const provider = THREAT_PROVIDERS[S.threatProvider];
+    if(!provider) return '';
+    
+    // Step 0: Input form
+    if(S.threatStep === 0){
+        return `<div class="screen-center"><div class="container-sm">
+            <div class="logo">AI PROOF <span>CLUB</span></div>
+            
+            <div style="margin-bottom:20px;padding:18px;background:${provider.color}15;border:1px solid ${provider.color}40">
+                <div style="font-size:11px;color:${provider.color};text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:8px">${provider.name} Threat Assessment</div>
+                <p style="font-size:14px;color:var(--text-primary);line-height:1.5;margin:0">${provider.tagline}</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title" style="font-size:18px;margin-bottom:6px">How exposed is your company?</h2>
+                <p class="text-secondary text-small" style="margin-bottom:4px">We'll analyze how ${provider.name}'s AI launches threaten your business — and show you how to stay ahead.</p>
+                <p class="text-secondary text-small" style="margin-bottom:20px;color:var(--accent)">3 insights free. Unlock the full report (15 opportunities + timeline) after.</p>
+                <form id="threat-form">
+                    <div class="form-group">
+                        <label class="form-label">Your Company Website</label>
+                        <input type="url" class="form-input" id="threat-url" required placeholder="https://yourcompany.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">What does your company do? <span style="color:var(--text-muted);font-weight:400">(1 sentence)</span></label>
+                        <input type="text" class="form-input" id="threat-desc" placeholder="e.g. We run a digital marketing agency" maxlength="150">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Your Email</label>
+                        <input type="email" class="form-input" id="threat-email" required placeholder="you@company.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Industry</label>
+                        <select class="form-input" id="threat-industry" required>
+                            <option value="">Select industry</option>
+                            ${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Run ${provider.name} Threat Assessment →</button>
+                </form>
+            </div>
+        </div></div>`;
+    }
+    
+    // Step 1: Loading
+    if(S.threatStep === 1){
+        const steps = ['Scanning your business...', `Analyzing ${provider.name}'s AI launches...`, 'Calculating threat timeline...', 'Finding defensive opportunities...', 'Building your report...'];
+        return `<div class="screen-center"><div class="container-sm">
+            <div class="logo">AI PROOF <span>CLUB</span></div>
+            <div class="card text-center" style="padding:40px">
+                <div style="font-size:28px;margin-bottom:15px">⚡</div>
+                <h2 class="card-title">${provider.name} vs ${S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'')}</h2>
+                <div style="margin-top:20px">
+                    ${steps.map((step,i)=>`
+                        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;opacity:${i<=S.threatLoadingStep?1:0.3};transition:opacity 0.3s">
+                            <span style="color:${i<S.threatLoadingStep?'var(--success)':i===S.threatLoadingStep?provider.color:'var(--text-muted)'};font-size:14px">${i<S.threatLoadingStep?'✓':i===S.threatLoadingStep?'◉':'○'}</span>
+                            <span class="text-small">${step}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div></div>`;
+    }
+    
+    // Step 2: Results
+    if(S.threatStep === 2 && S.threatResult){
+        const r = S.threatResult;
+        const domain = S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        const freeOpps = (r.opportunities || []).slice(0, 3);
+        const lockedOpps = (r.opportunities || []).slice(3);
+        const lockedCount = Math.max(12, 15 - freeOpps.length);
+        const allRisks = r.threats || [];
+        const freeRisks = allRisks.slice(0, 2);
+        
+        let html = `<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm">
+            <div class="logo">AI PROOF <span>CLUB</span></div>
+            
+            <div style="margin-bottom:20px;padding:20px 24px;background:linear-gradient(135deg, rgba(255,60,60,0.12) 0%, rgba(255,60,60,0.04) 100%);border:1px solid rgba(255,60,60,0.3);position:relative;overflow:hidden">
+                <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${provider.color}"></div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="font-size:18px">🎯</span>
+                    <span style="font-size:10px;color:${provider.color};text-transform:uppercase;letter-spacing:2px;font-weight:700">${provider.name} Threat Level</span>
+                </div>
+                <h2 style="font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:8px">${r.threat_level || 'High Exposure'}</h2>
+                <p style="font-size:13px;color:var(--text-secondary);line-height:1.5">${r.threat_summary || `${provider.name} is actively building products that overlap with ${domain}'s core business.`}</p>
+                ${r.company_description ? `<p style="font-size:11px;color:var(--text-muted);margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,60,60,0.15)">${domain} — ${r.company_description}</p>` : ''}
+            </div>
+            
+            <div style="margin-bottom:15px;padding:18px;background:#111118;border:1px solid #1a1a2e">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                    <span style="font-size:14px">⏱️</span>
+                    <span style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;font-weight:700">Estimated Timeline</span>
+                </div>
+                <p style="font-size:20px;font-weight:700;color:var(--text-primary);margin-bottom:4px">${r.months_until_threat || provider.defaultMonths} months</p>
+                <p style="font-size:12px;color:var(--text-secondary);line-height:1.5">${r.timeline_reason || `Until ${provider.name}'s AI products directly compete with ${domain}'s core offering.`}</p>
+            </div>
+            
+            <div style="margin-bottom:15px;padding:18px;background:#111118;border:1px solid #1a1a2e">
+                <div style="font-size:11px;color:${provider.color};text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">${provider.name}'s AI Products Targeting Your Space</div>
+                ${provider.products.slice(0,5).map((p,i)=>`
+                    <div style="padding:6px 0;${i<4?'border-bottom:1px solid var(--bg-tertiary)':''}">
+                        <div style="display:flex;justify-content:space-between;align-items:baseline">
+                            <span style="font-size:12px;font-weight:600;color:var(--text-primary)">${p.name}</span>
+                            <span style="font-size:10px;color:var(--text-muted)">${p.date}</span>
+                        </div>
+                        <p style="font-size:11px;color:var(--text-secondary);margin-top:2px">${p.desc}</p>
+                    </div>
+                `).join('')}
+                <p style="font-size:11px;color:var(--text-muted);margin-top:8px">+ ${provider.products.length - 5} more products launched recently</p>
+            </div>
+            
+            <div style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;padding-left:2px">How to make ${domain} AI-proof</div>`;
+        
+        // Free opportunities
+        html += freeOpps.map(o => `
+            <div class="card" style="margin-bottom:12px;border-left:3px solid var(--accent)">
+                ${o.prediction ? `<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Prediction: ${o.prediction}</div>` : ''}
+                <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:6px">${o.title}</div>
+                <p class="text-small text-secondary" style="line-height:1.6">${o.description}</p>
+            </div>
+        `).join('');
+        
+        // Risks
+        html += `<div class="card" style="margin-bottom:15px;border-left:3px solid var(--warning)">
+            <h3 style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Risks from ${provider.name}</h3>
+            ${freeRisks.map(t=>`
+                <div style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline">
+                        <span style="font-size:12px;font-weight:600;color:var(--text-primary)">${t.prediction||t.title}</span>
+                        <span style="font-size:11px;font-weight:700;color:var(--warning)">${t.probability}%</span>
+                    </div>
+                    <p style="font-size:11px;color:var(--text-secondary);margin-top:3px;line-height:1.5">${t.impact}</p>
+                </div>
+            `).join('')}
+            ${!S.threatUnlocked && allRisks.length > 2 ? `
+                <div style="padding:10px 0 2px 0;display:flex;align-items:center;gap:6px">
+                    <span style="font-size:13px">🔒</span>
+                    <span style="font-size:11px;color:var(--text-muted)">${allRisks.length - 2} more ${provider.name}-specific risks in full report</span>
+                </div>
+            ` : ''}
+            ${S.threatUnlocked ? allRisks.slice(2).map(t=>`
+                <div style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline">
+                        <span style="font-size:12px;font-weight:600;color:var(--text-primary)">${t.prediction||t.title}</span>
+                        <span style="font-size:11px;font-weight:700;color:var(--warning)">${t.probability}%</span>
+                    </div>
+                    <p style="font-size:11px;color:var(--text-secondary);margin-top:3px;line-height:1.5">${t.impact}</p>
+                </div>
+            `).join('') : ''}
+        </div>`;
+        
+        if(S.threatUnlocked && lockedOpps.length > 0){
+            html += `<div style="margin-bottom:15px;padding:12px;border:1px solid var(--accent);text-align:center">
+                <span style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px">Full Report — ${lockedOpps.length} More Opportunities</span>
+            </div>`;
+            html += lockedOpps.map(o => `
+                <div class="card" style="margin-bottom:12px;border-left:3px solid var(--accent)">
+                    ${o.prediction ? `<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Prediction: ${o.prediction}</div>` : ''}
+                    <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:6px">${o.title}</div>
+                    <p class="text-small text-secondary" style="line-height:1.6">${o.description}</p>
+                </div>
+            `).join('');
+            
+            // Download + Share section
+            html += `<div class="card" style="margin-bottom:15px">
+                <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Share with Your Team</h3>
+                <button class="btn btn-secondary btn-full" id="download-threat-pdf" style="margin-bottom:10px">Download Full Report (PDF) →</button>
+                <div style="display:flex;gap:10px">
+                    <input type="email" class="form-input" id="share-email" placeholder="teammate@company.com" style="flex:1;font-size:12px">
+                    <button class="btn btn-secondary" id="send-threat-email" style="white-space:nowrap;font-size:11px">Send</button>
+                </div>
+                <p class="text-secondary text-small" style="margin-top:8px">Send this report to your team so everyone is aligned.</p>
+            </div>`;
+            
+            html += `<div class="card text-center" style="border-color:var(--accent)">
+                <p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p>
+                <a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a>
+            </div>`;
+        } else {
+            html += `<p style="font-size:13px;text-align:center;margin-bottom:6px;color:var(--text-secondary)">Right now, you're operating with ~20% visibility into ${provider.name}'s impact on your business.</p>
+            <p style="font-size:13px;text-align:center;margin-bottom:15px;color:var(--text-muted)">🔒 ${lockedCount} more opportunities + full timeline in the complete report</p>
+            
+            <div class="card text-center" style="border-color:var(--accent)">
+                <p style="font-size:16px;font-weight:700;margin-bottom:6px">Unlock Your Full ${provider.name} Defense Report</p>
+                <p class="text-secondary text-small" style="margin-bottom:15px">15 opportunities, full risk analysis, downloadable PDF for your team.</p>
+                <button class="btn btn-primary btn-full" id="unlock-threat-report">Unlock Full Report — $${COMPANY_REPORT_PRICE}</button>
                 <a href="${STRATEGY_CALL_URL}" target="_blank" style="display:block;margin-top:12px;font-size:12px;color:var(--text-secondary);text-decoration:none">or <span style="color:var(--accent);text-decoration:underline">book a strategy call</span></a>
             </div>`;
         }
@@ -2714,6 +2981,135 @@ Exactly 3 in o (one per prediction above), 2 in r. Every item MUST be specific t
         render();
         // Scroll to top to see unlocked content
         window.scrollTo({top:0, behavior:'smooth'});
+    });
+    
+    // Threat Assessment form
+    document.getElementById('threat-form')?.addEventListener('submit', async e=>{
+        e.preventDefault();
+        S.threatUrl = document.getElementById('threat-url').value;
+        S.threatEmail = document.getElementById('threat-email').value;
+        S.threatIndustry = document.getElementById('threat-industry').value;
+        S.threatDesc = (document.getElementById('threat-desc')?.value || '').trim();
+        
+        const provider = THREAT_PROVIDERS[S.threatProvider];
+        const domain = S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        const emailEnc = encodeURIComponent(S.threatEmail);
+        
+        // Check URL cache
+        const urlMatch = await db('users','GET',null,`?role=eq.${encodeURIComponent(S.threatUrl)}&source=eq.threat_${S.threatProvider}&company_result=neq.null&limit=1`);
+        if(urlMatch?.length && urlMatch[0].company_result){
+            try {
+                S.threatResult = JSON.parse(urlMatch[0].company_result);
+                const emailExists = await db('users','GET',null,`?email=eq.${emailEnc}&source=eq.threat_${S.threatProvider}`);
+                if(!emailExists?.length){
+                    await db('users','POST',{email:S.threatEmail,password:'auth_managed',industry:S.threatIndustry,role:S.threatUrl,source:'threat_'+S.threatProvider,start_date:new Date().toISOString(),plan:'lead',company_result:urlMatch[0].company_result});
+                }
+                S.threatStep = 2; render(); return;
+            } catch(e){}
+        }
+        
+        // Check email cache
+        const existing = await db('users','GET',null,`?email=eq.${emailEnc}&source=eq.threat_${S.threatProvider}`);
+        if(existing?.length && existing[0].company_result && existing[0].role === S.threatUrl){
+            try { S.threatResult = JSON.parse(existing[0].company_result); S.threatStep = 2; render(); return; } catch(e){}
+        }
+        
+        // Save lead
+        if(existing?.length){
+            await db('users','PATCH',{role:S.threatUrl,industry:S.threatIndustry,company_result:null},`?email=eq.${emailEnc}&source=eq.threat_${S.threatProvider}`);
+        } else {
+            await db('users','POST',{email:S.threatEmail,password:'auth_managed',industry:S.threatIndustry,role:S.threatUrl,source:'threat_'+S.threatProvider,start_date:new Date().toISOString(),plan:'lead'});
+        }
+        
+        // Loading
+        S.threatStep = 1; S.threatLoadingStep = 0; render();
+        setTimeout(()=>{S.threatLoadingStep=1;render();},800);
+        setTimeout(()=>{S.threatLoadingStep=2;render();},2000);
+        setTimeout(()=>{S.threatLoadingStep=3;render();},3500);
+        setTimeout(()=>{S.threatLoadingStep=4;render();},5000);
+        
+        const companyContext = S.threatDesc ? `${domain}: ${S.threatDesc}. Industry: ${S.threatIndustry}.` : `${domain} (${S.threatIndustry}).`;
+        const productList = provider.products.slice(0,6).map(p=>'- '+p.name+': '+p.desc).join('\n');
+        
+        let aiResult = null;
+        try {
+            const prompt = companyContext+'\n\n'+provider.name+' is launching these AI products:\n'+productList+'\n\n1. How many months until '+provider.name+"'s products directly threaten "+domain+"'s core business? Give a number and brief reason.\n2. Create 3 specific opportunities for "+domain+' to stay ahead of '+provider.name+".\n3. Create 2 specific risks from "+provider.name+' for '+domain+". Name each concretely. Keep descriptions short.\n\nReturn ONLY JSON:\n{\"d\":\"what "+domain+" does\",\"l\":\"High Exposure or Moderate Exposure\",\"ts\":\"1 sentence threat summary\",\"m\":18,\"mr\":\"why this many months\",\"o\":[{\"p\":\""+provider.name+" product\",\"t\":\"opportunity\",\"s\":\"1-2 sentences\"}],\"r\":[{\"p\":\"risk name\",\"n\":80,\"s\":\"1 sentence\"}]}\n\n3 in o, 2 in r. Specific to "+domain+' vs '+provider.name+'.';
+            
+            const result = await ai([{role:'user',content:prompt}],1500,'general');
+            if(result){
+                let cleaned = result.replace(/```json|```/g,'').trim();
+                let parsed = null;
+                try{parsed=JSON.parse(cleaned);}catch(e1){
+                    const fixes=['}]}]}',']}]}','"}]}'];
+                    for(const fix of fixes){try{parsed=JSON.parse(cleaned+fix);break;}catch(e2){}}
+                }
+                if(parsed){
+                    aiResult = {
+                        company_description:parsed.d||'',
+                        threat_level:parsed.l||'High Exposure',
+                        threat_summary:parsed.ts||'',
+                        months_until_threat:parsed.m||provider.defaultMonths,
+                        timeline_reason:parsed.mr||'',
+                        opportunities:(parsed.o||[]).map(x=>({prediction:x.p||'',title:x.t||'',description:x.s||''})),
+                        threats:(parsed.r||[]).map(x=>({prediction:x.p||'',probability:x.n||80,impact:x.s||''}))
+                    };
+                }
+            }
+        } catch(e){console.error('Threat analysis error:',e);}
+        
+        // Pad to full report
+        const preBuiltOpps = generateCompanyOpportunities(domain, S.threatIndustry);
+        const preBuiltRisks = generateCompanyRisks(domain, S.threatIndustry);
+        const genOpps = aiResult?.opportunities||[];
+        const genRisks = aiResult?.threats||[];
+        const filteredOpps = preBuiltOpps.filter(o=>!genOpps.some(g=>g.title.toLowerCase().includes(o.title.toLowerCase().slice(0,8))));
+        const filteredRisks = preBuiltRisks.filter(r=>!genRisks.some(g=>(g.prediction||'').toLowerCase().includes((r.prediction||'').toLowerCase().slice(0,8))));
+        
+        S.threatResult = {
+            company_description: aiResult?.company_description || S.threatDesc || domain+' operates in '+S.threatIndustry+'.',
+            threat_level: aiResult?.threat_level || 'High Exposure',
+            threat_summary: aiResult?.threat_summary || provider.name+' is actively building products that overlap with '+domain+"'s business.",
+            months_until_threat: aiResult?.months_until_threat || provider.defaultMonths,
+            timeline_reason: aiResult?.timeline_reason || "Based on "+provider.name+"'s current launch velocity and your industry overlap.",
+            opportunities: [...genOpps,...filteredOpps].slice(0,15),
+            threats: [...genRisks,...filteredRisks].slice(0,7)
+        };
+        
+        await db('users','PATCH',{company_result:JSON.stringify(S.threatResult)},`?email=eq.${emailEnc}&source=eq.threat_${S.threatProvider}`);
+        S.threatStep = 2; render();
+    });
+    
+    // Unlock threat report (test mode)
+    document.getElementById('unlock-threat-report')?.addEventListener('click',()=>{
+        S.threatUnlocked = true; render();
+        window.scrollTo({top:0,behavior:'smooth'});
+    });
+    
+    // Download threat PDF (print to PDF)
+    document.getElementById('download-threat-pdf')?.addEventListener('click',()=>{
+        const r = S.threatResult;
+        const provider = THREAT_PROVIDERS[S.threatProvider];
+        const domain = S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        const w = window.open('','_blank');
+        w.document.write('<!DOCTYPE html><html><head><title>'+provider.name+' Threat Report - '+domain+'</title><style>body{font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:40px;color:#1a1a1a}h1{font-size:24px;border-bottom:3px solid '+provider.color+';padding-bottom:10px}h2{font-size:16px;color:'+provider.color+';text-transform:uppercase;letter-spacing:2px;margin-top:30px}.card{border:1px solid #ddd;padding:16px;margin:12px 0}.threat-level{font-size:20px;font-weight:700;color:#cc0000;margin:5px 0}.opp{border-left:3px solid '+provider.color+';padding-left:12px;margin:12px 0}.risk{background:#fff8f0;padding:10px;margin:8px 0;border-left:3px solid #ff8800}.meta{color:#666;font-size:12px}</style></head><body><h1>'+provider.name+' Threat Assessment</h1><p class="meta">'+domain+' · '+S.threatIndustry+' · '+new Date().toLocaleDateString()+'</p><div class="card"><div class="threat-level">'+r.threat_level+'</div><p>'+r.threat_summary+'</p></div><div class="card"><strong>Timeline:</strong> '+r.months_until_threat+' months<br><span class="meta">'+r.timeline_reason+'</span></div><h2>Opportunities ('+r.opportunities.length+')</h2>'+r.opportunities.map(o=>'<div class="opp"><strong>'+o.title+'</strong>'+(o.prediction?' <span class="meta">· '+o.prediction+'</span>':'')+'<p>'+o.description+'</p></div>').join('')+'<h2>Risks ('+r.threats.length+')</h2>'+r.threats.map(t=>'<div class="risk"><strong>'+t.prediction+'</strong> — '+t.probability+'%<p>'+t.impact+'</p></div>').join('')+'<hr><p class="meta">Report by AI Proof Club · aiproof.club</p></body></html>');
+        w.document.close();
+        setTimeout(()=>{w.print();},500);
+    });
+    
+    // Email threat report to teammate
+    document.getElementById('send-threat-email')?.addEventListener('click', async ()=>{
+        const emailInput = document.getElementById('share-email');
+        const shareEmail = emailInput?.value;
+        if(!shareEmail||!shareEmail.includes('@')){alert('Enter a valid email');return;}
+        const btn = document.getElementById('send-threat-email');
+        btn.textContent='Sending...';btn.disabled=true;
+        try{
+            const provider = THREAT_PROVIDERS[S.threatProvider];
+            const domain = S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+            await sendEmail('threat_share',{to:shareEmail,from_name:S.threatEmail,provider_name:provider.name,domain:domain,report_url:'https://aiproof.club/'+S.threatProvider});
+            btn.textContent='Sent ✓';emailInput.value='';
+            setTimeout(()=>{btn.textContent='Send';btn.disabled=false;},2000);
+        }catch(e){btn.textContent='Failed';btn.disabled=false;}
     });
 
     // Onboarding flow - Step 1: Email + Industry
@@ -9281,6 +9677,24 @@ async function init(){
         return;
     }
     
+    // Check for threat assessment mode (/google, /claude, /openai)
+    const threatMode = params.get('threat') || (['google','claude','openai'].includes(hash) ? hash : null);
+    if(threatMode && THREAT_PROVIDERS[threatMode]) {
+        if(hash !== threatMode) history.replaceState({}, '', location.pathname + '#' + threatMode);
+        S.threatProvider = threatMode;
+        S.threatStep = 0;
+        S.threatUrl = '';
+        S.threatEmail = '';
+        S.threatIndustry = '';
+        S.threatDesc = '';
+        S.threatResult = null;
+        S.threatLoadingStep = 0;
+        S.threatUnlocked = false;
+        S.screen = 'threat';
+        render();
+        return;
+    }
+    
     // Check for password reset token
     const resetToken = params.get('token');
     if(resetToken && hash === 'reset') {
@@ -9292,7 +9706,7 @@ async function init(){
     }
     
     // Handle hash routes
-    const validScreens = ['signin','signup','login','forgot','pricing','onboarding','upload','quiz','results','dashboard','quests','coach','receipts','capsules','review','settings','forecasts','diagnostic','company'];
+    const validScreens = ['signin','signup','login','forgot','pricing','onboarding','upload','quiz','results','dashboard','quests','coach','receipts','capsules','review','settings','forecasts','diagnostic','company','threat'];
     
     if(params.get('success')==='true'){
         history.replaceState({},'',location.pathname);
