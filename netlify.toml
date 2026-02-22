@@ -1,18 +1,27 @@
 [build]
-  functions = "netlify/functions"
   publish = "."
 
-[functions]
-  node_bundler = "esbuild"
-
-# Redirect for clean URLs
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  from = "/company"
+  to = "/app.html"
   status = 200
 
-# SPA fallback
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/diagnostic"
+  to = "/app.html"
+  status = 200
+
+[[redirects]]
+  from = "/google"
+  to = "/app.html"
+  status = 200
+
+[[redirects]]
+  from = "/claude"
+  to = "/app.html"
+  status = 200
+
+[[redirects]]
+  from = "/openai"
+  to = "/app.html"
   status = 200

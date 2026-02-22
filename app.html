@@ -9333,7 +9333,14 @@ async function init(){
     const hash=location.hash.replace('#','');
     
     // Clean URL routing: /google, /claude, /openai, /company, /diagnostic
+    // Works whether Netlify rewrites (path stays /openai) or JS reads path directly
     var path=location.pathname.replace(/\/$/,'').split('/').pop();
+    // Also check referrer in case of redirect
+    if(path==='app.html'){
+        var ref=document.referrer||'';
+        var refPath=ref.replace(/\/$/,'').split('/').pop();
+        if(['google','claude','openai','company','diagnostic'].includes(refPath)) path=refPath;
+    }
     if(path==='diagnostic'){params.set('mode','diagnostic');}
     if(path==='company'){params.set('mode','company');}
     if(['google','claude','openai'].includes(path)){params.set('threat',path);}
