@@ -783,9 +783,7 @@ async function supabaseAuth(action, data) {
 
 async function authSignUp(email, password, userType) {
     const payload = { email, password };
-    if (userType) {
-        payload.data = { user_type: userType };
-    }
+    if (userType) payload.data = { user_type: userType };
     return supabaseAuth('signup', payload);
 }
 
@@ -1589,7 +1587,7 @@ function render(){
     const screens={
         login:loginH, signup:signupH, forgot:forgotH, pricing:pricingH,
         // Free diagnostic flow (from landing page) - 4 questions with email gate
-        diagnostic:diagnosticH, freeQuiz:quizH, freeResults:freeResultsH,
+        diagnostic:diagnosticH, company:companyH, freeQuiz:quizH, freeResults:freeResultsH,
         // Onboarding flow
         onboarding:onboardingH, upload:uploadH, analyzing:analyzingH, quiz:quizH, results:resultsH,
         // App screens
@@ -1769,6 +1767,152 @@ function calculateDiagnosticScores(){
     return scores;
 }
 
+function companyH(){
+    // Step 0: Input form (URL + email + industry)
+    if(S.companyStep === 0){
+        return `<div class="screen-center"><div class="container-sm">
+            <div class="logo">AI PROOF <span>CLUB</span></div>
+            <div class="card">
+                <h2 class="card-title" style="font-size:20px;margin-bottom:6px">Check Company AI Risk</h2>
+                <p class="text-secondary text-small" style="margin-bottom:20px">Enter a company website and we'll analyze which AI predictions threaten the business and where the opportunities are.</p>
+                <form id="company-form">
+                    <div class="form-group">
+                        <label class="form-label">Company Website</label>
+                        <input type="url" class="form-input" id="company-url" required placeholder="https://example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Your Email</label>
+                        <input type="email" class="form-input" id="company-email" required placeholder="you@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Industry</label>
+                        <select class="form-input" id="company-industry" required>
+                            <option value="">Select industry</option>
+                            ${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Analyze AI Risk →</button>
+                </form>
+                <p class="text-center text-secondary text-small mt-20">Or <a class="text-link" href="app.html?mode=diagnostic">check your personal AI risk →</a></p>
+            </div>
+        </div></div>`;
+    }
+    
+    // Step 1: Loading
+    if(S.companyStep === 1){
+        const steps = [
+            'Reading website...',
+            'Identifying business model...',
+            'Matching against AI predictions...',
+            'Finding opportunities...',
+            'Building your report...'
+        ];
+        return `<div class="screen-center"><div class="container-sm">
+            <div class="logo">AI PROOF <span>CLUB</span></div>
+            <div class="card text-center" style="padding:40px">
+                <div style="font-size:28px;margin-bottom:15px">🔍</div>
+                <h2 class="card-title">Analyzing ${S.companyUrl.replace(/https?:\/\//, '').replace(/\/$/, '')}</h2>
+                <div style="margin-top:20px">
+                    ${steps.map((step, i) => `
+                        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;opacity:${i <= S.companyLoadingStep ? 1 : 0.3};transition:opacity 0.3s">
+                            <span style="color:${i < S.companyLoadingStep ? 'var(--success)' : i === S.companyLoadingStep ? 'var(--accent)' : 'var(--text-muted)'};font-size:14px">${i < S.companyLoadingStep ? '✓' : i === S.companyLoadingStep ? '◉' : '○'}</span>
+                            <span class="text-small">${step}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div></div>`;
+    }
+    
+    // Step 2: Results
+    if(S.companyStep === 2 && S.companyResult){
+        const r = S.companyResult;
+        return `<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm">
+            <div class="logo">AI PROOF <span>CLUB</span></div>
+            <div class="card" style="margin-bottom:15px">
+                <h2 class="card-title" style="font-size:18px;margin-bottom:4px">AI Risk Report</h2>
+                <p class="text-secondary text-small">${S.companyUrl.replace(/https?:\/\//, '').replace(/\/$/, '')} · ${S.companyIndustry}</p>
+            </div>
+            
+            <div class="card" style="margin-bottom:15px;border-left:3px solid var(--danger)">
+                <h3 style="font-size:13px;color:var(--danger);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Top Threats</h3>
+                ${(r.threats || []).map(t => `
+                    <div style="padding:10px 0;border-bottom:1px solid var(--bg-tertiary)">
+                        <div style="display:flex;justify-content:space-between;align-items:baseline">
+                            <span style="font-size:13px;font-weight:600;color:var(--text-primary)">${t.title}</span>
+                            <span style="font-size:12px;font-weight:700;color:var(--warning)">${t.probability}%</span>
+                        </div>
+                        <p class="text-small text-secondary" style="margin-top:4px;line-height:1.5">${t.impact}</p>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="card" style="margin-bottom:15px;border-left:3px solid var(--success)">
+                <h3 style="font-size:13px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Top Opportunities</h3>
+                ${(r.opportunities || []).map(o => `
+                    <div style="padding:10px 0;border-bottom:1px solid var(--bg-tertiary)">
+                        <span style="font-size:13px;font-weight:600;color:var(--text-primary)">${o.title}</span>
+                        <p class="text-small text-secondary" style="margin-top:4px;line-height:1.5">${o.description}</p>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="card" style="margin-bottom:15px">
+                <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Summary</h3>
+                <p class="text-small" style="line-height:1.6">${r.summary || ''}</p>
+            </div>
+            
+            <div class="card text-center" style="border-color:var(--accent)">
+                <p style="font-size:13px;margin-bottom:12px">Want to prepare for these threats?</p>
+                <a href="app.html?mode=diagnostic" class="btn btn-primary btn-full">Get Your Personal AI-Proof Plan →</a>
+                <p class="text-secondary text-small mt-10">Takes 90 seconds. Completely free.</p>
+            </div>
+        </div></div>`;
+    }
+    
+    return '';
+}
+
+function generateCompanyFallback(industry) {
+    // Map user-facing industry to forecast industry tags
+    const indMap = {
+        'Technology': 'software', 'Finance': 'finance-ind', 'Healthcare': 'healthcare',
+        'Education': 'education', 'Marketing': 'marketing-ind', 'Legal': 'legal',
+        'Creative/Design': 'creative', 'Retail/E-commerce': 'retail-ind', 'Real Estate': 'real-estate',
+        'Manufacturing': 'manufacturing', 'Entertainment': 'entertainment', 'Fashion': 'fashion'
+    };
+    const indTag = indMap[industry] || 'software';
+    
+    // Find forecasts that match this industry
+    const relevant = FORECAST_DATABASE.filter(f => (f.industries || []).includes(indTag));
+    const sorted = relevant.sort((a, b) => b.probability - a.probability);
+    
+    const threats = sorted.slice(0, 4).map(f => ({
+        title: f.title,
+        probability: f.probability,
+        impact: f.threatReason || 'This prediction could significantly impact businesses in your industry.'
+    }));
+    
+    const opportunities = [];
+    sorted.forEach(f => {
+        if (opportunities.length >= 4) return;
+        (f.opportunities || []).slice(0, 1).forEach(o => {
+            if (opportunities.length < 4) {
+                opportunities.push({
+                    title: o.title.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{FE00}-\u{FEFF}]\s*/u, ''),
+                    description: o.description ? o.description.substring(0, 150) : ''
+                });
+            }
+        });
+    });
+    
+    return {
+        threats,
+        opportunities,
+        summary: `Based on ${threats.length} AI predictions relevant to the ${industry} industry, this company faces significant disruption risk. The most immediate threats relate to ${threats[0]?.title || 'AI automation'}. However, there are clear opportunities to get ahead of these changes by building new capabilities now.`
+    };
+}
+
 function loginH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Welcome back</h2><p class="card-subtitle">Continue your training</p><form id="login-form"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required></div><button type="submit" class="btn btn-primary btn-full">Sign In</button></form><p class="text-center mt-10"><a class="text-link text-small" id="forgot-pass">Forgot password?</a></p><p class="text-center text-secondary text-small mt-20">New? <a class="text-link" id="to-signup">Start training</a></p></div><div class="card mt-20 text-center" style="border-color:var(--accent)"><p class="text-small mb-10">Not sure yet?</p><button class="btn btn-secondary btn-full" id="take-free-quiz">Am I AI-Proof? →</button><p class="text-secondary text-small mt-10">Free. Takes 90 seconds.</p></div></div></div>`;}
 
 function freeResultsH(){
@@ -1812,7 +1956,9 @@ function forgotH(){return `<div class="screen-center"><div class="container-sm">
 
 function signupH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Start training</h2><p class="card-subtitle">Build skills AI can't replace</p><form id="signup-form"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="name" required></div><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required minlength="6"></div><button type="submit" class="btn btn-primary btn-full">Create Account</button></form><p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p></div></div></div>`;}
 
-function pricingH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center"><h2 class="card-title">Choose Your Plan</h2><p class="text-secondary text-small mb-20">Cancel anytime</p><div style="display:flex;flex-direction:column;gap:15px"><div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary)"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Most Popular</div><div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div><a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.user?.email||S.onboardData?.email||S.diagnosticEmail||'')}&client_reference_id=${encodeURIComponent(S.user?.email||S.onboardData?.email||S.diagnosticEmail||'')}" class="btn btn-primary btn-full mt-20">Start Monthly →</a></div>${STRIPE_ANNUAL?`<div style="border:1px solid var(--bg-tertiary);padding:20px"><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Best Value — 2 Months Free</div><div style="font-size:36px;font-weight:700">$99<span style="font-size:14px;color:var(--text-secondary)">/year</span></div><a href="${STRIPE_ANNUAL}?prefilled_email=${encodeURIComponent(S.user?.email||S.onboardData?.email||S.diagnosticEmail||'')}&client_reference_id=${encodeURIComponent(S.user?.email||S.onboardData?.email||S.diagnosticEmail||'')}" class="btn btn-secondary btn-full mt-20">Start Annual →</a></div>`:''}</div><ul style="list-style:none;text-align:left;margin-top:25px;font-size:12px"><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ AI-Proof Score + personalized profile</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progressive weekly quests</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ 3 AI Coaches (Ideas, Personality, Execution)</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progress capsules + Weekly reviews</li><li style="padding:8px 0">✓ Cancel anytime</li></ul></div></div></div>`;}
+function pricingH(){
+    return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center"><h2 class="card-title">Choose Your Plan</h2><p class="text-secondary text-small mb-20">Cancel anytime</p><div style="display:flex;flex-direction:column;gap:15px"><div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary)"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Most Popular</div><div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div><a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.user?.email||S.onboardData?.email||S.diagnosticEmail||'')}&client_reference_id=${encodeURIComponent(S.user?.email||S.onboardData?.email||S.diagnosticEmail||'')}" class="btn btn-primary btn-full mt-20">Start Monthly →</a></div>${STRIPE_ANNUAL?`<div style="border:1px solid var(--bg-tertiary);padding:20px"><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Best Value — 2 Months Free</div><div style="font-size:36px;font-weight:700">$99<span style="font-size:14px;color:var(--text-secondary)">/year</span></div><a href="${STRIPE_ANNUAL}?prefilled_email=${encodeURIComponent(S.user?.email||S.onboardData?.email||S.diagnosticEmail||'')}&client_reference_id=${encodeURIComponent(S.user?.email||S.onboardData?.email||S.diagnosticEmail||'')}" class="btn btn-secondary btn-full mt-20">Start Annual →</a></div>`:''}</div><ul style="list-style:none;text-align:left;margin-top:25px;font-size:12px"><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ AI-Proof Score + personalized profile</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progressive weekly quests</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ 3 AI Coaches (Ideas, Personality, Execution)</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progress capsules + Weekly reviews</li><li style="padding:8px 0">✓ Cancel anytime</li></ul></div></div></div>`;
+}
 
 function onboardingH(){
     const step = S.onboardStep;
@@ -2731,6 +2877,97 @@ IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jo
         S.onboardData.email = document.getElementById('ob-email').value;
         S.onboardData.industry = document.getElementById('ob-industry').value;
         S.onboardStep=2; // Go to quiz intro
+        render();
+    });
+    
+    // Company Risk Analysis form
+    document.getElementById('company-form')?.addEventListener('submit', async e=>{
+        e.preventDefault();
+        S.companyUrl = document.getElementById('company-url').value;
+        S.companyEmail = document.getElementById('company-email').value;
+        S.companyIndustry = document.getElementById('company-industry').value;
+        
+        // Save as lead
+        const tempPassword = 'temp_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        const authResult = await authSignUp(S.companyEmail, tempPassword, 'lead');
+        if (!authResult.error || authResult.error.message === 'User already registered') {
+            const signIn = await authSignIn(S.companyEmail, tempPassword);
+            if (signIn.access_token) {
+                localStorage.setItem('apc_auth_token', signIn.access_token);
+                await authUpdateMetadata(signIn.access_token, {
+                    industry: S.companyIndustry,
+                    source: 'company_risk',
+                    company_url: S.companyUrl
+                });
+            }
+        }
+        
+        // Save to users table
+        const existing = await db('users','GET',null,`?email=eq.${encodeURIComponent(S.companyEmail)}`);
+        if (!existing?.length) {
+            await db('users', 'POST', {
+                email: S.companyEmail,
+                industry: S.companyIndustry,
+                source: 'company_risk',
+                start_date: new Date().toISOString(),
+                plan: 'lead'
+            });
+        }
+        
+        // Show loading
+        S.companyStep = 1;
+        S.companyLoadingStep = 0;
+        render();
+        
+        setTimeout(()=>{ S.companyLoadingStep=1; render(); }, 800);
+        setTimeout(()=>{ S.companyLoadingStep=2; render(); }, 2000);
+        setTimeout(()=>{ S.companyLoadingStep=3; render(); }, 3500);
+        setTimeout(()=>{ S.companyLoadingStep=4; render(); }, 5000);
+        
+        // Build forecast summaries for the AI
+        const forecastSummaries = FORECAST_DATABASE.map(f => 
+            `[${f.id}] ${f.title} (${f.probability}%, ${f.timeframe}) - Industries: ${(f.industries||[]).join(', ')} - Opportunities: ${(f.opportunities||[]).map(o=>o.title.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{FE00}-\u{FEFF}]\s*/u,'')).join('; ')}`
+        ).join('\n');
+        
+        try {
+            const prompt = `You are an AI business risk analyst. Analyze this company for AI-related threats and opportunities.
+
+Company URL: ${S.companyUrl}
+Industry: ${S.companyIndustry}
+
+Here are real AI predictions and their opportunities:
+${forecastSummaries}
+
+Based on the company URL and industry, identify which predictions are most relevant.
+
+Return ONLY valid JSON (no markdown, no backticks):
+{
+    "threats": [
+        {"title": "<prediction title>", "probability": <number>, "impact": "<1-2 sentence explanation of how this specifically threatens this company>"}
+    ],
+    "opportunities": [
+        {"title": "<opportunity title>", "description": "<1-2 sentence explanation of how this company could pursue this>"}
+    ],
+    "summary": "<3-4 sentence executive summary of this company's AI risk profile and recommended next steps>"
+}
+
+Return exactly 4 threats and 4 opportunities. Be specific to the company, not generic.`;
+            
+            const result = await ai([{role:'user', content: prompt}], 1000, 'company_risk');
+            
+            if (result) {
+                const cleaned = result.replace(/```json|```/g, '').trim();
+                S.companyResult = JSON.parse(cleaned);
+            } else {
+                // Fallback: generate from forecast database based on industry
+                S.companyResult = generateCompanyFallback(S.companyIndustry);
+            }
+        } catch(e) {
+            console.error('Company analysis error:', e);
+            S.companyResult = generateCompanyFallback(S.companyIndustry);
+        }
+        
+        S.companyStep = 2;
         render();
     });
     
@@ -12401,6 +12638,20 @@ async function init(){
         return;
     }
     
+    // Check for company risk mode
+    if(params.get('mode') === 'company' || hash === 'company') {
+        if(hash !== 'company') history.replaceState({}, '', location.pathname + '#company');
+        S.companyStep = 0; // 0=input, 1=loading, 2=results
+        S.companyUrl = '';
+        S.companyEmail = '';
+        S.companyIndustry = '';
+        S.companyResult = null;
+        S.companyLoadingStep = 0;
+        S.screen = 'company';
+        render();
+        return;
+    }
+    
     // Check for Supabase Auth recovery token (comes as hash fragment)
     const hashParams = new URLSearchParams(location.hash.substring(1));
     const accessToken = hashParams.get('access_token');
@@ -12426,7 +12677,7 @@ async function init(){
     }
     
     // Handle hash routes
-    const validScreens = ['signin','signup','login','forgot','pricing','onboarding','upload','quiz','results','dashboard','quests','coach','receipts','capsules','review','settings','forecasts','diagnostic'];
+    const validScreens = ['signin','signup','login','forgot','pricing','onboarding','upload','quiz','results','dashboard','quests','coach','receipts','capsules','review','settings','forecasts','diagnostic','company'];
     
     if(params.get('success')==='true'){
         history.replaceState({},'',location.pathname);
