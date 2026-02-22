@@ -2498,15 +2498,30 @@ function bindEvents(){
         S.companyEmail = document.getElementById('company-email').value;
         S.companyIndustry = document.getElementById('company-industry').value;
         
+        // Check if this email already has a saved report
+        const existing = await db('users','GET',null,`?email=eq.${encodeURIComponent(S.companyEmail)}&source=eq.company_risk`);
+        if (existing?.length && existing[0].company_result) {
+            try {
+                S.companyResult = JSON.parse(existing[0].company_result);
+                S.companyUrl = existing[0].role || S.companyUrl; // role stores URL
+                S.companyStep = 2;
+                render();
+                return;
+            } catch(e) { /* proceed to generate fresh */ }
+        }
+        
         // Save as lead
-        await db('users', 'POST', {
-            email: S.companyEmail,
-            password: 'auth_managed',
-            industry: S.companyIndustry,
-            source: 'company_risk',
-            start_date: new Date().toISOString(),
-            plan: 'lead'
-        });
+        if (!existing?.length) {
+            await db('users', 'POST', {
+                email: S.companyEmail,
+                password: 'auth_managed',
+                industry: S.companyIndustry,
+                role: S.companyUrl,
+                source: 'company_risk',
+                start_date: new Date().toISOString(),
+                plan: 'lead'
+            });
+        }
         
         // Show loading
         S.companyStep = 1;
@@ -2519,21 +2534,35 @@ function bindEvents(){
         setTimeout(()=>{ S.companyLoadingStep=4; render(); }, 5000);
         
         const domain = S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
-        const topForecasts = [...FORECAST_DATABASE].sort((a,b)=>b.probability-a.probability).slice(0,12);
-        const forecastList = topForecasts.map(f=>`- ${f.title} (${f.probability}%)`).join('\n');
+        
+        // The 5 big predictions — always use these for the free 3
+        const BIG_FIVE = [
+            'Self-driving cars create new consumer contexts',
+            'AI generates full-length movies from a single prompt within 18 months',
+            'Humans and AI merge — neural interfaces and cognitive augmentation',
+            'Loneliness epidemic drives massive demand for connection',
+            'Mental health demand far exceeds supply of providers'
+        ];
+        
+        // Pick 3 randomly from the 5
+        const shuffled = [...BIG_FIVE].sort(() => Math.random() - 0.5);
+        const picked = shuffled.slice(0, 3);
         
         let aiOpps = null;
         try {
-            const prompt = `Analyze ${domain} (${S.companyIndustry}). What does this company do? Then find creative AI opportunities for them.
+            const prompt = `Analyze ${domain} (${S.companyIndustry}). What does this company likely do?
 
-AI trends: ${forecastList}
+Then for EACH of these 3 predictions, create ONE creative, specific opportunity for ${domain}:
+1. ${picked[0]}
+2. ${picked[1]}
+3. ${picked[2]}
 
-Think laterally. Meme company + self-driving cars = games for passengers. AI assistant + loneliness = emotional support features. Luxury brand + AI content = AI-generated fashion shows.
+Think laterally and be wildly creative. Examples: A meme company + self-driving cars = comedy games for passengers. An AI assistant + loneliness epidemic = emotionally intelligent companion features. A luxury brand + AI movies = AI-generated fashion films.
 
-Return ONLY valid JSON, nothing else:
-{"d":"what ${domain} does","o":[{"p":"trend","t":"name","s":"1 sentence"}],"r":[{"p":"trend","n":80,"s":"1 sentence"}],"m":"2 sentences"}
+Return ONLY valid JSON:
+{"d":"what ${domain} does","o":[{"p":"prediction name","t":"creative opportunity name","s":"1-2 sentences specific to ${domain}"}],"r":[{"p":"trend","n":80,"s":"1 sentence about ${domain}"}],"m":"2 sentences"}
 
-Exactly 3 in o, 2 in r. Specific to ${domain}. SHORT descriptions.`;
+Exactly 3 in o (one per prediction above), 2 in r. Be specific to ${domain}.`;
             
             const result = await ai([{role:'user',content:prompt}], 1500, 'general');
             console.log('Company AI raw:', result);
@@ -2556,23 +2585,41 @@ Exactly 3 in o, 2 in r. Specific to ${domain}. SHORT descriptions.`;
             }
         } catch(e){ console.error('Company analysis error:', e); }
         
-        // Build full 15 opportunities: AI-generated (3) + pre-built (12)
-        const generatedOpps = aiOpps ? aiOpps.opportunities : [];
+        // Fallback if AI fails: generate from the picked predictions
+        if (!aiOpps || !aiOpps.opportunities.length) {
+            aiOpps = {
+                company_description: `${domain} operates in the ${S.companyIndustry} space.`,
+                opportunities: picked.map(p => ({
+                    prediction: p,
+                    title: p.split(' ').slice(0, 4).join(' '),
+                    description: `${domain} can leverage the "${p.toLowerCase()}" trend to create new products and reach new audiences.`
+                })),
+                threats: [
+                    {prediction:'AI copilots in all software',probability:90,impact:'Competitors using AI will produce similar output faster and cheaper.'},
+                    {prediction:'Content creation cost approaches zero',probability:85,impact:'AI-generated supply makes differentiation through taste essential.'}
+                ],
+                summary: `${domain} has significant opportunities tied to major AI shifts. Moving early on these will separate leaders from followers.`
+            };
+        }
+        
+        // Build full 15: AI top 3 + 12 pre-built
         const preBuilt = generateCompanyOpportunities(domain, S.companyIndustry);
-        // Remove pre-built ones that overlap with AI-generated titles
-        const aiTitles = generatedOpps.map(o=>o.title.toLowerCase());
+        const aiTitles = aiOpps.opportunities.map(o=>o.title.toLowerCase());
         const filtered = preBuilt.filter(o=>!aiTitles.some(t=>o.title.toLowerCase().includes(t)||t.includes(o.title.toLowerCase())));
-        const allOpps = [...generatedOpps, ...filtered].slice(0, 15);
+        const allOpps = [...aiOpps.opportunities, ...filtered].slice(0, 15);
         
         S.companyResult = {
-            company_description: aiOpps?.company_description || `${domain} operates in the ${S.companyIndustry} space.`,
+            company_description: aiOpps.company_description,
             opportunities: allOpps,
-            threats: aiOpps?.threats || [
-                {prediction:'AI copilots in all software',probability:90,impact:`Competitors using AI will produce similar output faster and cheaper.`},
-                {prediction:'Content creation cost approaches zero',probability:85,impact:`AI-generated supply explosion makes attention harder to capture.`}
-            ],
-            summary: aiOpps?.summary || `${domain} has clear opportunities around AI-powered growth and community building. The key risk is falling behind competitors who adopt faster.`
+            threats: aiOpps.threats,
+            summary: aiOpps.summary
         };
+        
+        // Save result to DB so same email gets same results
+        await db('users','PATCH',
+            { company_result: JSON.stringify(S.companyResult) },
+            `?email=eq.${encodeURIComponent(S.companyEmail)}&source=eq.company_risk`
+        );
         
         S.companyStep = 2;
         render();
