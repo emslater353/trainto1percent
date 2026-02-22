@@ -9708,6 +9708,12 @@ async function init(){
     // Handle hash routes
     const validScreens = ['signin','signup','login','forgot','pricing','onboarding','upload','quiz','results','dashboard','quests','coach','receipts','capsules','review','settings','forecasts','diagnostic','company','threat'];
     
+    // Support ?screen= param from clean URL redirects
+    const screenParam = params.get('screen');
+    if(screenParam && validScreens.includes(screenParam)) {
+        if(!hash) hash = screenParam;
+    }
+    
     if(params.get('success')==='true'){
         history.replaceState({},'',location.pathname);
         const pending=localStorage.getItem('apc_pending');
