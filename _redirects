@@ -1,4 +1,3 @@
-# Clean URLs for AI Proof Club
 /company        /app.html?mode=company      200
 /diagnostic     /app.html?mode=diagnostic   200
 /google         /app.html?threat=google     200
