@@ -1710,8 +1710,10 @@ function companyH(){
             </div>
         `).join('');
         
-        // Risks - show 1-2 shallow teasers + locked count
-        const freeRisks = (r.threats||[]).slice(0, 2);
+        // Risks - show 2 free teasers + locked count
+        const allRisks = r.threats || [];
+        const freeRisks = allRisks.slice(0, 2);
+        const lockedRiskCount = Math.max(0, allRisks.length - 2);
         html += `<div class="card" style="margin-bottom:15px;border-left:3px solid var(--warning)">
             <h3 style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Risks to Watch</h3>
             ${freeRisks.map((t,i)=>`
@@ -1723,10 +1725,21 @@ function companyH(){
                     <p style="font-size:11px;color:var(--text-secondary);margin-top:3px;line-height:1.5">${t.impact}</p>
                 </div>
             `).join('')}
-            <div style="padding:10px 0 2px 0;display:flex;align-items:center;gap:6px">
-                <span style="font-size:13px">🔒</span>
-                <span style="font-size:11px;color:var(--text-muted)">5 more risks identified that could impact your company</span>
-            </div>
+            ${!S.companyUnlocked && lockedRiskCount > 0 ? `
+                <div style="padding:10px 0 2px 0;display:flex;align-items:center;gap:6px">
+                    <span style="font-size:13px">🔒</span>
+                    <span style="font-size:11px;color:var(--text-muted)">${lockedRiskCount} more risks identified that could impact your company</span>
+                </div>
+            ` : ''}
+            ${S.companyUnlocked ? allRisks.slice(2).map((t,i)=>`
+                <div style="padding:8px 0;${i<allRisks.length-3?'border-bottom:1px solid var(--bg-tertiary)':''}">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline">
+                        <span style="font-size:12px;font-weight:600;color:var(--text-primary)">${t.prediction||t.title}</span>
+                        <span style="font-size:11px;font-weight:700;color:var(--warning)">${t.probability}%</span>
+                    </div>
+                    <p style="font-size:11px;color:var(--text-secondary);margin-top:3px;line-height:1.5">${t.impact}</p>
+                </div>
+            `).join('') : ''}
         </div>`;
         
         // Bottom line
@@ -1791,6 +1804,19 @@ function generateCompanyOpportunities(domain, industry) {
         {prediction:'AI enables hyper-personalization',title:'Personalized Customer Journeys',description:`Use AI to create individualized experiences for every customer. ${domain} can increase retention and LTV by making every interaction feel bespoke.`},
         {prediction:'Automation reshapes workforce',title:'Human+AI Operating Model',description:`Redesign team structure around human-AI collaboration. Identify which roles amplify with AI and which need to stay purely human.`},
         {prediction:'Creator economy reaches $500B',title:'Creator Partnership Program',description:`Build a creator/affiliate ecosystem around ${domain}. Empower individuals to sell, promote, or build on top of your platform for shared revenue.`}
+    ];
+}
+
+function generateCompanyRisks(domain, industry) {
+    // 7 risks: 2 shown free (teaser), 5 locked in full report
+    return [
+        {prediction:'Current discovery channels become obsolete',probability:82,impact:`AI-driven personalization may replace how customers currently find and engage with ${domain}.`},
+        {prediction:'AI-generated competitors flood the market',probability:78,impact:`New entrants using AI could replicate core offerings at a fraction of the cost and timeline.`},
+        {prediction:'Customer expectations outpace your AI adoption',probability:85,impact:`${domain}'s customers will increasingly expect AI-powered features as standard — falling behind means losing them.`},
+        {prediction:'Key talent migrates to AI-native companies',probability:74,impact:`Top performers may leave for companies that are further along in AI integration and offer more future-proof career paths.`},
+        {prediction:'Regulatory shifts disrupt current business model',probability:68,impact:`Upcoming AI regulations could change how ${domain} collects data, uses automation, or delivers services.`},
+        {prediction:'Brand trust erodes in AI-saturated market',probability:72,impact:`As AI-generated content becomes indistinguishable from human-made, ${domain}'s authenticity signals may weaken.`},
+        {prediction:'Pricing pressure from AI-enabled competitors',probability:80,impact:`Competitors leveraging AI to cut costs will undercut ${domain}'s pricing — margins compress without a differentiation strategy.`}
     ];
 }
 
@@ -2615,16 +2641,22 @@ Exactly 3 in o (one per prediction above), 2 in r. Be specific to ${domain}.`;
             };
         }
         
-        // Build full 15: AI top 3 + 12 pre-built
+        // Build full 15 opps: AI top 3 + 12 pre-built
         const preBuilt = generateCompanyOpportunities(domain, S.companyIndustry);
         const aiTitles = aiOpps.opportunities.map(o=>o.title.toLowerCase());
         const filtered = preBuilt.filter(o=>!aiTitles.some(t=>o.title.toLowerCase().includes(t)||t.includes(o.title.toLowerCase())));
         const allOpps = [...aiOpps.opportunities, ...filtered].slice(0, 15);
         
+        // Build full 7 risks: AI risks + pre-built to pad to 7
+        const preBuiltRisks = generateCompanyRisks(domain, S.companyIndustry);
+        const aiRiskNames = aiOpps.threats.map(t=>(t.prediction||'').toLowerCase());
+        const filteredRisks = preBuiltRisks.filter(r=>!aiRiskNames.some(n=>r.prediction.toLowerCase().includes(n)||n.includes(r.prediction.toLowerCase())));
+        const allThreats = [...aiOpps.threats, ...filteredRisks].slice(0, 7);
+        
         S.companyResult = {
             company_description: aiOpps.company_description,
             opportunities: allOpps,
-            threats: aiOpps.threats,
+            threats: allThreats,
             summary: aiOpps.summary
         };
         
