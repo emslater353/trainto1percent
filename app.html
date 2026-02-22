@@ -1710,11 +1710,12 @@ function companyH(){
             </div>
         `).join('');
         
-        // Risks
+        // Risks - show 1-2 shallow teasers + locked count
+        const freeRisks = (r.threats||[]).slice(0, 2);
         html += `<div class="card" style="margin-bottom:15px;border-left:3px solid var(--warning)">
             <h3 style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Risks to Watch</h3>
-            ${(r.threats||[]).map((t,i)=>`
-                <div style="padding:8px 0;${i<(r.threats||[]).length-1?'border-bottom:1px solid var(--bg-tertiary)':''}">
+            ${freeRisks.map((t,i)=>`
+                <div style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">
                     <div style="display:flex;justify-content:space-between;align-items:baseline">
                         <span style="font-size:12px;font-weight:600;color:var(--text-primary)">${t.prediction||t.title}</span>
                         <span style="font-size:11px;font-weight:700;color:var(--warning)">${t.probability}%</span>
@@ -1722,6 +1723,10 @@ function companyH(){
                     <p style="font-size:11px;color:var(--text-secondary);margin-top:3px;line-height:1.5">${t.impact}</p>
                 </div>
             `).join('')}
+            <div style="padding:10px 0 2px 0;display:flex;align-items:center;gap:6px">
+                <span style="font-size:13px">🔒</span>
+                <span style="font-size:11px;color:var(--text-muted)">5 more risks identified that could impact your company</span>
+            </div>
         </div>`;
         
         // Bottom line
@@ -2565,8 +2570,10 @@ Then for EACH of these 3 predictions, create ONE creative, specific opportunity 
 
 Think laterally and be wildly creative. Examples: A meme company + self-driving cars = comedy games for passengers. An AI assistant + loneliness epidemic = emotionally intelligent companion features. A luxury brand + AI movies = AI-generated fashion films.
 
+Also identify 2 specific risks — name each risk concretely (e.g. "Traditional discovery channels become obsolete" or "AI-generated competitors flood the market"). Keep risk descriptions short and slightly vague — just enough to make the reader curious.
+
 Return ONLY valid JSON:
-{"d":"what ${domain} does","o":[{"p":"prediction name","t":"creative opportunity name","s":"1-2 sentences specific to ${domain}"}],"r":[{"p":"trend","n":80,"s":"1 sentence about ${domain}"}],"m":"2 sentences"}
+{"d":"what ${domain} does","o":[{"p":"prediction name","t":"creative opportunity name","s":"1-2 sentences specific to ${domain}"}],"r":[{"p":"specific risk name for ${domain}","n":80,"s":"short vague teaser, 1 sentence"}],"m":"2 sentences"}
 
 Exactly 3 in o (one per prediction above), 2 in r. Be specific to ${domain}.`;
             
@@ -2601,8 +2608,8 @@ Exactly 3 in o (one per prediction above), 2 in r. Be specific to ${domain}.`;
                     description: `${domain} can leverage the "${p.toLowerCase()}" trend to create new products and reach new audiences.`
                 })),
                 threats: [
-                    {prediction:'AI copilots in all software',probability:90,impact:'Competitors using AI will produce similar output faster and cheaper.'},
-                    {prediction:'Content creation cost approaches zero',probability:85,impact:'AI-generated supply makes differentiation through taste essential.'}
+                    {prediction:'Current discovery channels become obsolete',probability:82,impact:`AI-driven personalization may replace how customers currently find and engage with ${domain}.`},
+                    {prediction:'AI-generated competitors flood the market',probability:78,impact:`New entrants using AI could replicate core offerings at a fraction of the cost and timeline.`}
                 ],
                 summary: `${domain} has significant opportunities tied to major AI shifts. Moving early on these will separate leaders from followers.`
             };
