@@ -1827,6 +1827,7 @@ function companyH(){
     // Step 2: Results
     if(S.companyStep === 2 && S.companyResult){
         const r = S.companyResult;
+        const opps = (r.opportunities || []).slice(0, 3);
         return `<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm">
             <div class="logo">AI PROOF <span>CLUB</span></div>
             <div class="card" style="margin-bottom:15px">
@@ -1835,9 +1836,9 @@ function companyH(){
                 ${r.company_description ? `<p class="text-secondary text-small" style="line-height:1.5">${r.company_description}</p>` : ''}
             </div>
             
-            ${(r.opportunities || []).map(o => `
+            ${opps.map(o => `
                 <div class="card" style="margin-bottom:12px;border-left:3px solid var(--accent)">
-                    ${o.prediction ? `<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Prediction: ${o.prediction}</div>` : ''}
+                    ${o.prediction ? `<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">${o.prediction}</div>` : ''}
                     <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:6px">${o.title}</div>
                     <p class="text-small text-secondary" style="line-height:1.6">${o.description}</p>
                 </div>
@@ -1862,9 +1863,9 @@ function companyH(){
             </div>
             
             <div class="card text-center" style="border-color:var(--accent)">
-                <p style="font-size:14px;font-weight:600;margin-bottom:6px">Ready to act on these opportunities?</p>
-                <p class="text-secondary text-small" style="margin-bottom:15px">Get a personalized plan with weekly quests to build the skills you need.</p>
-                <a href="app.html?mode=diagnostic" class="btn btn-primary btn-full">Get Your AI-Proof Plan →</a>
+                <p style="font-size:14px;font-weight:600;margin-bottom:6px">Want the full company playbook?</p>
+                <p class="text-secondary text-small" style="margin-bottom:15px">Get more opportunities, detailed forecasts, and weekly action quests for your team.</p>
+                <a href="app.html#signup" class="btn btn-primary btn-full">See More for Your Company →</a>
             </div>
         </div></div>`;
     }
@@ -1873,35 +1874,24 @@ function companyH(){
 }
 
 function generateCompanyFallback(industry, url) {
-    // Extract domain name for clues
     const domain = (url || '').replace(/https?:\/\//, '').replace(/www\./, '').replace(/\/$/, '').split('.')[0] || '';
+    const name = domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : 'This company';
     
-    // Smart fallback based on domain + industry
     const opportunities = [
-        {
-            prediction: 'Self-driving cars create new consumer contexts',
-            title: 'In-Vehicle Experience Products',
-            description: `As autonomous vehicles free up commute time, ${domain || 'this company'} could create products or content designed for passengers with time to kill. New distribution channel, captive audience.`
-        },
         {
             prediction: 'Loneliness epidemic drives demand for connection',
             title: 'Community-Powered Growth',
-            description: `Build community features around your core product. People are starving for belonging. ${domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : 'This brand'} could become a gathering point, not just a product.`
+            description: `${name} could build community features that turn customers into a tribe. People are starving for belonging.`
         },
         {
             prediction: 'AI generates full movies from a single prompt',
             title: 'AI-Powered Content at Scale',
-            description: `Use AI content generation to produce ${industry === 'Entertainment' || industry === 'Creative/Design' ? 'films, shorts, and viral content' : 'marketing content, tutorials, and brand storytelling'} at 100x the current rate. First mover wins distribution.`
+            description: `${name} could use AI to produce content at 100x the current rate — first mover in ${industry || 'this space'} wins distribution.`
         },
         {
             prediction: 'Human-AI merge makes uniquely human skills premium',
             title: 'Human Premium Positioning',
-            description: `The skills that make ${domain || 'this company'} special — creativity, humor, taste, judgment — become more valuable as AI commoditizes everything else. Double down on what's human.`
-        },
-        {
-            prediction: 'Personalized content creates filter bubbles',
-            title: 'Shared Experience Events',
-            description: `In a world of infinite personalized content, shared experiences become rare and valuable. ${domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : 'This company'} could create live, synchronized, non-algorithmic moments people actually share together.`
+            description: `What makes ${name} special becomes more valuable as AI commoditizes everything else. Double down on what's human.`
         }
     ];
     
@@ -1909,25 +1899,20 @@ function generateCompanyFallback(industry, url) {
         {
             prediction: 'AI copilots in all software',
             probability: 90,
-            impact: `AI tools will let competitors produce similar output faster and cheaper. ${domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : 'This company'} needs to build moats beyond just execution speed.`
+            impact: `Competitors using AI will produce similar output faster and cheaper. ${name} needs moats beyond execution speed.`
         },
         {
             prediction: 'Content creation cost approaches zero',
             probability: 85,
-            impact: `When anyone can create content with AI, the supply explosion means attention becomes even harder to capture. Differentiation through taste and community becomes essential.`
-        },
-        {
-            prediction: 'Trust in digital content collapses',
-            probability: 78,
-            impact: `As AI-generated content floods the market, audiences become skeptical of everything. Building verified authenticity and trust becomes a critical business function.`
+            impact: `AI-generated supply explosion makes attention harder to capture. Differentiation through taste and community becomes essential.`
         }
     ];
     
     return {
-        company_description: `${domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : 'This company'} operates in the ${industry} space.`,
+        company_description: `${name} operates in the ${industry} space.`,
         opportunities,
         threats,
-        summary: `${domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : 'This company'} has significant opportunities to leverage AI trends — particularly around community building, new distribution channels in autonomous vehicles, and AI-powered content creation. The biggest risk is commoditization: as AI makes content creation nearly free, differentiation through human creativity, taste, and authentic community becomes the only sustainable moat.`
+        summary: `${name} has clear opportunities around community building and AI-powered content. The biggest risk is commoditization — differentiation through human creativity and authentic community is the sustainable moat.`
     };
 }
 
@@ -2773,6 +2758,7 @@ function bindEvents(){
         // Save lead data to users table
         await db('users', 'POST', {
             email: S.diagnosticEmail,
+            password: 'auth_managed',
             industry: S.diagnosticIndustry,
             role: S.diagnosticRole,
             responsibilities: S.diagnosticResponsibilities,
@@ -2915,7 +2901,7 @@ IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jo
                 await authUpdateMetadata(signIn.access_token, {
                     industry: S.companyIndustry,
                     source: 'company_risk',
-                    company_url: S.companyUrl
+                    role: S.companyUrl
                 });
             }
         }
@@ -2925,6 +2911,7 @@ IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jo
         if (!existing?.length) {
             await db('users', 'POST', {
                 email: S.companyEmail,
+                password: 'auth_managed',
                 industry: S.companyIndustry,
                 start_date: new Date().toISOString(),
                 plan: 'lead'
@@ -2948,17 +2935,16 @@ IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jo
         const domain = S.companyUrl.replace(/https?:\/\//, '').replace(/www\./, '').replace(/\/$/, '');
         
         try {
-            const prompt = `You are a creative AI strategist. Analyze ${domain} (${S.companyIndustry}).
+            const prompt = `Analyze ${domain} (${S.companyIndustry}). What does this company do? Then find creative AI opportunities for them.
 
-AI trends happening now:
-${forecastList}
+AI trends: ${forecastList}
 
-Think creatively about what ${domain} does, then connect AI trends to specific opportunities. Example for a meme site: self-driving cars = games for passengers; loneliness epidemic = comedy communities; AI movies = generate comedy films; human-AI merge = humor can't be downloaded.
+Think laterally. Meme company + self-driving cars = games for passengers. AI assistant + loneliness = emotional support features. Luxury brand + AI content = AI-generated fashion shows.
 
-Return ONLY this JSON (keep descriptions short, 1-2 sentences max):
-{"d":"what ${domain} does","o":[{"p":"trend","t":"opportunity name","s":"1-2 sentences for ${domain}"}],"r":[{"p":"trend","n":85,"s":"1 sentence for ${domain}"}],"m":"2-3 sentence summary"}
+Return ONLY valid JSON, nothing else:
+{"d":"what ${domain} does","o":[{"p":"trend","t":"name","s":"1 sentence"}],"r":[{"p":"trend","n":80,"s":"1 sentence"}],"m":"2 sentences"}
 
-3 opportunities in "o", 3 risks in "r". Be specific to ${domain}.`;
+Exactly 3 in o, 2 in r. Specific to ${domain}. SHORT descriptions.`;
             
             const result = await ai([{role:'user', content: prompt}], 1500, 'general');
             console.log('Company AI raw:', result);
