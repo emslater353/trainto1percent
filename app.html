@@ -1835,32 +1835,29 @@ function companyH(){
                 ${r.company_description ? `<p class="text-secondary text-small" style="line-height:1.5">${r.company_description}</p>` : ''}
             </div>
             
-            <div class="card" style="margin-bottom:15px;border-left:3px solid var(--accent)">
-                <h3 style="font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Opportunities</h3>
-                ${(r.opportunities || []).map((o, i) => `
-                    <div style="padding:12px 0;${i < (r.opportunities||[]).length - 1 ? 'border-bottom:1px solid var(--bg-tertiary)' : ''}">
-                        <span style="font-size:14px;font-weight:700;color:var(--text-primary)">${o.title}</span>
-                        ${o.prediction ? `<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-top:4px">↗ ${o.prediction}</div>` : ''}
-                        <p class="text-small text-secondary" style="margin-top:6px;line-height:1.6">${o.description}</p>
-                    </div>
-                `).join('')}
-            </div>
+            ${(r.opportunities || []).map(o => `
+                <div class="card" style="margin-bottom:12px;border-left:3px solid var(--accent)">
+                    ${o.prediction ? `<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Prediction: ${o.prediction}</div>` : ''}
+                    <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:6px">${o.title}</div>
+                    <p class="text-small text-secondary" style="line-height:1.6">${o.description}</p>
+                </div>
+            `).join('')}
             
-            <div class="card" style="margin-bottom:15px;border-left:3px solid var(--warning)">
-                <h3 style="font-size:13px;color:var(--warning);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Risks to Watch</h3>
+            <div class="card" style="margin-bottom:15px;margin-top:5px;border-left:3px solid var(--warning)">
+                <h3 style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Risks to Watch</h3>
                 ${(r.threats || []).map((t, i) => `
-                    <div style="padding:10px 0;${i < (r.threats||[]).length - 1 ? 'border-bottom:1px solid var(--bg-tertiary)' : ''}">
+                    <div style="padding:8px 0;${i < (r.threats||[]).length - 1 ? 'border-bottom:1px solid var(--bg-tertiary)' : ''}">
                         <div style="display:flex;justify-content:space-between;align-items:baseline">
-                            <span style="font-size:13px;font-weight:600;color:var(--text-primary)">${t.prediction || t.title}</span>
-                            <span style="font-size:12px;font-weight:700;color:var(--warning)">${t.probability}%</span>
+                            <span style="font-size:12px;font-weight:600;color:var(--text-primary)">${t.prediction || t.title}</span>
+                            <span style="font-size:11px;font-weight:700;color:var(--warning)">${t.probability}%</span>
                         </div>
-                        <p class="text-small text-secondary" style="margin-top:4px;line-height:1.5">${t.impact}</p>
+                        <p style="font-size:11px;color:var(--text-secondary);margin-top:3px;line-height:1.5">${t.impact}</p>
                     </div>
                 `).join('')}
             </div>
             
             <div class="card" style="margin-bottom:15px">
-                <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">The Bottom Line</h3>
+                <h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">The Bottom Line</h3>
                 <p class="text-small" style="line-height:1.7">${r.summary || ''}</p>
             </div>
             
@@ -2929,7 +2926,6 @@ IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jo
             await db('users', 'POST', {
                 email: S.companyEmail,
                 industry: S.companyIndustry,
-                source: 'company_risk',
                 start_date: new Date().toISOString(),
                 plan: 'lead'
             });
@@ -2962,7 +2958,7 @@ Think creatively about what ${domain} does, then connect AI trends to specific o
 Return ONLY this JSON (keep descriptions short, 1-2 sentences max):
 {"d":"what ${domain} does","o":[{"p":"trend","t":"opportunity name","s":"1-2 sentences for ${domain}"}],"r":[{"p":"trend","n":85,"s":"1 sentence for ${domain}"}],"m":"2-3 sentence summary"}
 
-4 opportunities in "o", 3 risks in "r". Be specific to ${domain}.`;
+3 opportunities in "o", 3 risks in "r". Be specific to ${domain}.`;
             
             const result = await ai([{role:'user', content: prompt}], 1500, 'general');
             console.log('Company AI raw:', result);
