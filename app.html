@@ -1603,7 +1603,7 @@ function companyH(){
                 <p class="text-secondary text-small" style="margin-bottom:4px">Enter a company and we'll map AI-driven opportunities and risks.</p>
                 <p class="text-secondary text-small" style="margin-bottom:20px;color:var(--accent)">3 opportunities free. Full 15 after unlock.</p>
                 <form id="company-form">
-                    <div class="form-group"><label class="form-label">Company Website</label><input type="text" class="form-input" id="company-url" required placeholder="memelord.com"></div>
+                    <div class="form-group"><label class="form-label">Company Website</label><input type="text" class="form-input" id="company-url" required placeholder="yourwebsite.com"></div>
                     <div class="form-group"><label class="form-label">What does the company do?</label><input type="text" class="form-input" id="company-desc" placeholder="e.g. AI executive assistant" maxlength="150"></div>
                     <div class="form-group"><label class="form-label">Your Email</label><input type="email" class="form-input" id="company-email" required placeholder="you@email.com"></div>
                     <div class="form-group"><label class="form-label">Industry</label><select class="form-input" id="company-industry" required><option value="">Select industry</option>${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}</select></div>
@@ -1642,7 +1642,7 @@ function companyH(){
 function threatH(){
     var provider=THREAT_PROVIDERS[S.threatProvider];if(!provider)return '';
     if(S.threatStep===0){
-        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div style="margin-bottom:20px;padding:18px;background:${provider.color}15;border:1px solid ${provider.color}40"><div style="font-size:11px;color:${provider.color};text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:8px">${provider.name} Threat Assessment</div><p style="font-size:14px;line-height:1.5;margin:0">${provider.tagline}</p></div><div class="card"><h2 class="card-title" style="font-size:18px;margin-bottom:6px">How exposed is your company?</h2><p class="text-secondary text-small" style="margin-bottom:20px">We'll analyze how ${provider.name}'s AI launches threaten your business.</p><form id="threat-form"><div class="form-group"><label class="form-label">Your Company Website</label><input type="text" class="form-input" id="threat-url" required placeholder="memelord.com"></div><div class="form-group"><label class="form-label">What does your company do?</label><input type="text" class="form-input" id="threat-desc" placeholder="e.g. Digital marketing agency" maxlength="150"></div><div class="form-group"><label class="form-label">Your Email</label><input type="email" class="form-input" id="threat-email" required placeholder="you@company.com"></div><div class="form-group"><label class="form-label">Industry</label><select class="form-input" id="threat-industry" required><option value="">Select</option>${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}</select></div><button type="submit" class="btn btn-primary btn-full">Run ${provider.name} Threat Assessment \u2192</button></form></div></div></div>`;
+        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div style="margin-bottom:20px;padding:18px;background:${provider.color}15;border:1px solid ${provider.color}40"><div style="font-size:11px;color:${provider.color};text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:8px">${provider.name} Threat Assessment</div><p style="font-size:14px;line-height:1.5;margin:0">${provider.tagline}</p></div><div class="card"><h2 class="card-title" style="font-size:18px;margin-bottom:6px">How exposed is your company?</h2><p class="text-secondary text-small" style="margin-bottom:20px">We'll analyze how ${provider.name}'s AI launches threaten your business.</p><form id="threat-form"><div class="form-group"><label class="form-label">Your Company Website</label><input type="text" class="form-input" id="threat-url" required placeholder="yourwebsite.com"></div><div class="form-group"><label class="form-label">What does your company do?</label><input type="text" class="form-input" id="threat-desc" placeholder="e.g. Digital marketing agency" maxlength="150"></div><div class="form-group"><label class="form-label">Your Email</label><input type="email" class="form-input" id="threat-email" required placeholder="you@company.com"></div><div class="form-group"><label class="form-label">Industry</label><select class="form-input" id="threat-industry" required><option value="">Select</option>${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}</select></div><button type="submit" class="btn btn-primary btn-full">Run ${provider.name} Threat Assessment \u2192</button></form></div></div></div>`;
     }
     if(S.threatStep===1){
         var steps=['Scanning your business...','Analyzing '+provider.name+'...','Calculating threat timeline...','Finding opportunities...','Building report...'];
@@ -2396,7 +2396,7 @@ function bindEvents(){
         S.companyIndustry=document.getElementById('company-industry').value;
         S.companyDesc=(document.getElementById('company-desc')?.value||'').trim();
         var domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
-        await db('users','POST',{email:S.companyEmail,password:'auth_managed',industry:S.companyIndustry,role:S.companyUrl,source:'company_risk',start_date:new Date().toISOString(),plan:'lead'});
+        await db('users','POST',{email:S.companyEmail,password:'auth_managed',industry:S.companyIndustry,role:S.companyUrl,source:'company_risk',start_date:new Date().toISOString(),plan:'lead',name:S.companyDesc||''});
         S.companyStep=1;S.companyLoadingStep=0;render();
         setTimeout(()=>{S.companyLoadingStep=1;render();},800);setTimeout(()=>{S.companyLoadingStep=2;render();},2000);setTimeout(()=>{S.companyLoadingStep=3;render();},3500);setTimeout(()=>{S.companyLoadingStep=4;render();},5000);
         var BIG5=['Self-driving cars create new consumer contexts','AI generates full movies from a prompt','Humans and AI merge via neural interfaces','Loneliness epidemic drives demand for connection','Mental health demand exceeds supply'];
@@ -2410,6 +2410,8 @@ function bindEvents(){
         var preO=generateCompanyOpportunities(domain,S.companyIndustry),preR=generateCompanyRisks(domain);
         var go=aiOpps?.opportunities||[],gr=aiOpps?.threats||preR.slice(0,2);
         S.companyResult={company_description:aiOpps?.company_description||S.companyDesc||domain,opportunities:[...go,...preO].slice(0,15),threats:[...gr,...preR].slice(0,7),summary:aiOpps?.summary||''};
+        // Save result to DB
+        await db('users','PATCH',{company_result:JSON.stringify(S.companyResult)},`?email=eq.${encodeURIComponent(S.companyEmail)}&source=eq.company_risk`);
         S.companyStep=2;render();
     });
     document.getElementById('unlock-company-report')?.addEventListener('click',()=>{
@@ -2423,7 +2425,7 @@ function bindEvents(){
         S.threatUrl=document.getElementById('threat-url').value;S.threatEmail=document.getElementById('threat-email').value;
         S.threatIndustry=document.getElementById('threat-industry').value;S.threatDesc=(document.getElementById('threat-desc')?.value||'').trim();
         var provider=THREAT_PROVIDERS[S.threatProvider],domain=S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
-        await db('users','POST',{email:S.threatEmail,password:'auth_managed',industry:S.threatIndustry,role:S.threatUrl,source:'threat_'+S.threatProvider,start_date:new Date().toISOString(),plan:'lead'});
+        await db('users','POST',{email:S.threatEmail,password:'auth_managed',industry:S.threatIndustry,role:S.threatUrl,source:'threat_'+S.threatProvider,start_date:new Date().toISOString(),plan:'lead',name:S.threatDesc||''});
         S.threatStep=1;S.threatLoadingStep=0;render();
         setTimeout(()=>{S.threatLoadingStep=1;render();},800);setTimeout(()=>{S.threatLoadingStep=2;render();},2000);setTimeout(()=>{S.threatLoadingStep=3;render();},3500);setTimeout(()=>{S.threatLoadingStep=4;render();},5000);
         var ctx=S.threatDesc?domain+': '+S.threatDesc+'. '+S.threatIndustry+'.':domain+' ('+S.threatIndustry+').';
@@ -2442,6 +2444,8 @@ function bindEvents(){
         if(softwareInd.some(s=>S.threatIndustry.includes(s))){fallbackLevel='High Exposure';fallbackMonths=Math.max(8,provider.defaultMonths-6);}
         if(physicalInd.some(s=>S.threatIndustry.includes(s))){fallbackLevel='Positioned but Must Adapt';fallbackMonths=provider.defaultMonths+6;}
         S.threatResult={company_description:aiR?.company_description||S.threatDesc||domain,threat_level:aiR?.threat_level||fallbackLevel,threat_summary:aiR?.threat_summary||provider.name+' is advancing into areas that touch '+domain+"'s operations.",months_until_threat:aiR?.months_until_threat||fallbackMonths,timeline_reason:aiR?.timeline_reason||'Based on '+provider.name+"'s launch velocity and "+S.threatIndustry+' industry dynamics.',opportunities:[...go,...preO].slice(0,15),threats:[...gr,...preR].slice(0,7)};
+        // Save result to DB
+        await db('users','PATCH',{company_result:JSON.stringify(S.threatResult)},`?email=eq.${encodeURIComponent(S.threatEmail)}&source=eq.threat_${S.threatProvider}`);
         S.threatStep=2;render();
     });
     document.getElementById('unlock-threat-report')?.addEventListener('click',()=>{
@@ -9394,12 +9398,16 @@ async function init(){
                 if(data.type==='company'){
                     S.companyUrl=data.url||'';S.companyEmail=data.email||'';S.companyIndustry=data.industry||'';
                     S.companyDesc=data.desc||'';S.companyResult=data.result;S.companyStep=2;S.companyUnlocked=true;
+                    // Update plan from lead to report_paid
+                    await db('users','PATCH',{plan:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.company_risk`);
                     S.screen='company';render();return;
                 }
                 if(data.type==='threat'){
                     S.threatProvider=data.provider;S.threatUrl=data.url||'';S.threatEmail=data.email||'';
                     S.threatIndustry=data.industry||'';S.threatDesc=data.desc||'';S.threatResult=data.result;
                     S.threatStep=2;S.threatUnlocked=true;
+                    // Update plan from lead to report_paid
+                    await db('users','PATCH',{plan:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.threat_${data.provider}`);
                     S.screen='threat';render();return;
                 }
             }catch(e){console.error('Report restore:',e);}
@@ -9554,8 +9562,8 @@ function updateHash(){
 }
 
 // Handle browser back/forward
-// Test unlock: type "unlock" only works with ?debug=1 in URL
-var _uk='';if(new URLSearchParams(location.search).get('debug')==='1'){document.addEventListener('keypress',function(e){_uk+=e.key;if(_uk.length>6)_uk=_uk.slice(-6);if(_uk==='unlock'){if(S.screen==='company'){S.companyUnlocked=true;render();}if(S.screen==='threat'){S.threatUnlocked=true;render();}}});}
+// Test unlock: add ?debug=1 to any URL, then type "unlock" on results page
+var _dbg=location.search.includes('debug=1');var _uk='';document.addEventListener('keydown',function(e){if(!_dbg)return;if(e.key.length===1){_uk+=e.key.toLowerCase();if(_uk.length>6)_uk=_uk.slice(-6);if(_uk==='unlock'){if(S.screen==='company'){S.companyUnlocked=true;render();}if(S.screen==='threat'){S.threatUnlocked=true;render();}}}});
 
 window.addEventListener('popstate', () => {
     const hash = location.hash.replace('#','');
