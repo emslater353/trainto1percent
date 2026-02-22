@@ -2945,41 +2945,67 @@ IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jo
         setTimeout(()=>{ S.companyLoadingStep=3; render(); }, 3500);
         setTimeout(()=>{ S.companyLoadingStep=4; render(); }, 5000);
         
-        // Build forecast summaries for the AI
-        const forecastSummaries = FORECAST_DATABASE.slice(0, 20).map(f => 
-            `- ${f.title} (${f.probability}%): ${(f.opportunities||[]).slice(0,3).map(o=>o.title.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{FE00}-\u{FEFF}]\s*/u,'')).join(', ')}`
-        ).join('\n');
+        // Build forecast summaries - keep very short
+        const topForecasts = [...FORECAST_DATABASE].sort((a,b) => b.probability - a.probability).slice(0, 12);
+        const forecastList = topForecasts.map(f => `- ${f.title} (${f.probability}%)`).join('\n');
+        
+        const domain = S.companyUrl.replace(/https?:\/\//, '').replace(/www\./, '').replace(/\/$/, '');
         
         try {
-            const prompt = `You're a brilliant AI strategist. Look at this company and creatively connect AI trends to their business.
+            const prompt = `You are a creative AI strategist. Analyze ${domain} (${S.companyIndustry}).
 
-Company: ${S.companyUrl}
-Industry: ${S.companyIndustry}
+AI trends happening now:
+${forecastList}
 
-Figure out what this company does from the URL/domain name. Then think CREATIVELY about how these AI predictions create opportunities for them:
+Think creatively about what ${domain} does, then connect AI trends to specific opportunities. Example for a meme site: self-driving cars = games for passengers; loneliness epidemic = comedy communities; AI movies = generate comedy films; human-AI merge = humor can't be downloaded.
 
-${forecastSummaries}
+Return ONLY this JSON (keep descriptions short, 1-2 sentences max):
+{"d":"what ${domain} does","o":[{"p":"trend","t":"opportunity name","s":"1-2 sentences for ${domain}"}],"r":[{"p":"trend","n":85,"s":"1 sentence for ${domain}"}],"m":"2-3 sentence summary"}
 
-Think laterally:
-- Self-driving cars = new captive audiences, new entertainment contexts
-- Loneliness epidemic = demand for community, connection, belonging
-- AI-generated movies = new content formats, new distribution
-- Human-AI merge = uniquely human skills become premium
-- Content personalization = niche audiences, micro-communities
-
-Return ONLY valid JSON:
-{"company_description":"<what this company does>","opportunities":[{"prediction":"<AI trend>","title":"<creative opportunity>","description":"<2-3 sentences, specific to THIS company>"}],"threats":[{"prediction":"<AI trend>","probability":<number>,"impact":"<1-2 sentences specific to THIS company>"}],"summary":"<3-4 sentences, lead with opportunities>"}
-
-5 opportunities, 3 threats. Be wildly creative and specific. Every item must feel written for THIS company, not generic.`;
+4 opportunities in "o", 3 risks in "r". Be specific to ${domain}.`;
             
-            const result = await ai([{role:'user', content: prompt}], 2000, 'general');
-            console.log('Company AI result:', result);
+            const result = await ai([{role:'user', content: prompt}], 1500, 'general');
+            console.log('Company AI raw:', result);
             
             if (result) {
-                const cleaned = result.replace(/```json|```/g, '').trim();
-                S.companyResult = JSON.parse(cleaned);
+                let cleaned = result.replace(/```json|```/g, '').trim();
+                
+                // Try to fix truncated JSON by closing open structures
+                let parsed = null;
+                try {
+                    parsed = JSON.parse(cleaned);
+                } catch(parseErr) {
+                    // Try adding closing brackets/braces
+                    const fixes = ['}]}]}', ']}]}', '"}]}]}', '"}]}', '"}],"m":"See full analysis inside."}'];
+                    for (const fix of fixes) {
+                        try {
+                            parsed = JSON.parse(cleaned + fix);
+                            break;
+                        } catch(e2) {}
+                    }
+                }
+                
+                if (parsed) {
+                    // Normalize short keys to full keys
+                    S.companyResult = {
+                        company_description: parsed.d || parsed.company_description || '',
+                        opportunities: (parsed.o || parsed.opportunities || []).map(x => ({
+                            prediction: x.p || x.prediction || '',
+                            title: x.t || x.title || '',
+                            description: x.s || x.description || ''
+                        })),
+                        threats: (parsed.r || parsed.threats || []).map(x => ({
+                            prediction: x.p || x.prediction || '',
+                            probability: x.n || x.probability || 80,
+                            impact: x.s || x.impact || ''
+                        })),
+                        summary: parsed.m || parsed.summary || ''
+                    };
+                } else {
+                    console.error('Could not parse AI response');
+                    S.companyResult = generateCompanyFallback(S.companyIndustry, S.companyUrl);
+                }
             } else {
-                console.error('AI returned null — check Netlify function logs');
                 S.companyResult = generateCompanyFallback(S.companyIndustry, S.companyUrl);
             }
         } catch(e) {
