@@ -880,6 +880,7 @@ const S = {
     companyUrl: '',
     companyEmail: '',
     companyIndustry: '',
+    companyDesc: '',
     companyResult: null,
     companyLoadingStep: 0,
     companyUnlocked: false // true after $29 purchase
@@ -1637,6 +1638,10 @@ function companyH(){
                     <div class="form-group">
                         <label class="form-label">Company Website</label>
                         <input type="url" class="form-input" id="company-url" required placeholder="https://example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">What does the company do? <span style="color:var(--text-muted);font-weight:400">(1 sentence)</span></label>
+                        <input type="text" class="form-input" id="company-desc" placeholder="e.g. AI executive assistant for scheduling and travel" maxlength="150">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Your Email</label>
@@ -2534,6 +2539,7 @@ function bindEvents(){
         S.companyUrl = document.getElementById('company-url').value;
         S.companyEmail = document.getElementById('company-email').value;
         S.companyIndustry = document.getElementById('company-industry').value;
+        S.companyDesc = (document.getElementById('company-desc')?.value || '').trim();
         
         const emailEnc = encodeURIComponent(S.companyEmail);
         
@@ -2611,21 +2617,29 @@ function bindEvents(){
         
         let aiOpps = null;
         try {
-            const prompt = `Analyze ${domain} (${S.companyIndustry}). What does this company likely do?
+            const companyContext = S.companyDesc 
+                ? `${domain} is: ${S.companyDesc}. Industry: ${S.companyIndustry}.`
+                : `${domain} (${S.companyIndustry}). Figure out what they do from the domain name.`;
+            
+            const prompt = `${companyContext}
 
-Then for EACH of these 3 predictions, create ONE creative, specific opportunity for ${domain}:
+For EACH of these 3 predictions, create ONE creative, specific opportunity for ${domain}:
 1. ${picked[0]}
 2. ${picked[1]}
 3. ${picked[2]}
 
-Think laterally and be wildly creative. Examples: A meme company + self-driving cars = comedy games for passengers. An AI assistant + loneliness epidemic = emotionally intelligent companion features. A luxury brand + AI movies = AI-generated fashion films.
+Think laterally and be wildly creative about how each prediction creates a specific opportunity for THIS company. Examples:
+- AI executive assistant + self-driving cars = concierge travel planning for autonomous road trips
+- AI executive assistant + humans-AI merge = build infrastructure now so average people have this ready when AGI arrives
+- Meme company + loneliness epidemic = comedy community platform for belonging
+- Luxury brand + AI movies = AI-generated fashion films and virtual runway shows
 
-Also identify 2 specific risks — name each risk concretely (e.g. "Traditional discovery channels become obsolete" or "AI-generated competitors flood the market"). Keep risk descriptions short and slightly vague — just enough to make the reader curious.
+Also identify 2 specific risks for ${domain} — name each concretely. Keep risk descriptions short and slightly vague — just enough to spark curiosity.
 
 Return ONLY valid JSON:
 {"d":"what ${domain} does","o":[{"p":"prediction name","t":"creative opportunity name","s":"1-2 sentences specific to ${domain}"}],"r":[{"p":"specific risk name for ${domain}","n":80,"s":"short vague teaser, 1 sentence"}],"m":"2 sentences"}
 
-Exactly 3 in o (one per prediction above), 2 in r. Be specific to ${domain}.`;
+Exactly 3 in o (one per prediction above), 2 in r. Every item MUST be specific to ${domain}'s actual business.`;
             
             const result = await ai([{role:'user',content:prompt}], 1500, 'general');
             console.log('Company AI raw:', result);
@@ -2651,7 +2665,7 @@ Exactly 3 in o (one per prediction above), 2 in r. Be specific to ${domain}.`;
         // Fallback if AI fails: generate from the picked predictions
         if (!aiOpps || !aiOpps.opportunities.length) {
             aiOpps = {
-                company_description: `${domain} operates in the ${S.companyIndustry} space.`,
+                company_description: S.companyDesc || `${domain} operates in the ${S.companyIndustry} space.`,
                 opportunities: picked.map(p => ({
                     prediction: p,
                     title: p.split(' ').slice(0, 4).join(' '),
