@@ -2535,27 +2535,51 @@ function bindEvents(){
         S.companyEmail = document.getElementById('company-email').value;
         S.companyIndustry = document.getElementById('company-industry').value;
         
-        // Check if this email already has a saved report
-        const existing = await db('users','GET',null,`?email=eq.${encodeURIComponent(S.companyEmail)}&source=eq.company_risk`);
-        if (existing?.length && existing[0].company_result) {
+        const emailEnc = encodeURIComponent(S.companyEmail);
+        
+        // 1. Check if this exact URL already has a saved report (any email)
+        const urlMatch = await db('users','GET',null,`?role=eq.${encodeURIComponent(S.companyUrl)}&source=eq.company_risk&company_result=neq.null&limit=1`);
+        if (urlMatch?.length && urlMatch[0].company_result) {
             try {
-                S.companyResult = JSON.parse(existing[0].company_result);
-                S.companyUrl = existing[0].role || S.companyUrl; // role stores URL
+                S.companyResult = JSON.parse(urlMatch[0].company_result);
+                // Save this email as a lead too if new
+                const emailExists = await db('users','GET',null,`?email=eq.${emailEnc}&source=eq.company_risk`);
+                if (!emailExists?.length) {
+                    await db('users', 'POST', {
+                        email: S.companyEmail, password: 'auth_managed',
+                        industry: S.companyIndustry, role: S.companyUrl,
+                        source: 'company_risk', start_date: new Date().toISOString(),
+                        plan: 'lead', company_result: urlMatch[0].company_result
+                    });
+                }
                 S.companyStep = 2;
                 render();
                 return;
-            } catch(e) { /* proceed to generate fresh */ }
+            } catch(e) { /* corrupted JSON, regenerate */ }
         }
         
-        // Save as lead
-        if (!existing?.length) {
+        // 2. Check if this email already has a saved report for this URL
+        const existing = await db('users','GET',null,`?email=eq.${emailEnc}&source=eq.company_risk`);
+        if (existing?.length && existing[0].company_result && existing[0].role === S.companyUrl) {
+            try {
+                S.companyResult = JSON.parse(existing[0].company_result);
+                S.companyStep = 2;
+                render();
+                return;
+            } catch(e) { /* corrupted, regenerate */ }
+        }
+        
+        // 3. Save or update lead
+        if (existing?.length) {
+            await db('users','PATCH',
+                { role: S.companyUrl, industry: S.companyIndustry, company_result: null },
+                `?email=eq.${emailEnc}&source=eq.company_risk`
+            );
+        } else {
             await db('users', 'POST', {
-                email: S.companyEmail,
-                password: 'auth_managed',
-                industry: S.companyIndustry,
-                role: S.companyUrl,
-                source: 'company_risk',
-                start_date: new Date().toISOString(),
+                email: S.companyEmail, password: 'auth_managed',
+                industry: S.companyIndustry, role: S.companyUrl,
+                source: 'company_risk', start_date: new Date().toISOString(),
                 plan: 'lead'
             });
         }
