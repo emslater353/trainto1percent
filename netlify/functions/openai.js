@@ -61,6 +61,12 @@ Keep it under 200 words. Be direct and insightful.`;
             systemPrompt = 'You are a helpful assistant.';
         }
 
+        // Set max_tokens based on type
+        let maxTokens = 500;
+        if (type === 'general' || type === 'company_risk') {
+            maxTokens = 1500;
+        }
+
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -73,7 +79,7 @@ Keep it under 200 words. Be direct and insightful.`;
                     { role: 'system', content: systemPrompt },
                     ...messages
                 ],
-                max_tokens: 500,
+                max_tokens: maxTokens,
                 temperature: 0.7
             })
         });
