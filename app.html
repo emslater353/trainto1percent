@@ -1875,43 +1875,62 @@ function companyH(){
     return '';
 }
 
-function generateCompanyFallback(industry) {
-    // Map user-facing industry to forecast industry tags
-    const indMap = {
-        'Technology': 'software', 'Finance': 'finance-ind', 'Healthcare': 'healthcare',
-        'Education': 'education', 'Marketing': 'marketing-ind', 'Legal': 'legal',
-        'Creative/Design': 'creative', 'Retail/E-commerce': 'retail-ind', 'Real Estate': 'real-estate',
-        'Manufacturing': 'manufacturing', 'Entertainment': 'entertainment', 'Fashion': 'fashion'
-    };
-    const indTag = indMap[industry] || 'software';
+function generateCompanyFallback(industry, url) {
+    // Extract domain name for clues
+    const domain = (url || '').replace(/https?:\/\//, '').replace(/www\./, '').replace(/\/$/, '').split('.')[0] || '';
     
-    // Find forecasts that match this industry
-    const relevant = FORECAST_DATABASE.filter(f => (f.industries || []).includes(indTag));
-    const sorted = relevant.sort((a, b) => b.probability - a.probability);
+    // Smart fallback based on domain + industry
+    const opportunities = [
+        {
+            prediction: 'Self-driving cars create new consumer contexts',
+            title: 'In-Vehicle Experience Products',
+            description: `As autonomous vehicles free up commute time, ${domain || 'this company'} could create products or content designed for passengers with time to kill. New distribution channel, captive audience.`
+        },
+        {
+            prediction: 'Loneliness epidemic drives demand for connection',
+            title: 'Community-Powered Growth',
+            description: `Build community features around your core product. People are starving for belonging. ${domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : 'This brand'} could become a gathering point, not just a product.`
+        },
+        {
+            prediction: 'AI generates full movies from a single prompt',
+            title: 'AI-Powered Content at Scale',
+            description: `Use AI content generation to produce ${industry === 'Entertainment' || industry === 'Creative/Design' ? 'films, shorts, and viral content' : 'marketing content, tutorials, and brand storytelling'} at 100x the current rate. First mover wins distribution.`
+        },
+        {
+            prediction: 'Human-AI merge makes uniquely human skills premium',
+            title: 'Human Premium Positioning',
+            description: `The skills that make ${domain || 'this company'} special — creativity, humor, taste, judgment — become more valuable as AI commoditizes everything else. Double down on what's human.`
+        },
+        {
+            prediction: 'Personalized content creates filter bubbles',
+            title: 'Shared Experience Events',
+            description: `In a world of infinite personalized content, shared experiences become rare and valuable. ${domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : 'This company'} could create live, synchronized, non-algorithmic moments people actually share together.`
+        }
+    ];
     
-    const threats = sorted.slice(0, 4).map(f => ({
-        title: f.title,
-        probability: f.probability,
-        impact: f.threatReason || 'This prediction could significantly impact businesses in your industry.'
-    }));
-    
-    const opportunities = [];
-    sorted.forEach(f => {
-        if (opportunities.length >= 4) return;
-        (f.opportunities || []).slice(0, 1).forEach(o => {
-            if (opportunities.length < 4) {
-                opportunities.push({
-                    title: o.title.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{FE00}-\u{FEFF}]\s*/u, ''),
-                    description: o.description ? o.description.substring(0, 150) : ''
-                });
-            }
-        });
-    });
+    const threats = [
+        {
+            prediction: 'AI copilots in all software',
+            probability: 90,
+            impact: `AI tools will let competitors produce similar output faster and cheaper. ${domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : 'This company'} needs to build moats beyond just execution speed.`
+        },
+        {
+            prediction: 'Content creation cost approaches zero',
+            probability: 85,
+            impact: `When anyone can create content with AI, the supply explosion means attention becomes even harder to capture. Differentiation through taste and community becomes essential.`
+        },
+        {
+            prediction: 'Trust in digital content collapses',
+            probability: 78,
+            impact: `As AI-generated content floods the market, audiences become skeptical of everything. Building verified authenticity and trust becomes a critical business function.`
+        }
+    ];
     
     return {
-        threats,
+        company_description: `${domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : 'This company'} operates in the ${industry} space.`,
         opportunities,
-        summary: `Based on ${threats.length} AI predictions relevant to the ${industry} industry, this company faces significant disruption risk. The most immediate threats relate to ${threats[0]?.title || 'AI automation'}. However, there are clear opportunities to get ahead of these changes by building new capabilities now.`
+        threats,
+        summary: `${domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : 'This company'} has significant opportunities to leverage AI trends — particularly around community building, new distribution channels in autonomous vehicles, and AI-powered content creation. The biggest risk is commoditization: as AI makes content creation nearly free, differentiation through human creativity, taste, and authentic community becomes the only sustainable moat.`
     };
 }
 
@@ -2927,57 +2946,45 @@ IMPORTANT: Be realistic with scores. Most people should score 30-60. Very few jo
         setTimeout(()=>{ S.companyLoadingStep=4; render(); }, 5000);
         
         // Build forecast summaries for the AI
-        const forecastSummaries = FORECAST_DATABASE.map(f => 
-            `- ${f.title} (${f.probability}%, ${f.timeframe}): ${(f.opportunities||[]).map(o=>o.title.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{FE00}-\u{FEFF}]\s*/u,'')).join('; ')}`
+        const forecastSummaries = FORECAST_DATABASE.slice(0, 20).map(f => 
+            `- ${f.title} (${f.probability}%): ${(f.opportunities||[]).slice(0,3).map(o=>o.title.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{FE00}-\u{FEFF}]\s*/u,'')).join(', ')}`
         ).join('\n');
         
         try {
-            const prompt = `You are a brilliant AI strategist who sees connections others miss. Your job is to look at a company and creatively connect AI mega-trends to their specific business.
+            const prompt = `You're a brilliant AI strategist. Look at this company and creatively connect AI trends to their business.
 
-Company URL: ${S.companyUrl}
-Industry they selected: ${S.companyIndustry}
+Company: ${S.companyUrl}
+Industry: ${S.companyIndustry}
 
-First, figure out what this company actually DOES based on the URL. The domain name itself is a clue. Think about their likely products, audience, culture, and business model.
+Figure out what this company does from the URL/domain name. Then think CREATIVELY about how these AI predictions create opportunities for them:
 
-Here are real AI predictions happening in the next 1-10 years:
 ${forecastSummaries}
 
-Now think CREATIVELY. Don't just match on industry tags. Think about:
-- How could self-driving cars create new contexts for this company's product?
-- How could the loneliness epidemic create demand this company could fill?
-- How could AI-generated content (movies, music, games) intersect with what they do?
-- How could human-AI merging create demand for their uniquely human skills?
-- What skills or experiences does this company offer that become MORE valuable as AI advances?
-- What new product lines or services could they launch based on these trends?
+Think laterally:
+- Self-driving cars = new captive audiences, new entertainment contexts
+- Loneliness epidemic = demand for community, connection, belonging
+- AI-generated movies = new content formats, new distribution
+- Human-AI merge = uniquely human skills become premium
+- Content personalization = niche audiences, micro-communities
 
-For example: A meme company could make games for self-driving car passengers. A meme company could build community features to fight loneliness. A meme company could produce AI-generated comedy films. A meme company's humor expertise becomes more valuable because humor is hard to download into AI.
+Return ONLY valid JSON:
+{"company_description":"<what this company does>","opportunities":[{"prediction":"<AI trend>","title":"<creative opportunity>","description":"<2-3 sentences, specific to THIS company>"}],"threats":[{"prediction":"<AI trend>","probability":<number>,"impact":"<1-2 sentences specific to THIS company>"}],"summary":"<3-4 sentences, lead with opportunities>"}
 
-Return ONLY valid JSON (no markdown, no backticks):
-{
-    "company_description": "<1 sentence — what this company likely does>",
-    "opportunities": [
-        {"prediction": "<which AI prediction this connects to>", "title": "<creative opportunity name>", "description": "<2-3 sentences explaining the specific, creative opportunity for THIS company. Be concrete and exciting, not generic.>"}
-    ],
-    "threats": [
-        {"prediction": "<which AI prediction this relates to>", "probability": <number 1-100>, "impact": "<1-2 sentence explanation of how this specifically threatens THIS company>"}
-    ],
-    "summary": "<3-4 sentence executive summary. Lead with the exciting opportunities, then mention the risks to watch. Be specific to this company.>"
-}
-
-Return exactly 5 opportunities and 3 threats. Opportunities FIRST — that's what matters most. Be wildly specific and creative, not generic. Every item should feel like it was written specifically for THIS company.`;
+5 opportunities, 3 threats. Be wildly creative and specific. Every item must feel written for THIS company, not generic.`;
             
-            const result = await ai([{role:'user', content: prompt}], 2000, 'company_risk');
+            const result = await ai([{role:'user', content: prompt}], 2000, 'general');
+            console.log('Company AI result:', result);
             
             if (result) {
                 const cleaned = result.replace(/```json|```/g, '').trim();
                 S.companyResult = JSON.parse(cleaned);
             } else {
-                // Fallback: generate from forecast database based on industry
-                S.companyResult = generateCompanyFallback(S.companyIndustry);
+                console.error('AI returned null — check Netlify function logs');
+                S.companyResult = generateCompanyFallback(S.companyIndustry, S.companyUrl);
             }
         } catch(e) {
             console.error('Company analysis error:', e);
-            S.companyResult = generateCompanyFallback(S.companyIndustry);
+            S.companyResult = generateCompanyFallback(S.companyIndustry, S.companyUrl);
         }
         
         S.companyStep = 2;
