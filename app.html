@@ -9554,6 +9554,9 @@ function updateHash(){
 }
 
 // Handle browser back/forward
+// Test unlock: type "unlock" only works with ?debug=1 in URL
+var _uk='';if(new URLSearchParams(location.search).get('debug')==='1'){document.addEventListener('keypress',function(e){_uk+=e.key;if(_uk.length>6)_uk=_uk.slice(-6);if(_uk==='unlock'){if(S.screen==='company'){S.companyUnlocked=true;render();}if(S.screen==='threat'){S.threatUnlocked=true;render();}}});}
+
 window.addEventListener('popstate', () => {
     const hash = location.hash.replace('#','');
     if(hash && S.user){
