@@ -749,8 +749,9 @@ const SUPABASE_URL = 'https://snbchuvvnbwvghmbxehv.supabase.co';
 const SUPABASE_KEY = 'PASTE_YOUR_NEW_ANON_KEY_HERE';
 const STRIPE_LINK = 'https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01';
 const STRIPE_ANNUAL = 'https://buy.stripe.com/dRm5kDbgP5CPdk89qO9ws02';
-const STRATEGY_CALL_URL='https://calendly.com/TODO-replace';
+const STRATEGY_CALL_URL='https://calendly.com/erica-m-slater/aiproofclub';
 const COMPANY_REPORT_PRICE=29;
+const COMPANY_REPORT_STRIPE='https://buy.stripe.com/14A3cv4Sr1mzdk8gTg9ws03';
 
 // Supabase Auth helper functions
 async function supabaseAuth(action, data) {
@@ -1602,7 +1603,7 @@ function companyH(){
                 <p class="text-secondary text-small" style="margin-bottom:4px">Enter a company and we'll map AI-driven opportunities and risks.</p>
                 <p class="text-secondary text-small" style="margin-bottom:20px;color:var(--accent)">3 opportunities free. Full 15 after unlock.</p>
                 <form id="company-form">
-                    <div class="form-group"><label class="form-label">Company Website</label><input type="url" class="form-input" id="company-url" required placeholder="https://example.com"></div>
+                    <div class="form-group"><label class="form-label">Company Website</label><input type="text" class="form-input" id="company-url" required placeholder="memelord.com"></div>
                     <div class="form-group"><label class="form-label">What does the company do?</label><input type="text" class="form-input" id="company-desc" placeholder="e.g. AI executive assistant" maxlength="150"></div>
                     <div class="form-group"><label class="form-label">Your Email</label><input type="email" class="form-input" id="company-email" required placeholder="you@email.com"></div>
                     <div class="form-group"><label class="form-label">Industry</label><select class="form-input" id="company-industry" required><option value="">Select industry</option>${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}</select></div>
@@ -1615,15 +1616,24 @@ function companyH(){
         return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center" style="padding:40px"><div style="font-size:28px;margin-bottom:15px">\ud83d\udd0d</div><h2 class="card-title">Analyzing ${S.companyUrl.replace(/https?:\/\//,'').replace(/\/$/,'')}</h2><div style="margin-top:20px">${steps.map((st,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;opacity:${i<=S.companyLoadingStep?1:0.3}"><span style="color:${i<S.companyLoadingStep?'var(--success)':i===S.companyLoadingStep?'var(--accent)':'var(--text-muted)'};font-size:14px">${i<S.companyLoadingStep?'\u2713':i===S.companyLoadingStep?'\u25c9':'\u25cb'}</span><span class="text-small">${st}</span></div>`).join('')}</div></div></div></div>`;
     }
     if(S.companyStep===2&&S.companyResult){
-        var r=S.companyResult,opps=(r.opportunities||[]).slice(0,3),domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
-        var risks=(r.threats||[]).slice(0,2),lc=Math.max(12,15-opps.length);
-        var h=`<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div style="margin-bottom:20px;padding:20px 24px;background:linear-gradient(135deg,rgba(255,170,0,0.12),rgba(255,170,0,0.04));border:1px solid rgba(255,170,0,0.3);position:relative"><div style="position:absolute;top:0;left:0;width:4px;height:100%;background:var(--warning)"></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">\u26a0\ufe0f</span><span style="font-size:10px;color:var(--warning);text-transform:uppercase;letter-spacing:2px;font-weight:700">AI-Proof Status</span></div><h2 style="font-size:22px;font-weight:700;margin-bottom:8px">Moderately Positioned</h2><p style="font-size:13px;color:var(--text-secondary);line-height:1.5">You're ahead of most companies, but missing key shifts.</p>${r.company_description?`<p style="font-size:11px;color:var(--text-muted);margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,170,0,0.15)">${domain} \u2014 ${r.company_description}</p>`:''}</div><div style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Opportunities based on AI predictions</div>`;
+        var r=S.companyResult,domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        var allOpps=r.opportunities||[],allRisks=r.threats||[];
+        var opps=S.companyUnlocked?allOpps:allOpps.slice(0,3);
+        var risks=S.companyUnlocked?allRisks:allRisks.slice(0,2);
+        var lc=Math.max(0,allOpps.length-3);
+        var h=`<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>${S.companyUnlocked?'<div style="text-align:center;margin-bottom:15px;padding:10px;background:var(--accent);color:#000;font-size:11px;text-transform:uppercase;letter-spacing:2px;font-weight:700">\u2713 Full Report Unlocked</div>':''}<div style="margin-bottom:20px;padding:20px 24px;background:linear-gradient(135deg,rgba(255,170,0,0.12),rgba(255,170,0,0.04));border:1px solid rgba(255,170,0,0.3);position:relative"><div style="position:absolute;top:0;left:0;width:4px;height:100%;background:var(--warning)"></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">\u26a0\ufe0f</span><span style="font-size:10px;color:var(--warning);text-transform:uppercase;letter-spacing:2px;font-weight:700">AI-Proof Status</span></div><h2 style="font-size:22px;font-weight:700;margin-bottom:8px">Moderately Positioned</h2><p style="font-size:13px;color:var(--text-secondary);line-height:1.5">You're ahead of most companies, but missing key shifts.</p>${r.company_description?`<p style="font-size:11px;color:var(--text-muted);margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,170,0,0.15)">${domain} \u2014 ${r.company_description}</p>`:''}</div><div style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Opportunities based on AI predictions${S.companyUnlocked?' ('+allOpps.length+')':''}</div>`;
         opps.forEach(function(o){h+=`<div class="card" style="margin-bottom:12px;border-left:3px solid var(--accent)">${o.prediction?`<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Prediction: ${o.prediction}</div>`:''}<div style="font-size:15px;font-weight:700;margin-bottom:6px">${o.title}</div><p class="text-small text-secondary" style="line-height:1.6">${o.description}</p></div>`;});
-        h+=`<div class="card" style="margin-bottom:15px;border-left:3px solid var(--warning)"><h3 style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Risks to Watch</h3>`;
+        h+=`<div class="card" style="margin-bottom:15px;border-left:3px solid var(--warning)"><h3 style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Risks to Watch${S.companyUnlocked?' ('+allRisks.length+')':''}</h3>`;
         risks.forEach(function(t){h+=`<div style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:600">${t.prediction}</span><span style="font-size:11px;font-weight:700;color:var(--warning)">${t.probability}%</span></div><p style="font-size:11px;color:var(--text-secondary);margin-top:3px">${t.impact}</p></div>`;});
-        h+=`<div style="padding:10px 0 2px 0">\ud83d\udd12 <span style="font-size:11px;color:var(--text-muted)">5 more risks in full report</span></div></div>`;
+        if(!S.companyUnlocked){h+=`<div style="padding:10px 0 2px 0">\ud83d\udd12 <span style="font-size:11px;color:var(--text-muted)">${allRisks.length-2} more risks in full report</span></div>`;}
+        h+=`</div>`;
         h+=`<div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">The Bottom Line</h3><p class="text-small" style="line-height:1.7">${r.summary||''}</p></div>`;
-        h+=`<p style="font-size:13px;text-align:center;margin-bottom:15px;color:var(--text-muted)">\ud83d\udd12 ${lc} more opportunities identified</p><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:16px;font-weight:700;margin-bottom:6px">Unlock Your Full 15 Opportunity Report</p><p class="text-secondary text-small" style="margin-bottom:15px">See the shifts that will impact your company.</p><button class="btn btn-primary btn-full" id="unlock-company-report">Unlock Full Report \u2014 $${COMPANY_REPORT_PRICE}</button><a href="${STRATEGY_CALL_URL}" target="_blank" style="display:block;margin-top:12px;font-size:12px;color:var(--text-secondary)">or <span style="color:var(--accent);text-decoration:underline">book a strategy call</span></a></div></div></div>`;
+        if(!S.companyUnlocked){
+            h+=`<p style="font-size:13px;text-align:center;margin-bottom:15px;color:var(--text-muted)">\ud83d\udd12 ${lc} more opportunities identified</p><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:16px;font-weight:700;margin-bottom:6px">Unlock Your Full 15 Opportunity Report</p><p class="text-secondary text-small" style="margin-bottom:15px">See the shifts that will impact your company.</p><button class="btn btn-primary btn-full" id="unlock-company-report">Unlock Full Report →</button><a href="${STRATEGY_CALL_URL}" target="_blank" style="display:block;margin-top:12px;font-size:12px;color:var(--text-secondary)">or <span style="color:var(--accent);text-decoration:underline">book a strategy call</span></a></div>`;
+        } else {
+            h+=`<div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
+        }
+        h+=`</div></div>`;
         return h;
     }
     return '';
@@ -1632,7 +1642,7 @@ function companyH(){
 function threatH(){
     var provider=THREAT_PROVIDERS[S.threatProvider];if(!provider)return '';
     if(S.threatStep===0){
-        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div style="margin-bottom:20px;padding:18px;background:${provider.color}15;border:1px solid ${provider.color}40"><div style="font-size:11px;color:${provider.color};text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:8px">${provider.name} Threat Assessment</div><p style="font-size:14px;line-height:1.5;margin:0">${provider.tagline}</p></div><div class="card"><h2 class="card-title" style="font-size:18px;margin-bottom:6px">How exposed is your company?</h2><p class="text-secondary text-small" style="margin-bottom:20px">We'll analyze how ${provider.name}'s AI launches threaten your business.</p><form id="threat-form"><div class="form-group"><label class="form-label">Your Company Website</label><input type="url" class="form-input" id="threat-url" required placeholder="https://yourcompany.com"></div><div class="form-group"><label class="form-label">What does your company do?</label><input type="text" class="form-input" id="threat-desc" placeholder="e.g. Digital marketing agency" maxlength="150"></div><div class="form-group"><label class="form-label">Your Email</label><input type="email" class="form-input" id="threat-email" required placeholder="you@company.com"></div><div class="form-group"><label class="form-label">Industry</label><select class="form-input" id="threat-industry" required><option value="">Select</option>${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}</select></div><button type="submit" class="btn btn-primary btn-full">Run ${provider.name} Threat Assessment \u2192</button></form></div></div></div>`;
+        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div style="margin-bottom:20px;padding:18px;background:${provider.color}15;border:1px solid ${provider.color}40"><div style="font-size:11px;color:${provider.color};text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:8px">${provider.name} Threat Assessment</div><p style="font-size:14px;line-height:1.5;margin:0">${provider.tagline}</p></div><div class="card"><h2 class="card-title" style="font-size:18px;margin-bottom:6px">How exposed is your company?</h2><p class="text-secondary text-small" style="margin-bottom:20px">We'll analyze how ${provider.name}'s AI launches threaten your business.</p><form id="threat-form"><div class="form-group"><label class="form-label">Your Company Website</label><input type="text" class="form-input" id="threat-url" required placeholder="memelord.com"></div><div class="form-group"><label class="form-label">What does your company do?</label><input type="text" class="form-input" id="threat-desc" placeholder="e.g. Digital marketing agency" maxlength="150"></div><div class="form-group"><label class="form-label">Your Email</label><input type="email" class="form-input" id="threat-email" required placeholder="you@company.com"></div><div class="form-group"><label class="form-label">Industry</label><select class="form-input" id="threat-industry" required><option value="">Select</option>${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}</select></div><button type="submit" class="btn btn-primary btn-full">Run ${provider.name} Threat Assessment \u2192</button></form></div></div></div>`;
     }
     if(S.threatStep===1){
         var steps=['Scanning your business...','Analyzing '+provider.name+'...','Calculating threat timeline...','Finding opportunities...','Building report...'];
@@ -1640,21 +1650,30 @@ function threatH(){
     }
     if(S.threatStep===2&&S.threatResult){
         var r=S.threatResult,domain=S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
-        var opps=(r.opportunities||[]).slice(0,3),risks=(r.threats||[]).slice(0,2),lc=Math.max(12,15-opps.length);
+        var allOpps=r.opportunities||[],allRisks=r.threats||[];
+        var opps=S.threatUnlocked?allOpps:allOpps.slice(0,3);
+        var risks=S.threatUnlocked?allRisks:allRisks.slice(0,2);
+        var lc=Math.max(0,allOpps.length-3);
         var tl=r.threat_level||'High Exposure';
         var tlColor='rgba(255,170,0';
         if(tl.includes('High'))tlColor='rgba(255,60,60';
         if(tl.includes('Critical'))tlColor='rgba(255,30,30';
         if(tl.includes('Positioned')||tl.includes('Low'))tlColor='rgba(80,200,120';
-        var h=`<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div style="margin-bottom:20px;padding:20px 24px;background:linear-gradient(135deg,${tlColor},0.12),${tlColor},0.04));border:1px solid ${tlColor},0.3);position:relative"><div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${provider.color}"></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">\ud83c\udfaf</span><span style="font-size:10px;color:${provider.color};text-transform:uppercase;letter-spacing:2px;font-weight:700">${provider.name} Threat Level</span></div><h2 style="font-size:22px;font-weight:700;margin-bottom:8px">${tl}</h2><p style="font-size:13px;color:var(--text-secondary);line-height:1.5">${r.threat_summary||''}</p></div>`;
+        var h=`<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>${S.threatUnlocked?'<div style="text-align:center;margin-bottom:15px;padding:10px;background:var(--accent);color:#000;font-size:11px;text-transform:uppercase;letter-spacing:2px;font-weight:700">\u2713 Full Report Unlocked</div>':''}<div style="margin-bottom:20px;padding:20px 24px;background:linear-gradient(135deg,${tlColor},0.12),${tlColor},0.04));border:1px solid ${tlColor},0.3);position:relative"><div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${provider.color}"></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">\ud83c\udfaf</span><span style="font-size:10px;color:${provider.color};text-transform:uppercase;letter-spacing:2px;font-weight:700">${provider.name} Threat Level</span></div><h2 style="font-size:22px;font-weight:700;margin-bottom:8px">${tl}</h2><p style="font-size:13px;color:var(--text-secondary);line-height:1.5">${r.threat_summary||''}</p></div>`;
         h+=`<div style="margin-bottom:15px;padding:18px;background:#111118;border:1px solid #1a1a2e"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span>\u23f1\ufe0f</span><span style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;font-weight:700">Estimated Timeline</span></div><p style="font-size:20px;font-weight:700;margin-bottom:4px">${r.months_until_threat||provider.defaultMonths} months</p><p style="font-size:12px;color:var(--text-secondary)">${r.timeline_reason||''}</p></div>`;
         h+=`<div style="margin-bottom:15px;padding:18px;background:#111118;border:1px solid #1a1a2e"><div style="font-size:11px;color:${provider.color};text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">${provider.name}'s AI Product Launches</div>${provider.products.map((p,i)=>`<div style="padding:6px 0;${i<provider.products.length-1?'border-bottom:1px solid var(--bg-tertiary)':''}"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:600">${p.name}</span><span style="font-size:10px;color:var(--text-muted)">${p.date}</span></div><p style="font-size:11px;color:var(--text-secondary);margin-top:2px">${p.desc}</p></div>`).join('')}</div>`;
-        h+=`<div style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">How to make ${domain} AI-proof</div>`;
-        opps.forEach(function(o){h+=`<div class="card" style="margin-bottom:12px;border-left:3px solid var(--accent)">${o.prediction?`<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">vs: ${o.prediction}</div>`:''}<div style="font-size:15px;font-weight:700;margin-bottom:6px">${o.title}</div><p class="text-small text-secondary" style="line-height:1.6">${o.description}</p></div>`;});
-        h+=`<div class="card" style="margin-bottom:15px;border-left:3px solid var(--warning)"><h3 style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Risks from ${provider.name}</h3>`;
+        h+=`<div style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">How to make ${domain} AI-proof${S.threatUnlocked?' ('+allOpps.length+' opportunities)':''}</div>`;
+        opps.forEach(function(o){h+=`<div class="card" style="margin-bottom:12px;border-left:3px solid var(--accent)">${o.prediction?`<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Prediction: ${o.prediction}</div>`:''}<div style="font-size:15px;font-weight:700;margin-bottom:6px">${o.title}</div><p class="text-small text-secondary" style="line-height:1.6">${o.description}</p></div>`;});
+        h+=`<div class="card" style="margin-bottom:15px;border-left:3px solid var(--warning)"><h3 style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Risks from ${provider.name}${S.threatUnlocked?' ('+allRisks.length+')':''}</h3>`;
         risks.forEach(function(t){h+=`<div style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:600">${t.prediction}</span><span style="font-size:11px;font-weight:700;color:var(--warning)">${t.probability}%</span></div><p style="font-size:11px;color:var(--text-secondary);margin-top:3px">${t.impact}</p></div>`;});
-        h+=`<div style="padding:10px 0 2px 0">\ud83d\udd12 <span style="font-size:11px;color:var(--text-muted)">5 more risks in full report</span></div></div>`;
-        h+=`<p style="font-size:13px;text-align:center;margin-bottom:15px;color:var(--text-muted)">\ud83d\udd12 ${lc} more opportunities + full risk analysis</p><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:16px;font-weight:700;margin-bottom:6px">Unlock Your Full ${provider.name} Defense Report</p><p class="text-secondary text-small" style="margin-bottom:15px">15 opportunities, full risk analysis, timeline.</p><button class="btn btn-primary btn-full" id="unlock-threat-report">Unlock Full Report \u2014 $${COMPANY_REPORT_PRICE}</button><a href="${STRATEGY_CALL_URL}" target="_blank" style="display:block;margin-top:12px;font-size:12px;color:var(--text-secondary)">or <span style="color:var(--accent);text-decoration:underline">book a strategy call</span></a></div></div></div>`;
+        if(!S.threatUnlocked){h+=`<div style="padding:10px 0 2px 0">\ud83d\udd12 <span style="font-size:11px;color:var(--text-muted)">${allRisks.length-2} more risks in full report</span></div>`;}
+        h+=`</div>`;
+        if(!S.threatUnlocked){
+            h+=`<p style="font-size:13px;text-align:center;margin-bottom:15px;color:var(--text-muted)">\ud83d\udd12 ${lc} more opportunities + full risk analysis</p><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:16px;font-weight:700;margin-bottom:6px">Unlock Your Full ${provider.name} Defense Report</p><p class="text-secondary text-small" style="margin-bottom:15px">15 opportunities, full risk analysis, timeline.</p><button class="btn btn-primary btn-full" id="unlock-threat-report">Unlock Full Report →</button><a href="${STRATEGY_CALL_URL}" target="_blank" style="display:block;margin-top:12px;font-size:12px;color:var(--text-secondary)">or <span style="color:var(--accent);text-decoration:underline">book a strategy call</span></a></div>`;
+        } else {
+            h+=`<div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
+        }
+        h+=`</div></div>`;
         return h;
     }
     return '';
@@ -2393,7 +2412,11 @@ function bindEvents(){
         S.companyResult={company_description:aiOpps?.company_description||S.companyDesc||domain,opportunities:[...go,...preO].slice(0,15),threats:[...gr,...preR].slice(0,7),summary:aiOpps?.summary||''};
         S.companyStep=2;render();
     });
-    document.getElementById('unlock-company-report')?.addEventListener('click',()=>{S.companyUnlocked=true;render();});
+    document.getElementById('unlock-company-report')?.addEventListener('click',()=>{
+        localStorage.setItem('apc_report',JSON.stringify({type:'company',url:S.companyUrl,email:S.companyEmail,industry:S.companyIndustry,desc:S.companyDesc,result:S.companyResult}));
+        var email=encodeURIComponent(S.companyEmail||'');
+        window.location.href=COMPANY_REPORT_STRIPE+'?prefilled_email='+email+'&success_url='+encodeURIComponent(location.origin+'/app.html?report_success=true');
+    });
     // === THREAT FORM ===
     document.getElementById('threat-form')?.addEventListener('submit', async e=>{
         e.preventDefault();
@@ -2421,7 +2444,11 @@ function bindEvents(){
         S.threatResult={company_description:aiR?.company_description||S.threatDesc||domain,threat_level:aiR?.threat_level||fallbackLevel,threat_summary:aiR?.threat_summary||provider.name+' is advancing into areas that touch '+domain+"'s operations.",months_until_threat:aiR?.months_until_threat||fallbackMonths,timeline_reason:aiR?.timeline_reason||'Based on '+provider.name+"'s launch velocity and "+S.threatIndustry+' industry dynamics.',opportunities:[...go,...preO].slice(0,15),threats:[...gr,...preR].slice(0,7)};
         S.threatStep=2;render();
     });
-    document.getElementById('unlock-threat-report')?.addEventListener('click',()=>{S.threatUnlocked=true;render();});
+    document.getElementById('unlock-threat-report')?.addEventListener('click',()=>{
+        localStorage.setItem('apc_report',JSON.stringify({type:'threat',provider:S.threatProvider,url:S.threatUrl,email:S.threatEmail,industry:S.threatIndustry,desc:S.threatDesc,result:S.threatResult}));
+        var email=encodeURIComponent(S.threatEmail||'');
+        window.location.href=COMPANY_REPORT_STRIPE+'?prefilled_email='+email+'&success_url='+encodeURIComponent(location.origin+'/app.html?report_success=true');
+    });
 
     // Onboarding flow - Step 1: Email + Industry
     document.getElementById('onboard-email-form')?.addEventListener('submit',e=>{
@@ -9355,6 +9382,29 @@ async function init(){
     if(path==='diagnostic'){params.set('mode','diagnostic');}
     if(path==='company'){params.set('mode','company');}
     if(['google','claude','openai'].includes(path)){params.set('threat',path);}
+    
+    // Check for report payment success
+    if(params.get('report_success')==='true'){
+        history.replaceState({},'',location.pathname);
+        var saved=localStorage.getItem('apc_report');
+        if(saved){
+            try{
+                var data=JSON.parse(saved);
+                localStorage.removeItem('apc_report');
+                if(data.type==='company'){
+                    S.companyUrl=data.url||'';S.companyEmail=data.email||'';S.companyIndustry=data.industry||'';
+                    S.companyDesc=data.desc||'';S.companyResult=data.result;S.companyStep=2;S.companyUnlocked=true;
+                    S.screen='company';render();return;
+                }
+                if(data.type==='threat'){
+                    S.threatProvider=data.provider;S.threatUrl=data.url||'';S.threatEmail=data.email||'';
+                    S.threatIndustry=data.industry||'';S.threatDesc=data.desc||'';S.threatResult=data.result;
+                    S.threatStep=2;S.threatUnlocked=true;
+                    S.screen='threat';render();return;
+                }
+            }catch(e){console.error('Report restore:',e);}
+        }
+    }
     
     // Check for diagnostic mode from landing page
     if(params.get('mode') === 'diagnostic') {
