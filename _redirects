@@ -1,5 +1,5 @@
-/company        /app.html?mode=company      200
-/diagnostic     /app.html?mode=diagnostic   200
-/google         /app.html?threat=google     200
-/claude         /app.html?threat=claude     200
-/openai         /app.html?threat=openai     200
+/company        /app.html      200
+/diagnostic     /app.html      200
+/google         /app.html      200
+/claude         /app.html      200
+/openai         /app.html      200

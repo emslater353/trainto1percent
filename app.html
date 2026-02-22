@@ -9332,6 +9332,12 @@ async function init(){
     const params=new URLSearchParams(location.search);
     const hash=location.hash.replace('#','');
     
+    // Clean URL routing: /google, /claude, /openai, /company, /diagnostic
+    var path=location.pathname.replace(/\/$/,'').split('/').pop();
+    if(path==='diagnostic'){params.set('mode','diagnostic');}
+    if(path==='company'){params.set('mode','company');}
+    if(['google','claude','openai'].includes(path)){params.set('threat',path);}
+    
     // Check for diagnostic mode from landing page
     if(params.get('mode') === 'diagnostic') {
         history.replaceState({}, '', location.pathname + '#diagnostic');
