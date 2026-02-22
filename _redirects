@@ -1,0 +1,12 @@
+# Clean URLs for AI Proof Club
+/company        /app.html?mode=company      200
+/diagnostic     /app.html?mode=diagnostic   200
+/login          /app.html#login             200
+/signup         /app.html#signup            200
+/pricing        /app.html#pricing           200
+/dashboard      /app.html#dashboard         200
+/quests         /app.html#quests            200
+/coach          /app.html#coach             200
+/forecasts      /app.html#forecasts         200
+/settings       /app.html#settings          200
+/receipts       /app.html#receipts          200
