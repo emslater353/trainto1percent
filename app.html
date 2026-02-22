@@ -1688,17 +1688,23 @@ function companyH(){
         let html = `<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm">
             <div class="logo">AI PROOF <span>CLUB</span></div>
             
-            <div class="card" style="margin-bottom:15px;border-left:3px solid var(--warning)">
-                <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px">AI-Proof Status</div>
-                <h2 style="font-size:20px;font-weight:700;color:var(--warning);margin-bottom:6px">Moderately Positioned</h2>
-                <p class="text-secondary text-small" style="line-height:1.5">You're ahead of most companies, but missing key shifts that will define the next few months and years.</p>
-                ${r.company_description ? `<p style="font-size:12px;color:var(--text-muted);margin-top:8px">${domain} — ${r.company_description}</p>` : ''}
-            </div>`;
+            <div style="margin-bottom:20px;padding:20px 24px;background:linear-gradient(135deg, rgba(255,170,0,0.12) 0%, rgba(255,170,0,0.04) 100%);border:1px solid rgba(255,170,0,0.3);position:relative;overflow:hidden">
+                <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:var(--warning)"></div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="font-size:18px">⚠️</span>
+                    <span style="font-size:10px;color:var(--warning);text-transform:uppercase;letter-spacing:2px;font-weight:700">AI-Proof Status</span>
+                </div>
+                <h2 style="font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:8px">Moderately Positioned</h2>
+                <p style="font-size:13px;color:var(--text-secondary);line-height:1.5">You're ahead of most companies, but missing key shifts that will define the next few months and years.</p>
+                ${r.company_description ? `<p style="font-size:11px;color:var(--text-muted);margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,170,0,0.15)">${domain} — ${r.company_description}</p>` : ''}
+            </div>
+            
+            <div style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;padding-left:2px">Opportunities based on AI predictions</div>`;
         
         // Free opportunities
         html += freeOpps.map(o => `
             <div class="card" style="margin-bottom:12px;border-left:3px solid var(--accent)">
-                ${o.prediction ? `<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">${o.prediction}</div>` : ''}
+                ${o.prediction ? `<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Prediction: ${o.prediction}</div>` : ''}
                 <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:6px">${o.title}</div>
                 <p class="text-small text-secondary" style="line-height:1.6">${o.description}</p>
             </div>
