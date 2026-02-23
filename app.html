@@ -2349,7 +2349,7 @@ function bindEvents(){
         
         // Create Auth user with random password (they'll set real password if they convert)
         const tempPassword = 'temp_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-        const authResult = await authSignUp(S.diagnosticEmail, tempPassword, {source:'diagnostic_quiz',industry:S.diagnosticIndustry});
+        const authResult = await authSignUp(S.diagnosticEmail, tempPassword, {user_type:'lead',source:'diagnostic_quiz',industry:S.diagnosticIndustry});
         
         if (authResult.error && authResult.error.message !== 'User already registered') {
             console.error('Lead capture error:', authResult.error);
@@ -2362,7 +2362,7 @@ function bindEvents(){
             industry: S.diagnosticIndustry,
             source: 'diagnostic_quiz',
             start_date: new Date().toISOString(),
-            plan: 'lead'
+            user_type: 'lead'
         });
         
         S.diagnosticStep = 1;
@@ -2400,10 +2400,10 @@ function bindEvents(){
         var domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
         // Create Auth user (same pattern as diagnostic)
         var tempPw='temp_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
-        var authRes=await authSignUp(S.companyEmail,tempPw,{website:S.companyUrl,source:'company_risk',industry:S.companyIndustry,company_desc:S.companyDesc||''});
+        var authRes=await authSignUp(S.companyEmail,tempPw,{user_type:'lead',role:S.companyUrl,website:S.companyUrl,source:'company_risk',industry:S.companyIndustry,company_desc:S.companyDesc||''});
         if(authRes.error&&authRes.error.message!=='User already registered'){console.error('Auth:',authRes.error);}
         // Save custom fields to public.users
-        await db('users','POST',{email:S.companyEmail,password:'auth_managed',industry:S.companyIndustry,role:S.companyUrl,source:'company_risk',start_date:new Date().toISOString(),plan:'lead',name:S.companyDesc||''});
+        await db('users','POST',{email:S.companyEmail,password:'auth_managed',industry:S.companyIndustry,role:S.companyUrl,source:'company_risk',start_date:new Date().toISOString(),user_type:'lead',name:S.companyDesc||''});
         S.companyStep=1;S.companyLoadingStep=0;render();
         setTimeout(()=>{S.companyLoadingStep=1;render();},800);setTimeout(()=>{S.companyLoadingStep=2;render();},2000);setTimeout(()=>{S.companyLoadingStep=3;render();},3500);setTimeout(()=>{S.companyLoadingStep=4;render();},5000);
         var BIG5=['Self-driving cars create new consumer contexts','AI generates full movies from a prompt','Humans and AI merge via neural interfaces','Loneliness epidemic drives demand for connection','Mental health demand exceeds supply'];
@@ -2434,10 +2434,10 @@ function bindEvents(){
         var provider=THREAT_PROVIDERS[S.threatProvider],domain=S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
         // Create Auth user (same pattern as diagnostic)
         var tempPw='temp_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
-        var authRes=await authSignUp(S.threatEmail,tempPw,{website:S.threatUrl,source:'threat_'+S.threatProvider,industry:S.threatIndustry,company_desc:S.threatDesc||''});
+        var authRes=await authSignUp(S.threatEmail,tempPw,{user_type:'lead',role:S.threatUrl,website:S.threatUrl,source:'threat_'+S.threatProvider,industry:S.threatIndustry,company_desc:S.threatDesc||''});
         if(authRes.error&&authRes.error.message!=='User already registered'){console.error('Auth:',authRes.error);}
         // Save custom fields to public.users
-        await db('users','POST',{email:S.threatEmail,password:'auth_managed',industry:S.threatIndustry,role:S.threatUrl,source:'threat_'+S.threatProvider,start_date:new Date().toISOString(),plan:'lead',name:S.threatDesc||''});
+        await db('users','POST',{email:S.threatEmail,password:'auth_managed',industry:S.threatIndustry,role:S.threatUrl,source:'threat_'+S.threatProvider,start_date:new Date().toISOString(),user_type:'lead',name:S.threatDesc||''});
         S.threatStep=1;S.threatLoadingStep=0;render();
         setTimeout(()=>{S.threatLoadingStep=1;render();},800);setTimeout(()=>{S.threatLoadingStep=2;render();},2000);setTimeout(()=>{S.threatLoadingStep=3;render();},3500);setTimeout(()=>{S.threatLoadingStep=4;render();},5000);
         var ctx=S.threatDesc?domain+': '+S.threatDesc+'. '+S.threatIndustry+'.':domain+' ('+S.threatIndustry+').';
@@ -9411,7 +9411,7 @@ async function init(){
                     S.companyUrl=data.url||'';S.companyEmail=data.email||'';S.companyIndustry=data.industry||'';
                     S.companyDesc=data.desc||'';S.companyResult=data.result;S.companyStep=2;S.companyUnlocked=true;
                     // Update plan from lead to report_paid
-                    await db('users','PATCH',{plan:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.company_risk`);
+                    await db('users','PATCH',{user_type:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.company_risk`);
                     S.screen='company';render();return;
                 }
                 if(data.type==='threat'){
@@ -9419,7 +9419,7 @@ async function init(){
                     S.threatIndustry=data.industry||'';S.threatDesc=data.desc||'';S.threatResult=data.result;
                     S.threatStep=2;S.threatUnlocked=true;
                     // Update plan from lead to report_paid
-                    await db('users','PATCH',{plan:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.threat_${data.provider}`);
+                    await db('users','PATCH',{user_type:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.threat_${data.provider}`);
                     S.screen='threat';render();return;
                 }
             }catch(e){console.error('Report restore:',e);}
