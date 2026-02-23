@@ -1592,6 +1592,55 @@ function calculateDiagnosticScores(){
 // ===== THREAT PROVIDERS =====
 var THREAT_PROVIDERS={google:{name:'Google',color:'#4285F4',tagline:'Google is launching AI products faster than any company in history.',products:[{name:'Gemini 2.5 Pro',date:'2025',desc:'Most capable reasoning model'},{name:'AI Overviews in Search',date:'2024-2025',desc:'AI answers replacing website clicks'},{name:'Gemini in Workspace',date:'2024-2025',desc:'AI in Gmail, Docs, Sheets'},{name:'Google Veo 2',date:'2025',desc:'AI video generation from text'},{name:'Project Astra',date:'2025',desc:'Real-time AI assistant with vision'},{name:'Waymo Expansion',date:'2025',desc:'Autonomous ride-hailing in 10+ cities'},{name:'Gemini Code Assist',date:'2025',desc:'AI pair-programmer'},{name:'AI-Powered Ads',date:'2025',desc:'Fully automated ad creation'}],defaultMonths:18},claude:{name:'Anthropic (Claude)',color:'#D97706',tagline:"Anthropic is building the most trusted AI \u2014 coming for knowledge work.",products:[{name:'Claude Opus 4',date:'2025',desc:'Most capable AI for complex reasoning'},{name:'Computer Use',date:'2025',desc:'AI that operates your computer'},{name:'Claude for Enterprise',date:'2024-2025',desc:'Enterprise AI with team collaboration'},{name:'Claude Code',date:'2025',desc:'AI coding agent'},{name:'Claude in Excel/Chrome',date:'2025',desc:'AI agents in spreadsheets and browsers'},{name:'MCP Protocol',date:'2024-2025',desc:'AI connecting to any tool or API'},{name:'Extended Thinking',date:'2025',desc:'AI reasoning for minutes'}],defaultMonths:14},openai:{name:'OpenAI',color:'#10A37F',tagline:'OpenAI is racing to build AGI \u2014 every product reshapes your industry.',products:[{name:'ChatGPT',date:'2024-2025',desc:'200M+ weekly users doing specialist work'},{name:'Sora',date:'2025',desc:'AI video generation'},{name:'GPT Store',date:'2024-2025',desc:'Marketplace of AI apps'},{name:'o3 Reasoning',date:'2025',desc:'PhD-level reasoning'},{name:'Operator',date:'2025',desc:'AI completing tasks'},{name:'Codex',date:'2024-2025',desc:'AI writing code'},{name:'Voice Mode',date:'2024-2025',desc:'Natural voice replacing support'},{name:'DALL-E',date:'2024-2025',desc:'AI images'}],defaultMonths:12}};
 
+function downloadReportPDF(type){
+    var domain,result,providerName='',providerColor='#00e5c7';
+    if(type==='company'){
+        domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        result=S.companyResult;
+    } else {
+        domain=S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        result=S.threatResult;
+        var prov=THREAT_PROVIDERS[S.threatProvider];
+        providerName=prov?prov.name:'';providerColor=prov?prov.color:'#00e5c7';
+    }
+    if(!result)return;
+    var opps=result.opportunities||[],risks=result.threats||[];
+    var title=type==='company'?'AI Opportunity Report: '+domain:providerName+' Threat Assessment: '+domain;
+    var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+title+'</title>';
+    html+='<style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:700px;margin:0 auto;padding:40px 30px;color:#1a1a2e;line-height:1.6}h1{font-size:22px;margin-bottom:4px}h2{font-size:11px;margin-top:30px;margin-bottom:12px;text-transform:uppercase;letter-spacing:1.5px;color:#666}.subtitle{color:#666;font-size:13px;margin-bottom:25px}.opp{border-left:3px solid '+providerColor+';padding:12px 16px;margin-bottom:12px;background:#f8f9fa}.opp-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:'+providerColor+';margin-bottom:4px}.opp-title{font-size:15px;font-weight:700;margin-bottom:4px}.opp-desc{font-size:13px;color:#444}.risk{margin-bottom:10px;padding:8px 0;border-bottom:1px solid #eee}.risk-head{display:flex;justify-content:space-between}.risk-name{font-weight:600;font-size:13px}.risk-prob{font-weight:700;color:#e67e22;font-size:12px}.risk-impact{font-size:12px;color:#666;margin-top:2px}.banner{padding:20px;margin-bottom:25px;border-left:4px solid '+providerColor+';background:#f8f9fa}.threat-info{background:#f0f0f5;padding:16px;margin-bottom:15px;border-radius:4px}.footer{margin-top:40px;padding-top:20px;border-top:1px solid #ddd;font-size:11px;color:#999;text-align:center}@media print{body{padding:20px}}</style></head><body>';
+    html+='<div class="banner"><h1>'+title+'</h1><p class="subtitle">'+(result.company_description||domain)+'</p></div>';
+    if(type==='threat'&&result.threat_level){
+        html+='<div class="threat-info"><strong>Threat Level:</strong> '+result.threat_level+'<br><strong>Timeline:</strong> '+(result.months_until_threat||'')+ ' months<br>'+(result.timeline_reason||'')+'</div>';
+    }
+    html+='<h2>Opportunities ('+opps.length+')</h2>';
+    opps.forEach(function(o){html+='<div class="opp">'+(o.prediction?'<div class="opp-label">'+o.prediction+'</div>':'')+'<div class="opp-title">'+o.title+'</div><div class="opp-desc">'+o.description+'</div></div>';});
+    html+='<h2>Risks ('+risks.length+')</h2>';
+    risks.forEach(function(t){html+='<div class="risk"><div class="risk-head"><span class="risk-name">'+t.prediction+'</span><span class="risk-prob">'+t.probability+'%</span></div><div class="risk-impact">'+t.impact+'</div></div>';});
+    if(result.summary){html+='<h2>Summary</h2><p style="font-size:13px">'+result.summary+'</p>';}
+    html+='<div class="footer">Report by AI Proof Club &middot; aiproof.club</div></body></html>';
+    var w=window.open('','_blank');w.document.write(html);w.document.close();
+    setTimeout(function(){w.print();},500);
+}
+
+function emailReportToTeam(type){
+    var domain,result,email,providerName='';
+    if(type==='company'){domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');result=S.companyResult;email=S.companyEmail;}
+    else{domain=S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');result=S.threatResult;email=S.threatEmail;var p=THREAT_PROVIDERS[S.threatProvider];providerName=p?p.name+' ':''}
+    var teamEmail=document.getElementById('team-email-'+type)?.value;
+    if(!teamEmail||!result)return;
+    var opps=(result.opportunities||[]).slice(0,5);
+    var subject=encodeURIComponent(providerName+'AI Threat Report for '+domain);
+    var body=providerName+'Threat Assessment for '+domain+'\n\n';
+    if(result.threat_level)body+='Threat Level: '+result.threat_level+'\n';
+    if(result.months_until_threat)body+='Timeline: '+result.months_until_threat+' months\n\n';
+    body+='Top Opportunities:\n';
+    opps.forEach(function(o,i){body+=(i+1)+'. '+o.title+': '+o.description+'\n';});
+    body+='\nFull report: '+location.origin+'/'+type+'\n\nShared from AI Proof Club';
+    window.open('mailto:'+teamEmail+'?subject='+subject+'&body='+encodeURIComponent(body));
+    var statusEl=document.getElementById(type+'-email-status');
+    if(statusEl){statusEl.style.display='block';setTimeout(function(){statusEl.style.display='none';},3000);}
+}
+
 function generateCompanyOpportunities(d,ind){return [{prediction:'Loneliness epidemic',title:'Community-Powered Growth',description:d+' could build community features that turn customers into a tribe.'},{prediction:'AI-generated movies',title:'AI Content Studio',description:'Use generative AI to produce brand content at 100x speed.'},{prediction:'Human-AI merge',title:'Human Premium Positioning',description:'What makes '+d+' uniquely human becomes more valuable.'},{prediction:'Self-driving cars',title:'In-Transit Experiences',description:'Autonomous vehicles free up commute hours for '+d+'.'},{prediction:'Continuous learning',title:'AI Upskilling Platform',description:'Build a learning system that keeps your team current.'},{prediction:'AI copilots',title:'AI Workflow Integration',description:'Embed AI copilot features before competitors.'},{prediction:'Trust collapses',title:'Verified Authenticity',description:d+' can build verified-authentic brand signals.'},{prediction:'Filter bubbles',title:'Shared Experiences',description:d+' could create live non-algorithmic moments.'},{prediction:'Mental health',title:'Wellbeing Integration',description:'Integrate wellbeing features for lower turnover.'},{prediction:'AI agents',title:'Agent-Ready Infrastructure',description:'Prepare for AI agents acting for customers.'},{prediction:'Data privacy',title:'Privacy-First',description:'Turn data protection into a selling point.'},{prediction:'Voice interfaces',title:'Voice-First Features',description:'Design voice interaction for core product.'},{prediction:'Personalization',title:'Personalized Journeys',description:'AI-powered individualized experiences.'},{prediction:'Automation',title:'Human+AI Model',description:'Redesign teams around human-AI collaboration.'},{prediction:'Creator economy',title:'Creator Partnerships',description:'Build a creator ecosystem around '+d+'.'}];}
 
 function generateCompanyRisks(d){return [{prediction:'Discovery channels become obsolete',probability:82,impact:'AI may replace how customers find '+d+'.'},{prediction:'AI competitors flood market',probability:78,impact:'New entrants could replicate offerings cheaply.'},{prediction:'Customer expectations outpace adoption',probability:85,impact:'Customers will expect AI features as standard.'},{prediction:'Talent migrates to AI-native cos',probability:74,impact:'Top performers may leave for AI-forward companies.'},{prediction:'Regulatory shifts',probability:68,impact:'AI regulations could change how '+d+' operates.'},{prediction:'Brand trust erodes',probability:72,impact:'AI content makes authenticity signals weaker.'},{prediction:'Pricing pressure',probability:80,impact:'AI-enabled competitors will undercut pricing.'}];}
@@ -1633,7 +1682,7 @@ function companyH(){
         if(!S.companyUnlocked){
             h+=`<p style="font-size:13px;text-align:center;margin-bottom:15px;color:var(--text-muted)">\ud83d\udd12 ${lc} more opportunities identified</p><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:16px;font-weight:700;margin-bottom:6px">Unlock Your Full 15 Opportunity Report</p><p class="text-secondary text-small" style="margin-bottom:15px">See the shifts that will impact your company.</p><button class="btn btn-primary btn-full" id="unlock-company-report">Unlock Full Report →</button><a href="${STRATEGY_CALL_URL}" target="_blank" style="display:block;margin-top:12px;font-size:12px;color:var(--text-secondary)">or <span style="color:var(--accent);text-decoration:underline">book a strategy call</span></a></div>`;
         } else {
-            h+=`<div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
+            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-company-pdf">\u2193 Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:8px"><input type="email" class="form-input" id="team-email-company" placeholder="teammate@company.com" style="flex:1;font-size:12px"><button class="btn btn-primary btn-small" id="send-company-email">Send</button></div><p id="company-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none">\u2713 Email client opened</p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call \u2192</a></div>`;
         }
         h+=`</div></div>`;
         return h;
@@ -1673,7 +1722,7 @@ function threatH(){
         if(!S.threatUnlocked){
             h+=`<p style="font-size:13px;text-align:center;margin-bottom:15px;color:var(--text-muted)">\ud83d\udd12 ${lc} more opportunities + full risk analysis</p><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:16px;font-weight:700;margin-bottom:6px">Unlock Your Full ${provider.name} Defense Report</p><p class="text-secondary text-small" style="margin-bottom:15px">15 opportunities, full risk analysis, timeline.</p><button class="btn btn-primary btn-full" id="unlock-threat-report">Unlock Full Report →</button><a href="${STRATEGY_CALL_URL}" target="_blank" style="display:block;margin-top:12px;font-size:12px;color:var(--text-secondary)">or <span style="color:var(--accent);text-decoration:underline">book a strategy call</span></a></div>`;
         } else {
-            h+=`<div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
+            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-threat-pdf">\u2193 Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:8px"><input type="email" class="form-input" id="team-email-threat" placeholder="teammate@company.com" style="flex:1;font-size:12px"><button class="btn btn-primary btn-small" id="send-threat-email">Send</button></div><p id="threat-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none">\u2713 Email client opened</p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call \u2192</a></div>`;
         }
         h+=`</div></div>`;
         return h;
@@ -2465,6 +2514,11 @@ function bindEvents(){
         var email=encodeURIComponent(S.threatEmail||'');
         window.location.href=COMPANY_REPORT_STRIPE+'?prefilled_email='+email+'&success_url='+encodeURIComponent(location.origin+'/app.html?report_success=true');
     });
+    // PDF + Email handlers
+    document.getElementById('download-company-pdf')?.addEventListener('click',()=>downloadReportPDF('company'));
+    document.getElementById('download-threat-pdf')?.addEventListener('click',()=>downloadReportPDF('threat'));
+    document.getElementById('send-company-email')?.addEventListener('click',()=>emailReportToTeam('company'));
+    document.getElementById('send-threat-email')?.addEventListener('click',()=>emailReportToTeam('threat'));
 
     // Onboarding flow - Step 1: Email + Industry
     document.getElementById('onboard-email-form')?.addEventListener('submit',e=>{
@@ -9396,8 +9450,12 @@ async function init(){
         if(['google','claude','openai','company','diagnostic'].includes(refPath)) path=refPath;
     }
     if(path==='diagnostic'){params.set('mode','diagnostic');}
-    if(path==='company'){params.set('mode','company');}
-    if(['google','claude','openai'].includes(path)){params.set('threat',path);}
+    if(path==='company'){
+        S.companyStep=0;S.companyUrl='';S.companyEmail='';S.companyIndustry='';S.companyDesc='';S.companyResult=null;S.companyLoadingStep=0;S.companyUnlocked=false;S.screen='company';render();return;
+    }
+    if(['google','claude','openai'].includes(path)){
+        S.threatProvider=path;S.threatStep=0;S.threatUrl='';S.threatEmail='';S.threatIndustry='';S.threatDesc='';S.threatResult=null;S.threatLoadingStep=0;S.threatUnlocked=false;S.screen='threat';render();return;
+    }
     
     // Check for report payment success
     if(params.get('report_success')==='true'){
