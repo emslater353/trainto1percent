@@ -2396,6 +2396,11 @@ function bindEvents(){
         S.companyIndustry=document.getElementById('company-industry').value;
         S.companyDesc=(document.getElementById('company-desc')?.value||'').trim();
         var domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        // Create Auth user (same pattern as diagnostic)
+        var tempPw='temp_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
+        var authRes=await authSignUp(S.companyEmail,tempPw);
+        if(authRes.error&&authRes.error.message!=='User already registered'){console.error('Auth:',authRes.error);}
+        // Save custom fields to public.users
         await db('users','POST',{email:S.companyEmail,password:'auth_managed',industry:S.companyIndustry,role:S.companyUrl,source:'company_risk',start_date:new Date().toISOString(),plan:'lead',name:S.companyDesc||''});
         S.companyStep=1;S.companyLoadingStep=0;render();
         setTimeout(()=>{S.companyLoadingStep=1;render();},800);setTimeout(()=>{S.companyLoadingStep=2;render();},2000);setTimeout(()=>{S.companyLoadingStep=3;render();},3500);setTimeout(()=>{S.companyLoadingStep=4;render();},5000);
@@ -2411,7 +2416,7 @@ function bindEvents(){
         var go=aiOpps?.opportunities||[],gr=aiOpps?.threats||preR.slice(0,2);
         S.companyResult={company_description:aiOpps?.company_description||S.companyDesc||domain,opportunities:[...go,...preO].slice(0,15),threats:[...gr,...preR].slice(0,7),summary:aiOpps?.summary||''};
         // Save result to DB
-        await db('users','PATCH',{company_result:JSON.stringify(S.companyResult)},`?email=eq.${encodeURIComponent(S.companyEmail)}&source=eq.company_risk`);
+        await db('leads','PATCH',{company_result:JSON.stringify(S.companyResult)},`?email=eq.${encodeURIComponent(S.companyEmail)}&source=eq.company_risk`);
         S.companyStep=2;render();
     });
     document.getElementById('unlock-company-report')?.addEventListener('click',()=>{
@@ -2425,6 +2430,11 @@ function bindEvents(){
         S.threatUrl=document.getElementById('threat-url').value;S.threatEmail=document.getElementById('threat-email').value;
         S.threatIndustry=document.getElementById('threat-industry').value;S.threatDesc=(document.getElementById('threat-desc')?.value||'').trim();
         var provider=THREAT_PROVIDERS[S.threatProvider],domain=S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        // Create Auth user (same pattern as diagnostic)
+        var tempPw='temp_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
+        var authRes=await authSignUp(S.threatEmail,tempPw);
+        if(authRes.error&&authRes.error.message!=='User already registered'){console.error('Auth:',authRes.error);}
+        // Save custom fields to public.users
         await db('users','POST',{email:S.threatEmail,password:'auth_managed',industry:S.threatIndustry,role:S.threatUrl,source:'threat_'+S.threatProvider,start_date:new Date().toISOString(),plan:'lead',name:S.threatDesc||''});
         S.threatStep=1;S.threatLoadingStep=0;render();
         setTimeout(()=>{S.threatLoadingStep=1;render();},800);setTimeout(()=>{S.threatLoadingStep=2;render();},2000);setTimeout(()=>{S.threatLoadingStep=3;render();},3500);setTimeout(()=>{S.threatLoadingStep=4;render();},5000);
