@@ -2456,39 +2456,30 @@ function bindEvents(){
         await db('users','POST',{email:S.companyEmail,password:'auth_managed',industry:S.companyIndustry,role:S.companyUrl,source:'company_risk',start_date:new Date().toISOString(),user_type:'lead',name:S.companyDesc||''});
         S.companyStep=1;S.companyLoadingStep=0;render();
         setTimeout(()=>{S.companyLoadingStep=1;render();},800);setTimeout(()=>{S.companyLoadingStep=2;render();},2000);setTimeout(()=>{S.companyLoadingStep=3;render();},3500);setTimeout(()=>{S.companyLoadingStep=4;render();},5000);
-        var BIG5=['Self-driving cars create new consumer contexts','AI generates full movies from a prompt','Humans and AI merge via neural interfaces','Loneliness epidemic drives demand for connection','Mental health demand exceeds supply'];
-        var picked=[...BIG5].sort(()=>Math.random()-0.5).slice(0,3);
+        var PREDICTIONS_A=['Self-driving cars become a new lifestyle space — gaming, commerce, mobile offices, therapy rooms, goods transport, insurance reinvention','Humans and AI merge through neural interfaces — skills become downloadable, thought-controlled devices, memory augmentation','Loneliness epidemic intensifies — community becomes the ultimate product, belonging is monetizable','Mental health demand far exceeds supply — AI therapy, meme therapy, wellness integrated into every product','Full-length movies made with a single AI prompt — any company can produce cinematic content for pennies','DeFi reaches 100M users — crypto payments, decentralized finance, new economic rails','AI tutors outperform human teachers — personalized education embedded everywhere','Experience economy has explosive growth — people pay for moments not things'];
+        var PREDICTIONS_B=['Traditional resume becomes obsolete — skills-based hiring, proof of work over credentials','Universal basic income tested globally — spending shifts to identity, community, self-improvement','Creator middle class disappears — only niche authorities survive, top 1% captures everything','80% of jobs disappear or transform — every company must redesign around human-AI collaboration','AI agents act autonomously for consumers — your product must be discoverable by AI, not just humans','Perfect voice cloning becomes trivial — trust in audio collapses, authenticity becomes premium','Restaurant automation goes mainstream — physical spaces become experience-first, not service-first'];
         var ctx=S.companyDesc?domain+': '+S.companyDesc+'. '+S.companyIndustry+'.':domain+' ('+S.companyIndustry+').';
-        var aiOpps=null;
-        var prompt=ctx+'\n\nFor EACH of these 3 predictions, create ONE creative and SPECIFIC opportunity for '+domain+':\n1. '+picked[0]+'\n2. '+picked[1]+'\n3. '+picked[2]+'\n\nCRITICAL: First figure out what '+domain+' ACTUALLY does. Each opportunity must be wildly specific to THIS company.\n\nExamples of GREAT opportunities:\n- LVMH (luxury) + self-driving cars = curated in-car luxury shopping experiences\n- memelord (memes) + loneliness = meme-based community platform with real social bonds\n- howie (AI assistant) + human-AI merge = natural memory that knows context\n\nAlso create 2 SPECIFIC risks and 2 ADDITIONAL opportunities based on these predictions:\n4. AI copilots replace junior knowledge workers\n5. Trust in digital content collapses\n\nReturn ONLY JSON:\n{"d":"1 sentence what '+domain+' does","o":[{"p":"prediction name","t":"creative title","s":"2 specific sentences for '+domain+'"}],"r":[{"p":"risk name","n":probability 50-95,"s":"1 sentence"}],"m":"2 sentence honest summary"}\n\n5 in o, 2 in r.';
-        for(var attempt=0;attempt<3&&!aiOpps;attempt++){
+        var basePrompt='You are a visionary AI strategist. Company: '+ctx+'\n\nThink BIG about each prediction. Self-driving cars arent just free time — they are a NEW LIFESTYLE SPACE where people game, shop, work, get therapy, transport goods. Insurance gets reinvented. Neural interfaces mean humor could be downloadable, skills transmitted instantly. Loneliness means community IS the product. Memes become therapy. Movies in one prompt means any brand becomes a studio.\n\nFor EACH prediction below, create ONE wildly creative and SPECIFIC opportunity for '+domain+'. Each must:\n- Reference what '+domain+' ACTUALLY does\n- Be 2 vivid, actionable sentences\n- Think about how '+domain+' specifically captures value from this shift\n- NOT be generic advice like "adapt to change" or "leverage AI"\n\nExamples:\n- memelord (memes) + self-driving cars = in-car meme gaming experiences, interactive meme battles during rides, location-based meme content that changes as you drive\n- memelord + loneliness = meme buddy system that creates real friendships through shared humor, group creation rooms\n- memelord + neural interfaces = thought-to-meme creation, downloadable humor packs, meme memories\n- memelord + space economy = memes ARE news, memelord becomes the way people learn about space through humor\n- LVMH + self-driving cars = in-car luxury showrooms, curated shopping delivered to your autonomous vehicle\n- howie + neural interfaces = thought-controlled task management, contextual memory\n\n';
+        var allOppsResult=[],allRisksResult=[];
+        // Call 1: first 8 predictions
+        for(var attempt=0;attempt<3;attempt++){
             try{
-                var result=await ai([{role:'user',content:prompt}],2000,'general');
-                if(result){var c=result.replace(/```json|```/g,'').trim(),p=null;try{p=JSON.parse(c);}catch(e1){for(var f of ['}]}]}',']}]}','}]}}','}]}']){try{p=JSON.parse(c+f);break;}catch(e2){}}}
-                if(p&&p.o&&p.o.length>=3){aiOpps={company_description:p.d||'',opportunities:(p.o||[]).map(x=>({prediction:x.p||'',title:x.t||'',description:x.s||''})),threats:(p.r||[]).map(x=>({prediction:x.p||'',probability:x.n||80,impact:x.s||''})),summary:p.m||''};}}
-            }catch(e){console.error('Company AI attempt '+(attempt+1)+':',e);}
+                var p1=basePrompt+'Predictions:\n'+PREDICTIONS_A.map((p,i)=>(i+1)+'. '+p).join('\n')+'\n\nAlso create 4 SPECIFIC risks for '+domain+'.\n\nReturn ONLY JSON:\n{"d":"1 sentence what '+domain+' does","o":[{"p":"prediction name","t":"title","s":"2 vivid sentences"}],"r":[{"p":"risk","n":50-95,"s":"1 sentence"}],"m":"2 sentence summary"}\n\n8 in o, 4 in r.';
+                var r1=await ai([{role:'user',content:p1}],2500,'general');
+                if(r1){var c=r1.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}]}',']}]}','}]}}','}]}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
+                if(parsed&&parsed.o&&parsed.o.length>=3){allOppsResult.push(...parsed.o.map(x=>({prediction:x.p||'',title:x.t||'',description:x.s||''})));allRisksResult.push(...(parsed.r||[]).map(x=>({prediction:x.p||'',probability:x.n||80,impact:x.s||''})));var companyDesc=parsed.d||'';var summary=parsed.m||'';break;}}
+            }catch(e){console.error('Company AI call 1 attempt '+(attempt+1)+':',e);}
         }
-        // Build remaining opportunities specific to this company
-        var desc=aiOpps?.company_description||S.companyDesc||domain;
-        // Pull opportunities from FORECAST_DATABASE - the actual predictions in the app
-        var extra=[];
-        if(typeof FORECAST_DATABASE!=='undefined'){
-            var shuffled=[...FORECAST_DATABASE].sort(()=>Math.random()-0.5);
-            for(var fc of shuffled){
-                if(extra.length>=12)break;
-                if(!fc.opportunities||!fc.opportunities.length)continue;
-                var opp=fc.opportunities[Math.floor(Math.random()*Math.min(fc.opportunities.length,3))];
-                extra.push({
-                    prediction:fc.title,
-                    title:opp.title.replace(/[\u{1F300}-\u{1FAD6}]/gu,'').trim()+' for '+domain,
-                    description:domain+' can leverage the prediction that "'+fc.title+'" by building on this opportunity. '+opp.description+' For '+domain+', this means adapting its core strengths to capture value as this shift accelerates.'
-                });
-            }
+        // Call 2: next 7 predictions
+        for(var attempt=0;attempt<3;attempt++){
+            try{
+                var p2=basePrompt+'Predictions:\n'+PREDICTIONS_B.map((p,i)=>(i+1)+'. '+p).join('\n')+'\n\nAlso create 3 SPECIFIC risks for '+domain+'.\n\nReturn ONLY JSON:\n{"o":[{"p":"prediction name","t":"title","s":"2 vivid sentences"}],"r":[{"p":"risk","n":50-95,"s":"1 sentence"}]}\n\n7 in o, 3 in r.';
+                var r2=await ai([{role:'user',content:p2}],2000,'general');
+                if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}]}',']}]}','}]}}','}]}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
+                if(parsed&&parsed.o&&parsed.o.length>=3){allOppsResult.push(...parsed.o.map(x=>({prediction:x.p||'',title:x.t||'',description:x.s||''})));allRisksResult.push(...(parsed.r||[]).map(x=>({prediction:x.p||'',probability:x.n||80,impact:x.s||''})));break;}}
+            }catch(e){console.error('Company AI call 2 attempt '+(attempt+1)+':',e);}
         }
-        var go=aiOpps?.opportunities||[],gr=aiOpps?.threats||[];
-        var usedPredictions=new Set(go.map(o=>o.prediction));
-        var remaining=extra.filter(e=>!usedPredictions.has(e.prediction));
-        S.companyResult={company_description:desc,opportunities:[...go,...remaining].slice(0,15),threats:[...gr,...generateCompanyRisks(domain)].slice(0,7),summary:aiOpps?.summary||domain+' has real opportunities to leverage AI trends, but needs to move quickly on the ones that match its strengths.'};
+        S.companyResult={company_description:companyDesc||S.companyDesc||domain,opportunities:allOppsResult.slice(0,15),threats:allRisksResult.slice(0,7),summary:summary||domain+' has real opportunities to leverage these shifts, but needs to move fast on the ones that match its strengths.'};
         // Save result to DB
         await db('leads','PATCH',{company_result:JSON.stringify(S.companyResult)},`?email=eq.${encodeURIComponent(S.companyEmail)}&source=eq.company_risk`);
         S.companyStep=2;render();
@@ -2514,43 +2505,34 @@ function bindEvents(){
         setTimeout(()=>{S.threatLoadingStep=1;render();},800);setTimeout(()=>{S.threatLoadingStep=2;render();},2000);setTimeout(()=>{S.threatLoadingStep=3;render();},3500);setTimeout(()=>{S.threatLoadingStep=4;render();},5000);
         var ctx=S.threatDesc?domain+': '+S.threatDesc+'. '+S.threatIndustry+'.':domain+' ('+S.threatIndustry+').';
         var plist=provider.products.map(p=>'- '+p.name+': '+p.desc).join('\n');
-        var threatPicks=['Self-driving cars become a new lifestyle space — gaming, commerce, mobile offices, rolling clinics','Humans and AI merge through neural interfaces','Loneliness epidemic intensifies globally','Full-length movies can be made with a single AI prompt','AI tutors outperform human teachers'];
-        var picked2=[...threatPicks].sort(()=>Math.random()-0.5).slice(0,3);
-        var aiR=null;
-        var prompt=ctx+'\n\n'+provider.name+' has launched these AI products:\n'+plist+'\n\nAnalyze '+domain+' CAREFULLY.\n- Is this SOFTWARE (high risk) or PHYSICAL GOODS (lower direct risk)?\n- Is this company AI-native (existential risk if '+provider.name+' builds same thing)?\n\nTHREAT LEVEL: "Critical Exposure" (direct competitor), "High Exposure" (software), "Moderate Exposure" (service), "Positioned but Must Adapt" (physical goods)\nTIMELINE: Direct competition 6-12mo, Adjacent 12-18mo, Service 12-24mo, Physical 18-36mo\n\nNow create 5 SPECIFIC opportunities for '+domain+' based on these major predictions:\n1. '+picked2[0]+'\n2. '+picked2[1]+'\n3. '+picked2[2]+'\n4. Experience economy has explosive growth\n5. DeFi reaches 100M users globally\n\nThink BIG. Self-driving cars arent just extra time — they are a new lifestyle space where people game, shop, work, get therapy, transport goods. Insurance gets reinvented. Entertainment becomes location-aware. Neural interfaces mean '+domain+' could be controlled by thought. Movies in one prompt means '+domain+' can produce cinematic content for pennies.\n\nEach opportunity must be wildly specific to '+domain+'. 2 sentences each.\n\nAlso create 2 SPECIFIC risks that '+provider.name+' poses to '+domain+'.\n\nExamples:\n- LVMH + self-driving cars = in-car luxury showrooms, AR try-on during autonomous rides, curated experiences delivered to your car\n- memelord + loneliness = meme-based community with real belonging, group creation rooms, meme therapy\n- howie + neural interfaces = thought-controlled task management, memory that knows context\n\nReturn ONLY JSON:\n{"d":"1 sentence what '+domain+' does","l":"threat level","ts":"1 sentence what is threatened vs safe","m":months,"mr":"reason","o":[{"p":"prediction name","t":"opportunity title","s":"2 specific sentences for '+domain+'"}],"r":[{"p":"risk name","n":50-95,"s":"1 sentence"}]}\n\n5 in o, 2 in r.';
-        for(var attempt=0;attempt<3&&!aiR;attempt++){
+        var PREDICTIONS_A=['Self-driving cars become a new lifestyle space — gaming, commerce, mobile offices, therapy rooms, goods transport, insurance reinvention','Humans and AI merge through neural interfaces — skills become downloadable, thought-controlled devices, memory augmentation','Loneliness epidemic intensifies — community becomes the ultimate product, belonging is monetizable','Mental health demand far exceeds supply — AI therapy, meme therapy, wellness integrated into every product','Full-length movies made with a single AI prompt — any company can produce cinematic content for pennies','DeFi reaches 100M users — crypto payments, decentralized finance, new economic rails','AI tutors outperform human teachers — personalized education embedded everywhere','Experience economy has explosive growth — people pay for moments not things'];
+        var PREDICTIONS_B=['Traditional resume becomes obsolete — skills-based hiring, proof of work over credentials','Universal basic income tested globally — spending shifts to identity, community, self-improvement','Creator middle class disappears — only niche authorities survive, top 1% captures everything','80% of jobs disappear or transform — every company must redesign around human-AI collaboration','AI agents act autonomously for consumers — your product must be discoverable by AI, not just humans','Perfect voice cloning becomes trivial — trust in audio collapses, authenticity becomes premium','Restaurant automation goes mainstream — physical spaces become experience-first, not service-first'];
+        var basePrompt='You are a visionary AI strategist. Company: '+ctx+'\n\n'+provider.name+' has launched: '+plist+'\n\nThink BIG about each prediction. Self-driving cars arent just free time — they are a NEW LIFESTYLE SPACE where people game, shop, work, get therapy, transport goods. Insurance gets reinvented. Neural interfaces mean humor could be downloadable, skills transmitted instantly. Loneliness means community IS the product. Memes become therapy. Movies in one prompt means any brand becomes a studio.\n\nFor EACH prediction below, create ONE wildly creative and SPECIFIC opportunity for '+domain+'. Each must:\n- Reference what '+domain+' ACTUALLY does\n- Be 2 vivid, actionable sentences\n- Think about how '+domain+' specifically captures value from this shift\n- NOT be generic advice like "adapt to change" or "leverage AI"\n\nExamples:\n- memelord (memes) + self-driving cars = in-car meme gaming experiences, interactive meme battles during rides\n- memelord + loneliness = meme buddy system that creates real friendships through shared humor\n- memelord + neural interfaces = thought-to-meme creation, downloadable humor packs\n- memelord + space economy = memes ARE news, memelord becomes how people learn about space through humor\n\n';
+        var allOppsResult=[],allRisksResult=[],companyDesc='',summary='',threatLevel='',threatSummary='',monthsUntil=0,timelineReason='';
+        // Call 1: first 8 predictions + threat assessment
+        for(var attempt=0;attempt<3;attempt++){
             try{
-                var result=await ai([{role:'user',content:prompt}],2000,'general');
-                if(result){var c=result.replace(/```json|```/g,'').trim(),p=null;try{p=JSON.parse(c);}catch(e1){for(var f of ['}]}]}',']}]}','}]}}','}]}']){try{p=JSON.parse(c+f);break;}catch(e2){}}}
-                if(p&&p.o&&p.o.length>=3){aiR={company_description:p.d||'',threat_level:p.l||'High Exposure',threat_summary:p.ts||'',months_until_threat:p.m||provider.defaultMonths,timeline_reason:p.mr||'',opportunities:(p.o||[]).map(x=>({prediction:x.p||'',title:x.t||'',description:x.s||''})),threats:(p.r||[]).map(x=>({prediction:x.p||'',probability:x.n||80,impact:x.s||''}))};}}
-            }catch(e){console.error('Threat AI attempt '+(attempt+1)+':',e);}
+                var p1=basePrompt+'Predictions:\n'+PREDICTIONS_A.map((p,i)=>(i+1)+'. '+p).join('\n')+'\n\nAlso:\n- Assess THREAT LEVEL: "Critical Exposure" (direct competitor), "High Exposure" (software), "Moderate Exposure" (service), "Positioned but Must Adapt" (physical goods)\n- Create 4 SPECIFIC risks from '+provider.name+' for '+domain+'\n\nReturn ONLY JSON:\n{"d":"1 sentence what '+domain+' does","l":"threat level","ts":"what is threatened vs safe","m":months,"mr":"reason","o":[{"p":"prediction","t":"title","s":"2 vivid sentences"}],"r":[{"p":"risk","n":50-95,"s":"1 sentence"}]}\n\n8 in o, 4 in r.';
+                var r1=await ai([{role:'user',content:p1}],2500,'general');
+                if(r1){var c=r1.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}]}',']}]}','}]}}','}]}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
+                if(parsed&&parsed.o&&parsed.o.length>=3){allOppsResult.push(...parsed.o.map(x=>({prediction:x.p||'',title:x.t||'',description:x.s||''})));allRisksResult.push(...(parsed.r||[]).map(x=>({prediction:x.p||'',probability:x.n||80,impact:x.s||''})));companyDesc=parsed.d||'';threatLevel=parsed.l||'';threatSummary=parsed.ts||'';monthsUntil=parsed.m||0;timelineReason=parsed.mr||'';break;}}
+            }catch(e){console.error('Threat AI call 1 attempt '+(attempt+1)+':',e);}
+        }
+        // Call 2: next 7 predictions
+        for(var attempt=0;attempt<3;attempt++){
+            try{
+                var p2=basePrompt+'Predictions:\n'+PREDICTIONS_B.map((p,i)=>(i+1)+'. '+p).join('\n')+'\n\nAlso create 3 SPECIFIC risks from '+provider.name+' for '+domain+'.\n\nReturn ONLY JSON:\n{"o":[{"p":"prediction","t":"title","s":"2 vivid sentences"}],"r":[{"p":"risk","n":50-95,"s":"1 sentence"}]}\n\n7 in o, 3 in r.';
+                var r2=await ai([{role:'user',content:p2}],2000,'general');
+                if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}]}',']}]}','}]}}','}]}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
+                if(parsed&&parsed.o&&parsed.o.length>=3){allOppsResult.push(...parsed.o.map(x=>({prediction:x.p||'',title:x.t||'',description:x.s||''})));allRisksResult.push(...(parsed.r||[]).map(x=>({prediction:x.p||'',probability:x.n||80,impact:x.s||''})));break;}}
+            }catch(e){console.error('Threat AI call 2 attempt '+(attempt+1)+':',e);}
         }
         var fallbackLevel='Moderate Exposure';var fallbackMonths=provider.defaultMonths;
         var softwareInd=['Technology','SaaS','Software','AI/ML','Web3/Crypto'];
         var physicalInd=['Manufacturing','Retail','Real Estate','Healthcare','Construction'];
         if(softwareInd.some(s=>S.threatIndustry.includes(s))){fallbackLevel='High Exposure';fallbackMonths=Math.max(8,provider.defaultMonths-6);}
         if(physicalInd.some(s=>S.threatIndustry.includes(s))){fallbackLevel='Positioned but Must Adapt';fallbackMonths=provider.defaultMonths+6;}
-        // Build remaining opportunities specific to this company
-        var desc=aiR?.company_description||S.threatDesc||domain;
-        // Pull opportunities from FORECAST_DATABASE - the actual predictions in the app
-        var extra=[];
-        if(typeof FORECAST_DATABASE!=='undefined'){
-            var shuffled=[...FORECAST_DATABASE].sort(()=>Math.random()-0.5);
-            for(var fc of shuffled){
-                if(extra.length>=12)break;
-                if(!fc.opportunities||!fc.opportunities.length)continue;
-                var opp=fc.opportunities[Math.floor(Math.random()*Math.min(fc.opportunities.length,3))];
-                extra.push({
-                    prediction:fc.title,
-                    title:opp.title.replace(/[\u{1F300}-\u{1FAD6}]/gu,'').trim()+' for '+domain,
-                    description:domain+' can leverage the prediction that "'+fc.title+'" by building on this opportunity. '+opp.description+' For '+domain+', this means adapting its core strengths to capture value as this shift accelerates.'
-                });
-            }
-        }
-        var go=aiR?.opportunities||[],gr=aiR?.threats||[];
-        var usedPredictions=new Set(go.map(o=>o.prediction));
-        var remaining=extra.filter(e=>!usedPredictions.has(e.prediction));
-        S.threatResult={company_description:desc,threat_level:aiR?.threat_level||fallbackLevel,threat_summary:aiR?.threat_summary||provider.name+' is advancing into areas that directly impact '+domain+"'s core operations.",months_until_threat:aiR?.months_until_threat||fallbackMonths,timeline_reason:aiR?.timeline_reason||'Based on '+provider.name+"'s product velocity and "+S.threatIndustry+' dynamics.',opportunities:[...go,...remaining].slice(0,15),threats:[...gr,...generateCompanyRisks(domain)].slice(0,7)};
+        S.threatResult={company_description:companyDesc||S.threatDesc||domain,threat_level:threatLevel||fallbackLevel,threat_summary:threatSummary||provider.name+' is advancing into areas that directly impact '+domain+"'s core operations.",months_until_threat:monthsUntil||fallbackMonths,timeline_reason:timelineReason||'Based on '+provider.name+"'s product velocity and "+S.threatIndustry+' dynamics.',opportunities:allOppsResult.slice(0,15),threats:allRisksResult.slice(0,7)};
         // Save result to DB
         await db('users','PATCH',{company_result:JSON.stringify(S.threatResult)},`?email=eq.${encodeURIComponent(S.threatEmail)}&source=eq.threat_${S.threatProvider}`);
         S.threatStep=2;render();
