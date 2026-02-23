@@ -784,8 +784,10 @@ async function supabaseAuth(action, data) {
     }
 }
 
-async function authSignUp(email, password) {
-    return supabaseAuth('signup', { email, password });
+async function authSignUp(email, password, metadata) {
+    var payload = { email, password };
+    if(metadata) payload.data = metadata;
+    return supabaseAuth('signup', payload);
 }
 
 async function authSignIn(email, password) {
@@ -2347,7 +2349,7 @@ function bindEvents(){
         
         // Create Auth user with random password (they'll set real password if they convert)
         const tempPassword = 'temp_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-        const authResult = await authSignUp(S.diagnosticEmail, tempPassword);
+        const authResult = await authSignUp(S.diagnosticEmail, tempPassword, {source:'diagnostic_quiz',industry:S.diagnosticIndustry});
         
         if (authResult.error && authResult.error.message !== 'User already registered') {
             console.error('Lead capture error:', authResult.error);
@@ -2398,7 +2400,7 @@ function bindEvents(){
         var domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
         // Create Auth user (same pattern as diagnostic)
         var tempPw='temp_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
-        var authRes=await authSignUp(S.companyEmail,tempPw);
+        var authRes=await authSignUp(S.companyEmail,tempPw,{website:S.companyUrl,source:'company_risk',industry:S.companyIndustry,company_desc:S.companyDesc||''});
         if(authRes.error&&authRes.error.message!=='User already registered'){console.error('Auth:',authRes.error);}
         // Save custom fields to public.users
         await db('users','POST',{email:S.companyEmail,password:'auth_managed',industry:S.companyIndustry,role:S.companyUrl,source:'company_risk',start_date:new Date().toISOString(),plan:'lead',name:S.companyDesc||''});
@@ -2432,7 +2434,7 @@ function bindEvents(){
         var provider=THREAT_PROVIDERS[S.threatProvider],domain=S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
         // Create Auth user (same pattern as diagnostic)
         var tempPw='temp_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
-        var authRes=await authSignUp(S.threatEmail,tempPw);
+        var authRes=await authSignUp(S.threatEmail,tempPw,{website:S.threatUrl,source:'threat_'+S.threatProvider,industry:S.threatIndustry,company_desc:S.threatDesc||''});
         if(authRes.error&&authRes.error.message!=='User already registered'){console.error('Auth:',authRes.error);}
         // Save custom fields to public.users
         await db('users','POST',{email:S.threatEmail,password:'auth_managed',industry:S.threatIndustry,role:S.threatUrl,source:'threat_'+S.threatProvider,start_date:new Date().toISOString(),plan:'lead',name:S.threatDesc||''});
