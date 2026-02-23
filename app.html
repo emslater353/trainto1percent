@@ -2470,18 +2470,21 @@ function bindEvents(){
         }
         // Build remaining opportunities specific to this company
         var desc=aiOpps?.company_description||S.companyDesc||domain;
-        var extra=[
-            {prediction:'Voice interfaces',title:'Voice-First '+domain+' Experience',description:domain+' should build voice-activated features so users can interact hands-free. As voice interfaces replace screens, '+domain+' can capture users in contexts where screens are impractical.'},
-            {prediction:'Hyper-personalization',title:'AI-Personalized '+domain+' Journeys',description:domain+' should use AI to create individualized user paths based on behavior and preferences. This turns '+domain+' from a one-size-fits-all product into a uniquely personal experience.'},
-            {prediction:'AI agents',title:'Agent-Ready Infrastructure for '+domain,description:domain+' should prepare for AI agents that act on behalf of users by building an API layer and structured data. When autonomous agents start making decisions, '+domain+' needs to be where they look first.'},
-            {prediction:'Data privacy',title:domain+' Privacy-First Positioning',description:domain+' should make data protection a visible feature, not just a policy page. As trust erodes across tech, '+domain+' can differentiate by being the company that demonstrably respects user data.'},
-            {prediction:'Creator economy',title:'Creator Ecosystem Around '+domain,description:domain+' should enable users to create, share, and monetize content within its platform. Building a creator layer turns users into advocates and makes '+domain+' harder to replace.'},
-            {prediction:'Filter bubbles',title:'Shared Experiences via '+domain,description:domain+' should create live, non-algorithmic moments that bring users together around shared content. As filter bubbles isolate people, '+domain+' can become a place for genuine shared discovery.'},
-            {prediction:'Continuous learning',title:domain+' AI Upskilling Hub',description:domain+' should build a learning system that helps its team and users stay current on AI developments. Continuous learning becomes a competitive moat as the pace of change accelerates.'},
-            {prediction:'Automation',title:'Human+AI Operating Model for '+domain,description:domain+' should redesign its workflows around human-AI collaboration, keeping humans on creative and relationship tasks. This reduces costs while preserving what makes '+domain+' valuable.'},
-            {prediction:'AI content generation',title:domain+' Branded Content Engine',description:domain+' should use generative AI to produce brand content at 100x the current speed and a fraction of the cost. This frees the team to focus on strategy while AI handles volume.'},
-            {prediction:'Community moats',title:domain+' Community Flywheel',description:domain+' should invest in community features that create network effects and switching costs. AI can replicate features but it cannot replicate a community that users feel they belong to.'}
-        ];
+        // Pull opportunities from FORECAST_DATABASE - the actual predictions in the app
+        var extra=[];
+        if(typeof FORECAST_DATABASE!=='undefined'){
+            var shuffled=[...FORECAST_DATABASE].sort(()=>Math.random()-0.5);
+            for(var fc of shuffled){
+                if(extra.length>=12)break;
+                if(!fc.opportunities||!fc.opportunities.length)continue;
+                var opp=fc.opportunities[Math.floor(Math.random()*Math.min(fc.opportunities.length,3))];
+                extra.push({
+                    prediction:fc.title,
+                    title:opp.title.replace(/[\u{1F300}-\u{1FAD6}]/gu,'').trim()+' for '+domain,
+                    description:domain+' can leverage the prediction that "'+fc.title+'" by building on this opportunity. '+opp.description+' For '+domain+', this means adapting its core strengths to capture value as this shift accelerates.'
+                });
+            }
+        }
         var go=aiOpps?.opportunities||[],gr=aiOpps?.threats||[];
         var usedPredictions=new Set(go.map(o=>o.prediction));
         var remaining=extra.filter(e=>!usedPredictions.has(e.prediction));
@@ -2527,18 +2530,21 @@ function bindEvents(){
         if(physicalInd.some(s=>S.threatIndustry.includes(s))){fallbackLevel='Positioned but Must Adapt';fallbackMonths=provider.defaultMonths+6;}
         // Build remaining opportunities specific to this company
         var desc=aiR?.company_description||S.threatDesc||domain;
-        var extra=[
-            {prediction:'Voice interfaces',title:'Voice-First '+domain+' Experience',description:domain+' should build voice-activated features so users can interact hands-free. As voice interfaces replace screens, '+domain+' can capture users in contexts where screens are impractical.'},
-            {prediction:'Hyper-personalization',title:'AI-Personalized '+domain+' Journeys',description:domain+' should use AI to create individualized user paths based on behavior and preferences. This turns '+domain+' from a one-size-fits-all product into a uniquely personal experience.'},
-            {prediction:'AI agents',title:'Agent-Ready Infrastructure for '+domain,description:domain+' should prepare for AI agents that act on behalf of users by building an API layer and structured data. When autonomous agents start making decisions, '+domain+' needs to be where they look first.'},
-            {prediction:'Data privacy',title:domain+' Privacy-First Positioning',description:domain+' should make data protection a visible feature, not just a policy page. As trust erodes across tech, '+domain+' can differentiate by being the company that demonstrably respects user data.'},
-            {prediction:'Creator economy',title:'Creator Ecosystem Around '+domain,description:domain+' should enable users to create, share, and monetize content within its platform. Building a creator layer turns users into advocates and makes '+domain+' harder to replace.'},
-            {prediction:'Filter bubbles',title:'Shared Experiences via '+domain,description:domain+' should create live, non-algorithmic moments that bring users together around shared content. As filter bubbles isolate people, '+domain+' can become a place for genuine shared discovery.'},
-            {prediction:'Continuous learning',title:domain+' AI Upskilling Hub',description:domain+' should build a learning system that helps its team and users stay current on AI developments. Continuous learning becomes a competitive moat as the pace of change accelerates.'},
-            {prediction:'Automation',title:'Human+AI Operating Model for '+domain,description:domain+' should redesign its workflows around human-AI collaboration, keeping humans on creative and relationship tasks. This reduces costs while preserving what makes '+domain+' valuable.'},
-            {prediction:'AI content generation',title:domain+' Branded Content Engine',description:domain+' should use generative AI to produce brand content at 100x the current speed and a fraction of the cost. This frees the team to focus on strategy while AI handles volume.'},
-            {prediction:'Community moats',title:domain+' Community Flywheel',description:domain+' should invest in community features that create network effects and switching costs. AI can replicate features but it cannot replicate a community that users feel they belong to.'}
-        ];
+        // Pull opportunities from FORECAST_DATABASE - the actual predictions in the app
+        var extra=[];
+        if(typeof FORECAST_DATABASE!=='undefined'){
+            var shuffled=[...FORECAST_DATABASE].sort(()=>Math.random()-0.5);
+            for(var fc of shuffled){
+                if(extra.length>=12)break;
+                if(!fc.opportunities||!fc.opportunities.length)continue;
+                var opp=fc.opportunities[Math.floor(Math.random()*Math.min(fc.opportunities.length,3))];
+                extra.push({
+                    prediction:fc.title,
+                    title:opp.title.replace(/[\u{1F300}-\u{1FAD6}]/gu,'').trim()+' for '+domain,
+                    description:domain+' can leverage the prediction that "'+fc.title+'" by building on this opportunity. '+opp.description+' For '+domain+', this means adapting its core strengths to capture value as this shift accelerates.'
+                });
+            }
+        }
         var go=aiR?.opportunities||[],gr=aiR?.threats||[];
         var usedPredictions=new Set(go.map(o=>o.prediction));
         var remaining=extra.filter(e=>!usedPredictions.has(e.prediction));
