@@ -858,7 +858,8 @@ const S = {
     reportSlide:0, // 0=status, 1..N=opps, N+1=risks, N+2=bottom line/actions
     planGenerating:null, // index of opp currently generating plan
     plans:{}, // {oppIndex: {steps:[],generating:false}}
-    threatProvider:null,threatStep:0,threatUrl:'',threatEmail:'',threatIndustry:'',threatDesc:'',threatResult:null,threatLoadingStep:0,threatUnlocked:false
+    threatProvider:null,threatStep:0,threatUrl:'',threatEmail:'',threatIndustry:'',threatDesc:'',threatResult:null,threatLoadingStep:0,threatUnlocked:false,
+    threatSlide:0,threatPlans:{}
 };
 
 async function db(table, method, data=null, query='') {
@@ -1757,33 +1758,67 @@ function threatH(){
     }
     if(S.threatStep===1){
         var steps=['Scanning your business...','Analyzing '+provider.name+'...','Calculating threat timeline...','Finding opportunities...','Building report...'];
-        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center" style="padding:40px"><div style="font-size:28px;margin-bottom:15px">\u26a1</div><h2 class="card-title">${provider.name} vs ${S.threatUrl.replace(/https?:\/\//,'').replace(/\/$/,'')}</h2><div style="margin-top:20px">${steps.map((st,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;opacity:${i<=S.threatLoadingStep?1:0.3}"><span style="color:${i<S.threatLoadingStep?'var(--success)':i===S.threatLoadingStep?'var(--accent)':'var(--text-muted)'};font-size:14px">${i<S.threatLoadingStep?'\u2713':i===S.threatLoadingStep?'\u25c9':'\u25cb'}</span><span class="text-small">${st}</span></div>`).join('')}</div></div></div></div>`;
+        var allDone=S.threatLoadingStep>=steps.length;
+        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center" style="padding:40px"><div style="font-size:28px;margin-bottom:15px">${allDone?'🧠':'⚡'}</div><h2 class="card-title">${provider.name} vs ${S.threatUrl.replace(/https?:\/\//,'').replace(/\/$/,'')}</h2><div style="margin-top:20px">${steps.map((st,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;opacity:${i<=S.threatLoadingStep?1:0.3}"><span style="color:${i<S.threatLoadingStep?'var(--success)':i===S.threatLoadingStep?'var(--accent)':'var(--text-muted)'};font-size:14px">${i<S.threatLoadingStep?'✓':i===S.threatLoadingStep?'◉':'○'}</span><span class="text-small">${st}</span></div>`).join('')}</div>${allDone?`<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--bg-tertiary)"><div style="display:flex;align-items:center;justify-content:center;gap:12px"><div style="width:20px;height:20px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></div><span style="font-size:13px;color:var(--text-secondary)">AI is assessing threats to your company...</span></div><div style="margin-top:16px;font-size:11px;color:var(--text-muted);line-height:1.6">Analyzing ${provider.name}'s products against your business model.<br>This usually takes 15-30 seconds.</div></div>`:''}</div></div></div>`;
     }
     if(S.threatStep===2&&S.threatResult){
         var r=S.threatResult,domain=S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
         var allOpps=r.opportunities||[],allRisks=r.threats||[];
-        var opps=allOpps; // TESTING: show all
-        var risks=allRisks; // TESTING: show all
-        var lc=Math.max(0,allOpps.length-3);
+        var opps=allOpps;
+        var risks=allRisks;
+        var provider=THREAT_PROVIDERS[S.threatProvider];
+        var totalSlides=opps.length+3; // 0=status, 1..N=opps, N+1=risks, N+2=actions
+        var slide=Math.max(0,Math.min(S.threatSlide||0,totalSlides-1));
+        
         var tl=r.threat_level||'High Exposure';
-        var tlColor='rgba(255,170,0';
-        if(tl.includes('High'))tlColor='rgba(255,60,60';
-        if(tl.includes('Critical'))tlColor='rgba(255,30,30';
-        if(tl.includes('Positioned')||tl.includes('Low'))tlColor='rgba(80,200,120';
-        var h=`<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>${S.threatUnlocked?'<div style="text-align:center;margin-bottom:15px;padding:10px;background:var(--accent);color:#000;font-size:11px;text-transform:uppercase;letter-spacing:2px;font-weight:700">\u2713 Full Report Unlocked</div>':''}<div style="margin-bottom:20px;padding:20px 24px;background:linear-gradient(135deg,${tlColor},0.12),${tlColor},0.04));border:1px solid ${tlColor},0.3);position:relative"><div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${provider.color}"></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">\ud83c\udfaf</span><span style="font-size:10px;color:${provider.color};text-transform:uppercase;letter-spacing:2px;font-weight:700">${provider.name} Threat Level</span></div><h2 style="font-size:22px;font-weight:700;margin-bottom:8px">${tl}</h2><p style="font-size:13px;color:var(--text-secondary);line-height:1.5">${r.threat_summary||''}</p></div>`;
-        h+=`<div style="margin-bottom:15px;padding:18px;background:#111118;border:1px solid #1a1a2e"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span>\u23f1\ufe0f</span><span style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;font-weight:700">Estimated Timeline</span></div><p style="font-size:20px;font-weight:700;margin-bottom:4px">${r.months_until_threat||provider.defaultMonths} months</p><p style="font-size:12px;color:var(--text-secondary)">${r.timeline_reason||''}</p></div>`;
-        h+=`<div style="margin-bottom:15px;padding:18px;background:#111118;border:1px solid #1a1a2e"><div style="font-size:11px;color:${provider.color};text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">${provider.name}'s AI Product Launches</div>${provider.products.map((p,i)=>`<div style="padding:6px 0;${i<provider.products.length-1?'border-bottom:1px solid var(--bg-tertiary)':''}"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:600">${p.name}</span><span style="font-size:10px;color:var(--text-muted)">${p.date}</span></div><p style="font-size:11px;color:var(--text-secondary);margin-top:2px">${p.desc}</p></div>`).join('')}</div>`;
-        h+=`<div style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">How to make ${domain} AI-proof${S.threatUnlocked?' ('+allOpps.length+' opportunities)':''}</div>`;
-        opps.forEach(function(o){h+=`<div class="card" style="margin-bottom:12px;border-left:3px solid var(--accent)">${o.prediction?`<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Prediction: ${o.prediction}</div>`:''}<div style="font-size:15px;font-weight:700;margin-bottom:6px">${o.title}</div><p class="text-small text-secondary" style="line-height:1.6">${o.description}</p></div>`;});
-        h+=`<div class="card" style="margin-bottom:15px;border-left:3px solid var(--warning)"><h3 style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Risks from ${provider.name}${S.threatUnlocked?' ('+allRisks.length+')':''}</h3>`;
-        risks.forEach(function(t){h+=`<div style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:600">${t.prediction}</span><span style="font-size:11px;font-weight:700;color:var(--warning)">${t.probability}%</span></div><p style="font-size:11px;color:var(--text-secondary);margin-top:3px">${t.impact}</p></div>`;});
-        if(false){h+=`<div style="padding:10px 0 2px 0">\ud83d\udd12 <span style="font-size:11px;color:var(--text-muted)">${allRisks.length-2} more risks in full report</span></div>`;}
-        h+=`</div>`;
-        if(false){
-            h+=`<p style="font-size:13px;text-align:center;margin-bottom:15px;color:var(--text-muted)">\ud83d\udd12 ${lc} more opportunities + full risk analysis</p><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:16px;font-weight:700;margin-bottom:6px">Unlock Your Full ${provider.name} Defense Report</p><p class="text-secondary text-small" style="margin-bottom:15px">15 opportunities, full risk analysis, timeline.</p><button class="btn btn-primary btn-full" id="unlock-threat-report">Unlock Full Report →</button><a href="${STRATEGY_CALL_URL}" target="_blank" style="display:block;margin-top:12px;font-size:12px;color:var(--text-secondary)">or <span style="color:var(--accent);text-decoration:underline">book a strategy call</span></a></div>`;
-        } else {
-            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-threat-pdf">\u2193 Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:8px"><input type="email" class="form-input" id="team-email-threat" placeholder="teammate@company.com" style="flex:1;font-size:12px"><button class="btn btn-primary btn-small" id="send-threat-email">Send</button></div><p id="threat-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none">\u2713 Email client opened</p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call \u2192</a></div>`;
+        var statusIcon=tl.includes('Critical')||tl.includes('High')?'🔴':tl.includes('Positioned')||tl.includes('Low')?'🟢':'🟡';
+        var statusColor=tl.includes('Critical')||tl.includes('High')?'var(--danger)':tl.includes('Positioned')||tl.includes('Low')?'var(--success)':'var(--warning)';
+        var statusBg=tl.includes('Critical')||tl.includes('High')?'rgba(255,60,60,0.12)':tl.includes('Positioned')||tl.includes('Low')?'rgba(0,200,100,0.12)':'rgba(255,170,0,0.12)';
+        var statusBorder=tl.includes('Critical')||tl.includes('High')?'rgba(255,60,60,0.3)':tl.includes('Positioned')||tl.includes('Low')?'rgba(0,200,100,0.3)':'rgba(255,170,0,0.3)';
+        
+        var navDots='';for(var di=0;di<totalSlides;di++){navDots+=`<div style="width:${di===slide?'20px':'8px'};height:8px;border-radius:4px;background:${di===slide?'var(--accent)':'rgba(255,255,255,0.2)'};transition:all 0.3s"></div>`;}
+        
+        var h=`<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>${S.threatUnlocked?'<div style="text-align:center;margin-bottom:15px;padding:10px;background:var(--accent);color:#000;font-size:11px;text-transform:uppercase;letter-spacing:2px;font-weight:700">✓ Full Report Unlocked</div>':''}`;
+        
+        // --- SLIDE: THREAT STATUS (slide 0) ---
+        if(slide===0){
+            h+=`<div style="margin-bottom:20px;padding:24px;background:linear-gradient(135deg,${statusBg},rgba(0,0,0,0.02));border:1px solid ${statusBorder};position:relative"><div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${provider.color}"></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:18px">${statusIcon}</span><span style="font-size:10px;color:${provider.color};text-transform:uppercase;letter-spacing:2px;font-weight:700">${provider.name} Threat Level</span></div><h2 style="font-size:24px;font-weight:700;margin-bottom:12px">${tl}</h2><p style="font-size:14px;color:var(--text-secondary);line-height:1.7">${r.threat_summary||''}</p></div>`;
+            h+=`<div style="margin-bottom:15px;padding:18px;background:#111118;border:1px solid #1a1a2e"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span>⏱️</span><span style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;font-weight:700">Estimated Timeline</span></div><p style="font-size:20px;font-weight:700;margin-bottom:4px">${r.months_until_threat||provider.defaultMonths} months</p><p style="font-size:12px;color:var(--text-secondary)">${r.timeline_reason||''}</p></div>`;
+            h+=`<div style="margin-bottom:15px;padding:18px;background:#111118;border:1px solid #1a1a2e"><div style="font-size:11px;color:${provider.color};text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">${provider.name}'s AI Product Launches</div>${provider.products.slice(0,5).map((p,i)=>`<div style="padding:6px 0;${i<4?'border-bottom:1px solid var(--bg-tertiary)':''}"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:600">${p.name}</span><span style="font-size:10px;color:var(--text-muted)">${p.date}</span></div><p style="font-size:11px;color:var(--text-secondary);margin-top:2px">${p.desc}</p></div>`).join('')}</div>`;
+            h+=`<div style="text-align:center;padding:10px 0"><p style="font-size:12px;color:var(--text-muted)">${opps.length} defensive opportunities · ${risks.length} risks identified</p></div>`;
         }
+        // --- SLIDES: INDIVIDUAL OPPORTUNITIES (slides 1..N) ---
+        else if(slide>=1&&slide<=opps.length){
+            var oi=slide-1,o=opps[oi];
+            var plan=S.threatPlans?S.threatPlans[oi]:null;
+            h+=`<div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Opportunity ${oi+1} of ${opps.length}</div>`;
+            h+=`<div class="card" style="margin-bottom:16px;border-left:3px solid var(--accent);padding:20px 24px">${o.prediction?`<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">🔮 ${o.prediction}</div>`:''}<div style="font-size:18px;font-weight:700;margin-bottom:10px">${o.title}</div><p style="font-size:14px;color:var(--text-secondary);line-height:1.7">${o.description}</p>`;
+            if(plan&&plan.steps&&plan.steps.length>0){
+                h+=`<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--bg-tertiary)"><div style="font-size:10px;color:var(--success);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">✓ Action Plan</div>`;
+                plan.steps.forEach(function(step,si){h+=`<div style="display:flex;gap:10px;margin-bottom:10px"><span style="color:var(--accent);font-weight:700;font-size:13px;min-width:20px">${si+1}.</span><div><div style="font-size:13px;font-weight:600;margin-bottom:3px">${step.title}</div><p style="font-size:12px;color:var(--text-secondary);line-height:1.5">${step.desc}</p>${step.timeline?`<span style="font-size:10px;color:var(--text-muted)">⏱ ${step.timeline}</span>`:''}</div></div>`;});
+                h+=`</div>`;
+            } else if(plan&&plan.generating){
+                h+=`<div style="margin-top:16px;text-align:center;padding:20px 0"><div style="display:inline-block;width:20px;height:20px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></div><p style="font-size:12px;color:var(--text-muted);margin-top:8px">Generating action plan...</p></div>`;
+            } else {
+                h+=`<button class="btn btn-secondary btn-full" style="margin-top:16px" id="gen-threat-plan-${oi}">⚡ Generate Action Plan</button>`;
+            }
+            h+=`</div>`;
+        }
+        // --- SLIDE: RISKS (slide N+1) ---
+        else if(slide===opps.length+1){
+            h+=`<div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Risks from ${provider.name}</div>`;
+            h+=`<div class="card" style="margin-bottom:16px;border-left:3px solid var(--warning);padding:20px 24px"><h3 style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">⚠️ ${risks.length} Risks Identified</h3>`;
+            risks.forEach(function(t,ti){h+=`<div style="padding:10px 0;${ti<risks.length-1?'border-bottom:1px solid var(--bg-tertiary)':''}"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">${t.prediction}</span><span style="font-size:11px;font-weight:700;color:var(--warning);background:rgba(255,170,0,0.12);padding:2px 8px;border-radius:10px">${t.probability}%</span></div><p style="font-size:12px;color:var(--text-secondary);margin-top:4px;line-height:1.5">${t.impact}</p></div>`;});
+            h+=`</div>`;
+        }
+        // --- SLIDE: ACTIONS (last slide) ---
+        else {
+            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-threat-pdf">↓ Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:8px"><input type="email" class="form-input" id="team-email-threat" placeholder="teammate@company.com" style="flex:1;font-size:12px"><button class="btn btn-primary btn-small" id="send-threat-email">Send</button></div><p id="threat-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none">✓ Email client opened</p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
+        }
+        
+        // Navigation
+        h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:20px 0 30px 0"><button class="btn btn-secondary" id="threat-slide-prev" style="min-width:90px;font-size:13px;${slide===0?'opacity:0.3;pointer-events:none':''}">← Back</button><div style="display:flex;gap:4px;align-items:center">${navDots}</div><button class="btn btn-primary" id="threat-slide-next" style="min-width:90px;font-size:13px;${slide>=totalSlides-1?'opacity:0.3;pointer-events:none':''}">${slide===0?'See Opportunities →':slide===opps.length?'See Risks →':slide===opps.length+1?'Summary →':'Next →'}</button></div>`;
+        
         h+=`</div></div>`;
         return h;
     }
@@ -2575,6 +2610,14 @@ function bindEvents(){
         }
         
         // STEP 4: Build risks from Supabase + always include Big 3
+        // Fix: ensure prediction field contains actual prediction text, not a number
+        allOppsResult.forEach(function(o){
+            if(o.prediction&&!isNaN(o.prediction)){
+                var pidx=parseInt(o.prediction)-1;
+                if(sample[pidx]&&sample[pidx].prediction)o.prediction=sample[pidx].prediction;
+                else o.prediction='';
+            }
+        });
         var risks=forecastRisks.map(function(r){return{prediction:r.title,probability:r.default_probability,impact:r.description};});
         // Always include OpenAI, Claude, Gemini as competitive risks
         var big3=[
@@ -2624,8 +2667,8 @@ function bindEvents(){
         if(authRes.error&&authRes.error.message!=='User already registered'){console.error('Auth:',authRes.error);}
         // Save custom fields to public.users
         await db('users','POST',{email:S.threatEmail,password:'auth_managed',industry:S.threatIndustry,role:S.threatUrl,source:'threat_'+S.threatProvider,start_date:new Date().toISOString(),user_type:'lead',name:S.threatDesc||''});
-        S.threatStep=1;S.threatLoadingStep=0;render();
-        setTimeout(()=>{S.threatLoadingStep=1;render();},800);setTimeout(()=>{S.threatLoadingStep=2;render();},2000);setTimeout(()=>{S.threatLoadingStep=3;render();},3500);setTimeout(()=>{S.threatLoadingStep=4;render();},5000);
+        S.threatStep=1;S.threatLoadingStep=0;S.threatSlide=0;S.threatPlans={};render();
+        setTimeout(()=>{S.threatLoadingStep=1;render();},800);setTimeout(()=>{S.threatLoadingStep=2;render();},2000);setTimeout(()=>{S.threatLoadingStep=3;render();},3500);setTimeout(()=>{S.threatLoadingStep=4;render();},5000);setTimeout(()=>{S.threatLoadingStep=5;render();},7000);
         var ctx=S.threatDesc?domain+': '+S.threatDesc+'. '+S.threatIndustry+'.':domain+' ('+S.threatIndustry+').';
         var plist=provider.products.map(p=>'- '+p.name+': '+p.desc).join('\n');
         
@@ -2642,7 +2685,8 @@ function bindEvents(){
             var f=forecasts.find(function(fc){return fc.id===fo.forecast_id;});
             if(f)oppList.push({id:fo.id,prediction:f.title,title:fo.title,desc:fo.description});
         });
-        oppList.sort(function(){return Math.random()-0.5;});
+        // Fisher-Yates shuffle
+        for(var si=oppList.length-1;si>0;si--){var sj=Math.floor(Math.random()*(si+1));var tmp=oppList[si];oppList[si]=oppList[sj];oppList[sj]=tmp;}
         var sample=oppList.slice(0,50);
         
         // STEP 2: AI Call 1 - Generate 15 opportunities + threat assessment
@@ -2679,14 +2723,32 @@ function bindEvents(){
             }
         }
         
-        // STEP 4: Build risks from Supabase
+        // STEP 4: Build risks from Supabase + always include Big 3
         var risks=forecastRisks.map(function(r){return{prediction:r.title,probability:r.default_probability,impact:r.description};});
+        var big3=[
+            {prediction:'OpenAI builds competing product',probability:78,impact:'OpenAI\'s expanding product suite could directly replicate or replace what '+domain+' offers, with massive distribution advantage.'},
+            {prediction:'Anthropic\'s Claude enters your space',probability:72,impact:'Claude\'s rapid capability gains and enterprise focus mean Anthropic could build features that overlap with '+domain+'\'s core value.'},
+            {prediction:'Google Gemini commoditizes your niche',probability:75,impact:'Google can bundle Gemini into Search, Workspace, and Android — giving away for free what '+domain+' charges for.'}
+        ];
+        big3.forEach(function(b3){if(!risks.find(function(r){return r.prediction.includes('OpenAI')&&b3.prediction.includes('OpenAI')||r.prediction.includes('Claude')&&b3.prediction.includes('Claude')||r.prediction.includes('Gemini')&&b3.prediction.includes('Gemini');}))risks.push(b3);});
+        risks=risks.slice(0,10);
+        
+        // Fix: ensure prediction field contains actual prediction text, not a number
+        allOppsResult.forEach(function(o){
+            if(o.prediction&&!isNaN(o.prediction)){
+                // It's a number (AI returned template number instead of prediction text)
+                var idx=parseInt(o.prediction)-1;
+                if(sample[idx]&&sample[idx].prediction)o.prediction=sample[idx].prediction;
+                else o.prediction='';
+            }
+        });
+        
         var fallbackLevel='Moderate Exposure';var fallbackMonths=provider.defaultMonths;
         var softwareInd=['Technology','SaaS','Software','AI/ML','Web3/Crypto'];
         var physicalInd=['Manufacturing','Retail','Real Estate','Healthcare','Construction'];
         if(softwareInd.some(s=>S.threatIndustry.includes(s))){fallbackLevel='High Exposure';fallbackMonths=Math.max(8,provider.defaultMonths-6);}
         if(physicalInd.some(s=>S.threatIndustry.includes(s))){fallbackLevel='Positioned but Must Adapt';fallbackMonths=provider.defaultMonths+6;}
-        S.threatResult={company_description:companyDesc||S.threatDesc||domain,threat_level:threatLevel||fallbackLevel,threat_summary:threatSummary||provider.name+' is advancing into areas that directly impact '+domain+"'s core operations.",months_until_threat:monthsUntil||fallbackMonths,timeline_reason:timelineReason||'Based on '+provider.name+"'s product velocity and "+S.threatIndustry+' dynamics.',opportunities:allOppsResult.slice(0,15),threats:risks.length>=3?risks.slice(0,7):[...risks,...generateCompanyRisks(domain)].slice(0,7)};
+        S.threatResult={company_description:companyDesc||S.threatDesc||domain,threat_level:threatLevel||fallbackLevel,threat_summary:threatSummary||provider.name+' is advancing into areas that directly impact '+domain+"'s core operations.",months_until_threat:monthsUntil||fallbackMonths,timeline_reason:timelineReason||'Based on '+provider.name+"'s product velocity and "+S.threatIndustry+' dynamics.',opportunities:allOppsResult.slice(0,15),threats:risks};
         // Save result to DB
         await db('users','PATCH',{company_result:JSON.stringify(S.threatResult)},`?email=eq.${encodeURIComponent(S.threatEmail)}&source=eq.threat_${S.threatProvider}`);
         S.threatStep=2;render();
@@ -2705,6 +2767,8 @@ function bindEvents(){
     // Slide navigation
     document.getElementById('slide-prev')?.addEventListener('click',()=>{if(S.reportSlide>0){S.reportSlide--;render();}});
     document.getElementById('slide-next')?.addEventListener('click',()=>{var totalSlides=(S.companyResult?.opportunities?.length||0)+3;if(S.reportSlide<totalSlides-1){S.reportSlide++;render();}});
+    document.getElementById('threat-slide-prev')?.addEventListener('click',()=>{if(S.threatSlide>0){S.threatSlide--;render();}});
+    document.getElementById('threat-slide-next')?.addEventListener('click',()=>{var totalSlides=(S.threatResult?.opportunities?.length||0)+3;if(S.threatSlide<totalSlides-1){S.threatSlide++;render();}});
     
     // Generate Plan buttons
     for(var pi=0;pi<(S.companyResult?.opportunities?.length||0);pi++){
@@ -2745,6 +2809,25 @@ function bindEvents(){
                 S.plans[idx]={generating:false,steps:planSteps.slice(0,5)};render();
             });
         })(pi);
+    }
+    
+    // Generate Plan buttons for THREAT page
+    for(var tpi=0;tpi<(S.threatResult?.opportunities?.length||0);tpi++){
+        (function(idx){
+            document.getElementById('gen-threat-plan-'+idx)?.addEventListener('click',async function(){
+                if(!S.threatPlans)S.threatPlans={};
+                if(S.threatPlans[idx]&&S.threatPlans[idx].generating)return;
+                S.threatPlans[idx]={generating:true,steps:[]};render();
+                var opp=S.threatResult.opportunities[idx];
+                var domain=S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+                var ctx=S.threatDesc?domain+': '+S.threatDesc+'. '+S.threatIndustry+'.':domain+' ('+S.threatIndustry+').';
+                var planPrompt='You are a strategic AI consultant. Create a specific, actionable plan for this opportunity.\n\nCompany: '+ctx+'\nOpportunity: '+opp.title+'\nPrediction: '+(opp.prediction||'')+'\nDescription: '+opp.description+'\n\nCreate a 5-step action plan that is SPECIFIC to '+domain+'.\n\nRules:\n- Step 1 should be something they can do THIS WEEK\n- Steps should build on each other\n- Include specific tools, platforms, or approaches\n- Reference what '+domain+' actually does\n- Include estimated timeline for each step\n\nReturn ONLY JSON:\n{"steps":[{"title":"short action title","desc":"2-3 specific sentences","timeline":"e.g. Week 1, Month 1-2"}]}\n\n5 steps exactly.';
+                var planSteps=[];
+                try{var pr=await ai([{role:'user',content:planPrompt}],2000,'general');if(pr){var pc=pr.replace(/```json|```/g,'').trim();try{var pp=JSON.parse(pc);if(pp.steps)planSteps=pp.steps;}catch(e){}}}catch(e){}
+                if(planSteps.length>=3){try{var valPlanPrompt='Company: '+ctx+'\nOpportunity: '+opp.title+'\n\nReview and reorder this plan. Most impactful first. Replace anything generic.\n\nPlan:\n'+planSteps.map(function(s,i){return(i+1)+'. '+s.title+': '+s.desc;}).join('\n')+'\n\nReturn ONLY JSON:\n{"steps":[{"title":"...","desc":"...","timeline":"..."}]}';var vr=await gemini(valPlanPrompt,1500);if(vr){var vc=vr.replace(/```json|```/g,'').trim();try{var vp=JSON.parse(vc);if(vp.steps&&vp.steps.length>=3)planSteps=vp.steps;}catch(e){}}}catch(e){}}
+                S.threatPlans[idx]={generating:false,steps:planSteps.slice(0,5)};render();
+            });
+        })(tpi);
     }
 
     // Onboarding flow - Step 1: Email + Industry
@@ -9682,7 +9765,7 @@ async function init(){
         S.companyStep=0;S.companyUrl='';S.companyEmail='';S.companyIndustry='';S.companyDesc='';S.companyResult=null;S.companyLoadingStep=0;S.companyUnlocked=false;S.reportSlide=0;S.plans={};S.screen='company';render();return;
     }
     if(['google','claude','openai'].includes(path)){
-        S.threatProvider=path;S.threatStep=0;S.threatUrl='';S.threatEmail='';S.threatIndustry='';S.threatDesc='';S.threatResult=null;S.threatLoadingStep=0;S.threatUnlocked=false;S.screen='threat';render();return;
+        S.threatProvider=path;S.threatStep=0;S.threatUrl='';S.threatEmail='';S.threatIndustry='';S.threatDesc='';S.threatResult=null;S.threatLoadingStep=0;S.threatUnlocked=false;S.threatSlide=0;S.threatPlans={};S.screen='threat';render();return;
     }
     
     // Check for report payment success
@@ -9727,7 +9810,7 @@ async function init(){
     // Company mode
     if(params.get('mode')==='company'||hash==='company'){S.companyStep=0;S.companyUrl='';S.companyEmail='';S.companyIndustry='';S.companyDesc='';S.companyResult=null;S.companyLoadingStep=0;S.companyUnlocked=false;S.reportSlide=0;S.plans={};S.screen='company';render();return;}
     // Threat mode
-    var _tm=params.get('threat');if(_tm&&typeof THREAT_PROVIDERS!=='undefined'&&THREAT_PROVIDERS[_tm]){S.threatProvider=_tm;S.threatStep=0;S.threatUrl='';S.threatEmail='';S.threatIndustry='';S.threatDesc='';S.threatResult=null;S.threatLoadingStep=0;S.threatUnlocked=false;S.screen='threat';render();return;}
+    var _tm=params.get('threat');if(_tm&&typeof THREAT_PROVIDERS!=='undefined'&&THREAT_PROVIDERS[_tm]){S.threatProvider=_tm;S.threatStep=0;S.threatUrl='';S.threatEmail='';S.threatIndustry='';S.threatDesc='';S.threatResult=null;S.threatLoadingStep=0;S.threatUnlocked=false;S.threatSlide=0;S.threatPlans={};S.screen='threat';render();return;}
     // Check for password reset token
     const resetToken = params.get('token');
     if(resetToken && hash === 'reset') {
