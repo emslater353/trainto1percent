@@ -1,174 +1,190 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password — AI Proof Club</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <title>Set New Password – AI Proof Club</title>
     <style>
-        :root {
-            --bg-primary: #050508;
-            --bg-secondary: #0d0d12;
-            --bg-tertiary: #1a1a24;
-            --text-primary: #e8e8ec;
-            --text-secondary: #6e7087;
-            --accent: #00f0ff;
-            --accent-glow: rgba(0, 240, 255, 0.15);
-            --font-mono: 'Space Mono', monospace;
-        }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
-            font-family: var(--font-mono);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            font-size: 14px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            background-image: 
-                radial-gradient(ellipse at top, rgba(0, 240, 255, 0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at bottom, rgba(123, 104, 238, 0.03) 0%, transparent 50%);
         }
-
-        .container { max-width: 420px; width: 100%; }
-
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
         .logo {
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 3px;
             text-align: center;
-            margin-bottom: 40px;
-        }
-        .logo span { color: var(--accent); }
-
-        .card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--bg-tertiary);
-            padding: 35px;
-        }
-
-        h2 {
             font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-bottom: 32px;
+            color: #fff;
         }
-
-        p {
-            font-size: 12px;
-            color: var(--text-secondary);
-            line-height: 1.6;
+        .logo span { color: #00ffd5; }
+        .card {
+            background: #141414;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 32px 24px;
+        }
+        h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #fff;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
             margin-bottom: 24px;
         }
-
-        label {
-            font-size: 10px;
-            color: var(--text-secondary);
-            display: block;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        .form-group {
+            margin-bottom: 16px;
         }
-
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 6px;
+        }
         input {
             width: 100%;
             padding: 12px 14px;
-            background: var(--bg-primary);
-            border: 1px solid var(--bg-tertiary);
-            color: var(--text-primary);
-            font-family: var(--font-mono);
-            font-size: 13px;
-            margin-bottom: 18px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 15px;
             outline: none;
-            transition: border-color 0.3s;
+            transition: border-color 0.2s;
         }
-        input:focus { border-color: var(--accent); }
-
-        button {
+        input:focus {
+            border-color: #00ffd5;
+        }
+        .btn {
             width: 100%;
-            padding: 16px;
-            background: var(--accent);
-            color: var(--bg-primary);
+            padding: 14px;
+            background: #00ffd5;
+            color: #000;
             border: none;
-            font-family: var(--font-mono);
-            font-size: 11px;
+            border-radius: 8px;
+            font-size: 15px;
             font-weight: 700;
             cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: all 0.3s;
-            box-shadow: 0 0 30px var(--accent-glow);
-            margin-top: 6px;
+            margin-top: 8px;
+            transition: opacity 0.2s;
         }
-        button:hover { background: var(--text-primary); transform: translateY(-1px); }
-        button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .error {
-            color: #ff4466;
-            font-size: 11px;
-            margin-bottom: 14px;
+            background: #2a1010;
+            border: 1px solid #ff4444;
+            color: #ff6666;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 16px;
             display: none;
         }
-
-        .success { text-align: center; }
-        .success h2 { color: var(--accent); margin-bottom: 14px; }
-        .success a {
+        .success {
+            text-align: center;
+            display: none;
+        }
+        .success .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .success h2 { margin-bottom: 12px; }
+        .success p {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        .success .btn {
+            background: #00ffd5;
+            text-decoration: none;
             display: inline-block;
-            margin-top: 10px;
-            padding: 14px 30px;
-            background: var(--accent);
-            color: var(--bg-primary);
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            transition: all 0.3s;
-            box-shadow: 0 0 30px var(--accent-glow);
+            text-align: center;
         }
-        .success a:hover { background: var(--text-primary); }
-
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+        }
+        .loading p { color: #888; font-size: 14px; }
+        .spinner {
+            width: 32px; height: 32px;
+            border: 3px solid #333;
+            border-top-color: #00ffd5;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .expired { text-align: center; }
+        .expired p { color: #888; font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
         .expired a {
-            color: var(--accent);
+            color: #00ffd5;
             text-decoration: none;
-            font-size: 12px;
-            letter-spacing: 1px;
+            font-weight: 600;
         }
-        .expired a:hover { color: var(--text-primary); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="logo">AI PROOF <span>CLUB</span></div>
-        
-        <div class="card" id="reset-form">
-            <h2>Set your new password</h2>
-            <p>Enter a password to access your account.</p>
+
+        <!-- Loading state -->
+        <div class="card" id="state-loading">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Verifying your reset link...</p>
+            </div>
+        </div>
+
+        <!-- Form state -->
+        <div class="card" id="state-form" style="display:none">
+            <h2>Set New Password</h2>
+            <p class="subtitle">Choose a strong password for your account</p>
             <div class="error" id="error-msg"></div>
-            <label>New Password</label>
-            <input type="password" id="new-pass" placeholder="At least 6 characters" minlength="6" required>
-            <label>Confirm Password</label>
-            <input type="password" id="confirm-pass" placeholder="Confirm your password" required>
-            <button id="submit-btn" onclick="resetPassword()">Set Password</button>
+            <form id="reset-form">
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="new-pass" required minlength="6" placeholder="Min 6 characters" autofocus>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="confirm-pass" required minlength="6" placeholder="Confirm password">
+                </div>
+                <button type="submit" class="btn" id="submit-btn">Set New Password</button>
+            </form>
         </div>
-        
-        <div class="card success" id="success-msg" style="display:none">
-            <h2>Password set</h2>
-            <p>You're good to go. Sign in with your new password.</p>
-            <a href="app.html#login">Sign In →</a>
+
+        <!-- Success state -->
+        <div class="card success" id="state-success" style="display:none">
+            <div class="icon">✅</div>
+            <h2>Password Updated!</h2>
+            <p>Your new password is set. You can now sign in.</p>
+            <a href="/app.html" class="btn">Sign In →</a>
         </div>
-        
-        <div class="card expired" id="no-token" style="display:none">
-            <h2>Link expired</h2>
-            <p>This reset link is no longer valid. Request a new one from the sign-in page.</p>
-            <a href="app.html#forgot">Request new link →</a>
+
+        <!-- Expired/invalid state -->
+        <div class="card expired" id="state-expired" style="display:none">
+            <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+            <h2>Link Expired</h2>
+            <p>This reset link is no longer valid. Please request a new one.</p>
+            <a href="/app.html#forgot">Request New Reset Link →</a>
         </div>
     </div>
 
@@ -176,50 +192,70 @@
     const SUPABASE_URL = 'https://snbchuvvnbwvghmbxehv.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuYmNodXZ2bmJ3dmdobWJ4ZWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MDg5NzMsImV4cCI6MjA4NTQ4NDk3M30.cKPieraN3FRT_5ilAQL0X2b9kIpklzE49xGzVJwYxZo';
 
-    let accessToken = null;
-    
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    if (hashParams.get('access_token') && hashParams.get('type') === 'recovery') {
-        accessToken = hashParams.get('access_token');
+    var accessToken = null;
+
+    function show(id) {
+        ['state-loading','state-form','state-success','state-expired'].forEach(function(s) {
+            document.getElementById(s).style.display = s === id ? 'block' : 'none';
+        });
     }
-    
-    if (!accessToken) {
-        const queryParams = new URLSearchParams(window.location.search);
-        if (queryParams.get('access_token') && queryParams.get('type') === 'recovery') {
-            accessToken = queryParams.get('access_token');
+
+    function showError(msg) {
+        var el = document.getElementById('error-msg');
+        el.textContent = msg;
+        el.style.display = 'block';
+    }
+
+    // Parse the token from URL
+    // Supabase sends: #access_token=xxx&type=recovery
+    // Or after PKCE verify: ?access_token=xxx&type=recovery  
+    function getToken() {
+        // Check hash fragment first
+        var hash = window.location.hash.substring(1);
+        var hp = new URLSearchParams(hash);
+        if (hp.get('access_token') && hp.get('type') === 'recovery') {
+            return hp.get('access_token');
         }
-    }
-    
-    if (!accessToken) {
-        document.getElementById('reset-form').style.display = 'none';
-        document.getElementById('no-token').style.display = 'block';
-    }
-    
-    async function resetPassword() {
-        const newPass = document.getElementById('new-pass').value;
-        const confirmPass = document.getElementById('confirm-pass').value;
-        const errorEl = document.getElementById('error-msg');
-        const btn = document.getElementById('submit-btn');
-        
-        errorEl.style.display = 'none';
-        
-        if (newPass.length < 6) {
-            errorEl.textContent = 'Password must be at least 6 characters.';
-            errorEl.style.display = 'block';
-            return;
+        // Check query params
+        var qp = new URLSearchParams(window.location.search);
+        if (qp.get('access_token') && qp.get('type') === 'recovery') {
+            return qp.get('access_token');
         }
-        
+        return null;
+    }
+
+    // Init
+    accessToken = getToken();
+    if (accessToken) {
+        show('state-form');
+    } else {
+        // No token found — link might be expired or invalid
+        show('state-expired');
+    }
+
+    // Handle form submit
+    document.getElementById('reset-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var newPass = document.getElementById('new-pass').value;
+        var confirmPass = document.getElementById('confirm-pass').value;
+        var btn = document.getElementById('submit-btn');
+
+        document.getElementById('error-msg').style.display = 'none';
+
         if (newPass !== confirmPass) {
-            errorEl.textContent = 'Passwords do not match.';
-            errorEl.style.display = 'block';
+            showError('Passwords do not match.');
             return;
         }
-        
-        btn.textContent = 'Setting password...';
+        if (newPass.length < 6) {
+            showError('Password must be at least 6 characters.');
+            return;
+        }
+
+        btn.textContent = 'Updating...';
         btn.disabled = true;
-        
+
         try {
-            const res = await fetch(SUPABASE_URL + '/auth/v1/user', {
+            var r = await fetch(SUPABASE_URL + '/auth/v1/user', {
                 method: 'PUT',
                 headers: {
                     'apikey': SUPABASE_KEY,
@@ -228,31 +264,27 @@
                 },
                 body: JSON.stringify({ password: newPass })
             });
-            
-            const data = await res.json();
-            
-            if (!res.ok) {
-                errorEl.textContent = data.msg || data.error_description || 'Failed to set password. The link may have expired.';
-                errorEl.style.display = 'block';
-                btn.textContent = 'Set Password';
-                btn.disabled = false;
+            var result = await r.json();
+
+            if (!r.ok) {
+                console.error('Update error:', result);
+                if (result.msg && result.msg.includes('expired')) {
+                    show('state-expired');
+                } else {
+                    showError(result.msg || result.error_description || 'Failed to update password. The link may have expired.');
+                    btn.textContent = 'Set New Password';
+                    btn.disabled = false;
+                }
                 return;
             }
-            
-            document.getElementById('reset-form').style.display = 'none';
-            document.getElementById('success-msg').style.display = 'block';
-            history.replaceState({}, '', 'reset.html');
-            
-        } catch (e) {
-            errorEl.textContent = 'Something went wrong. Please try again.';
-            errorEl.style.display = 'block';
-            btn.textContent = 'Set Password';
+
+            show('state-success');
+        } catch(err) {
+            console.error('Reset error:', err);
+            showError('Something went wrong. Please try again.');
+            btn.textContent = 'Set New Password';
             btn.disabled = false;
         }
-    }
-    
-    document.getElementById('confirm-pass').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') resetPassword();
     });
     </script>
 </body>

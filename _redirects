@@ -4,3 +4,4 @@
 /google         /app.html?threat=google     200
 /claude         /app.html?threat=claude     200
 /openai         /app.html?threat=openai     200
+/reset          /reset.html                 200
