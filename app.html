@@ -745,6 +745,8 @@
 <div id="app"></div>
 <script>
 const OPENAI_API = '/.netlify/functions/openai';
+const APP_VERSION = 'v2025.02.25.B'; // Version tracker
+console.log('AI Proof Club version:', APP_VERSION);
 const SUPABASE_URL = 'https://snbchuvvnbwvghmbxehv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuYmNodXZ2bmJ3dmdobWJ4ZWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MDg5NzMsImV4cCI6MjA4NTQ4NDk3M30.cKPieraN3FRT_5ilAQL0X2b9kIpklzE49xGzVJwYxZo';
 const STRIPE_LINK = 'https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01';
@@ -1472,7 +1474,7 @@ function capsules(){
 
 function render(){
     const screens={
-        login:loginH, signup:signupH, forgot:forgotH, pricing:pricingH,
+        login:loginH, signup:signupH, forgot:forgotH, pricing:pricingH, resetPassword:resetPasswordH,
         // Free diagnostic flow (from landing page) - 4 questions with email gate
         diagnostic:diagnosticH, company:companyH, threat:threatH, freeQuiz:quizH, freeResults:freeResultsH,
         // Onboarding flow
@@ -1865,6 +1867,8 @@ function freeResultsH(){
 }
 
 function forgotH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Reset Password</h2><p class="card-subtitle">Enter your email to reset</p><form id="forgot-form"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="reset-email" required></div><button type="submit" class="btn btn-primary btn-full">Send Reset Link</button></form><p class="text-center text-secondary text-small mt-20"><a class="text-link" id="back-login">Back to sign in</a></p></div></div></div>`;}
+
+function resetPasswordH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Set New Password</h2><p class="card-subtitle">Enter your new password below</p><form id="reset-password-form"><div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-input" id="reset-new-pass" required minlength="6" placeholder="Min 6 characters"></div><div class="form-group"><label class="form-label">Confirm Password</label><input type="password" class="form-input" id="reset-confirm-pass" required minlength="6"></div><button type="submit" class="btn btn-primary btn-full">Set New Password</button></form><p class="text-center text-secondary text-small mt-20"><a class="text-link" id="back-login">Back to sign in</a></p></div></div></div>`;}
 
 function signupH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Start training</h2><p class="card-subtitle">Build skills AI can't replace</p><form id="signup-form"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="name" required></div><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required minlength="6"></div><button type="submit" class="btn btn-primary btn-full">Create Account</button></form><p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p></div></div></div>`;}
 
@@ -2559,6 +2563,7 @@ function bindEvents(){
         
         if(!forecasts||!forecastOpps){forecasts=[];forecastOpps=[];}
         if(!forecastRisks)forecastRisks=[];
+        console.log('Supabase: forecasts='+((forecasts&&forecasts.length)||0)+', opps='+((forecastOpps&&forecastOpps.length)||0)+', risks='+((forecastRisks&&forecastRisks.length)||0));
         
         // Build a compact list of forecast + opportunity pairs for the AI
         var oppList=[];
@@ -2570,11 +2575,12 @@ function bindEvents(){
         for(var si=oppList.length-1;si>0;si--){var sj=Math.floor(Math.random()*(si+1));var tmp=oppList[si];oppList[si]=oppList[sj];oppList[sj]=tmp;}
         var sample=oppList.slice(0,50);
         console.log('Sampled '+sample.length+' opportunities from '+oppList.length+' total');
+        console.log('First 3 samples:', sample.slice(0,3).map(s=>s.prediction+': '+s.title));
         
         // STEP 2: AI Call 1 - Generate 15 opportunities customized for this company
         var oppListText=sample.map(function(o,i){return (i+1)+'. ['+o.prediction+'] '+o.title+': '+o.desc;}).join('\n');
         
-        var generatePrompt='You are a visionary AI strategist.\n\nCompany: '+ctx+'\n\nBelow are '+sample.length+' opportunity templates based on major predictions. Your job: pick the 15 MOST RELEVANT to '+domain+' and REWRITE each one specifically for this company.\n\nCRITICAL RULES:\n- Every opportunity MUST use what '+domain+' actually does as the vehicle\n- If '+domain+' makes memes, the opportunity is about MEMES. If it sells insurance, about INSURANCE\n- Rewrite the description in 2 vivid, actionable sentences specific to '+domain+'\n- Think BIG: self-driving cars = new lifestyle spaces (gaming, shopping, therapy). Neural interfaces = thought-controlled products. Loneliness = community IS the product\n- NEVER suggest generic consulting/advising unrelated to the company product\n\nOpportunity templates:\n'+oppListText+'\n\nReturn ONLY valid JSON:\n{"d":"1 sentence what '+domain+' does","o":[{"id":template_number,"p":"prediction","t":"rewritten title for '+domain+'","s":"2 vivid sentences specific to '+domain+'"}],"m":"2 sentence summary"}\n\n15 in o. Pick the best fits and rewrite them.';
+        var generatePrompt='You are a visionary AI strategist.\n\nCompany: '+ctx+'\n\nBelow are '+sample.length+' opportunity templates based on major predictions. Your job: pick the 15 MOST RELEVANT to '+domain+' and REWRITE each one specifically for this company.\n\nCRITICAL RULES:\n- Pick from ACROSS the entire list — do NOT just take the first 15\n- Every opportunity MUST use what '+domain+' actually does as the vehicle\n- If '+domain+' makes memes, the opportunity is about MEMES. If it sells insurance, about INSURANCE\n- Rewrite the description in 2 vivid, actionable sentences specific to '+domain+'\n- Think BIG: self-driving cars = new lifestyle spaces (gaming, shopping, therapy). Neural interfaces = thought-controlled products. Loneliness = community IS the product\n- NEVER suggest generic consulting/advising unrelated to the company product\n- For the "p" field, include the FULL prediction name (e.g. "Self-driving cars become lifestyle spaces"), NOT a number\n- ORDER BY RELEVANCE: Put the most relevant to '+domain+' FIRST\n\nOpportunity templates:\n'+oppListText+'\n\nReturn ONLY valid JSON:\n{"d":"1 sentence what '+domain+' does","o":[{"id":template_number,"p":"full prediction name text","t":"rewritten title for '+domain+'","s":"2 vivid sentences specific to '+domain+'"}],"m":"2 sentence summary"}\n\n15 in o. Best fits first.';
         
         var allOppsResult=[],companyDesc='',summary='';
         for(var attempt=0;attempt<3;attempt++){
@@ -2587,14 +2593,16 @@ function bindEvents(){
         
         // STEP 3: Gemini ranks opportunities by relevance to this company
         if(allOppsResult.length>=5){
-            var rankPrompt='You are ranking opportunities for '+domain+' ('+companyDesc+', '+S.companyIndustry+').\n\nIMPORTANT: The order MUST reflect what matters most to THIS specific company. A meme site cares about different things than a luxury brand or a SaaS tool.\n\nFor '+domain+', consider:\n- What is their primary revenue model?\n- What is their core user behavior?\n- Which predictions would transform their specific industry?\n- Which opportunities leverage what they ALREADY do well?\n\nOpportunities to rank:\n'+allOppsResult.map(function(o,i){return(i+1)+'. ['+o.prediction+'] '+o.title+': '+o.description;}).join('\n')+'\n\nReturn ONLY a JSON object with "ranked" as an array of the opportunity numbers (1-'+allOppsResult.length+') ordered from BEST fit to WORST fit for '+domain+' specifically. The top 3 should be opportunities that '+domain+' could act on TOMORROW.\n\n{"ranked":[numbers in best-to-worst order]}\n\nDo NOT return them in the original order. Think carefully about what '+domain+' actually does.';
+            // Build a company profile for better ranking
+            var rankPrompt='You are an expert business strategist ranking AI opportunities for a specific company.\n\nCOMPANY: '+domain+'\nDESCRIPTION: '+(companyDesc||ctx)+'\nINDUSTRY: '+S.companyIndustry+'\n\nHere are '+allOppsResult.length+' opportunities generated for this company. Your job is to REORDER them so the MOST impactful and actionable ones come first.\n\nRANKING CRITERIA (in order of importance):\n1. IMMEDIATE ACTIONABILITY: Could they start this within 2 weeks with existing resources?\n2. CORE BUSINESS FIT: Does this leverage what they already do, not require them to become a different company?\n3. REVENUE POTENTIAL: Would this create new revenue or protect existing revenue?\n4. COMPETITIVE MOAT: Would this be hard for competitors to copy?\n5. PREDICTION RELEVANCE: How likely is this prediction to directly affect their industry?\n\nCRITICAL: Do NOT return the original order. Actually think about what '+domain+' does.\n\nFor example:\n- A MEME SITE should rank community/content/humor opportunities first, NOT self-driving cars\n- A SaaS tool like NOTION should rank AI features/productivity first, NOT physical goods\n- A LUXURY BRAND like LVMH should rank brand/experience opportunities first, NOT code tools\n\nOpportunities:\n'+allOppsResult.map(function(o,i){return(i+1)+'. ['+o.prediction+'] '+o.title+': '+o.description;}).join('\n')+'\n\nReturn a JSON object with "ranked" containing the numbers reordered from best to worst fit for '+domain+'.\nAlso include "reasoning" with a 1-sentence explanation of why #1 is the top pick.\n\n{"ranked":[numbers best-to-worst],"reasoning":"..."}\n\nJSON only. No other text.';
+            
             for(var attempt=0;attempt<2;attempt++){
                 try{
-                    var r2=await gemini(rankPrompt,500);
+                    var r2=await gemini(rankPrompt,800);
                     console.log('Gemini ranking raw:',r2);
                     if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}','}}',']}}',']','}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
                     if(parsed&&parsed.ranked&&parsed.ranked.length>=5){
-                        console.log('Gemini rank order:',parsed.ranked);
+                        console.log('Gemini rank order:',parsed.ranked,'Reason:',parsed.reasoning||'');
                         var ranked=[];
                         parsed.ranked.forEach(function(idx){
                             var i=typeof idx==='number'?idx-1:parseInt(idx)-1;
@@ -2602,11 +2610,15 @@ function bindEvents(){
                         });
                         // Add any that Gemini missed
                         allOppsResult.forEach(function(o){if(ranked.indexOf(o)===-1)ranked.push(o);});
-                        if(ranked.length>=5){allOppsResult=ranked;console.log('Reordered: top opp is now "'+ranked[0].title+'"');}
+                        if(ranked.length>=5){allOppsResult=ranked;console.log('Reordered: top opp is now "'+ranked[0].title+'" ['+ranked[0].prediction+']');}
                         break;
+                    } else {
+                        console.warn('Gemini ranking parse failed, attempt '+(attempt+1));
                     }}
                 }catch(e){console.error('Gemini rank attempt '+(attempt+1)+':',e);}
             }
+        } else {
+            console.warn('Skipping Gemini ranking: only '+allOppsResult.length+' opps');
         }
         
         // STEP 4: Build risks from Supabase + always include Big 3
@@ -2705,18 +2717,20 @@ function bindEvents(){
         
         // STEP 3: Gemini ranks opportunities by relevance
         if(allOppsResult.length>=5){
-            var rankPrompt='Company: '+ctx+' ('+companyDesc+')\n\nRank these opportunities from MOST to LEAST relevant for '+domain+'.\n\nOpportunities:\n'+allOppsResult.map(function(o,i){return(i+1)+'. ['+o.prediction+'] '+o.title+': '+o.description;}).join('\n')+'\n\nReturn ONLY JSON:\n{"ranked":[indexes best to worst]}\n\nMost relevant first. ONLY JSON, no other text.';
+            var rankPrompt='You are an expert business strategist ranking AI opportunities for a specific company.\n\nCOMPANY: '+domain+'\nDESCRIPTION: '+(companyDesc||ctx)+'\nINDUSTRY: '+S.threatIndustry+'\nTHREAT FROM: '+provider.name+'\n\nReorder these '+allOppsResult.length+' opportunities so the MOST impactful and actionable ones come first.\n\nRANKING CRITERIA:\n1. IMMEDIATE ACTIONABILITY: Could they start this within 2 weeks?\n2. CORE BUSINESS FIT: Does this leverage what they already do?\n3. DEFENSIVE VALUE: Does this protect against '+provider.name+'?\n4. REVENUE POTENTIAL: New revenue or protect existing?\n\nCRITICAL: Do NOT return the original order. A meme site should see community/content first, not self-driving cars. A SaaS tool should see AI features first, not physical goods.\n\nOpportunities:\n'+allOppsResult.map(function(o,i){return(i+1)+'. ['+o.prediction+'] '+o.title+': '+o.description;}).join('\n')+'\n\n{"ranked":[numbers best-to-worst],"reasoning":"why #1 is top"}\n\nJSON only.';
             for(var attempt=0;attempt<2;attempt++){
                 try{
-                    var r2=await gemini(rankPrompt,500);
-                    if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}','}}',']}}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
+                    var r2=await gemini(rankPrompt,800);
+                    console.log('Gemini threat ranking raw:',r2);
+                    if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}','}}',']}}',']','}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
                     if(parsed&&parsed.ranked&&parsed.ranked.length>=5){
                         var ranked=[];
                         parsed.ranked.forEach(function(idx){
                             var i=typeof idx==='number'?idx-1:parseInt(idx)-1;
-                            if(allOppsResult[i])ranked.push(allOppsResult[i]);
+                            if(i>=0&&i<allOppsResult.length&&allOppsResult[i])ranked.push(allOppsResult[i]);
                         });
-                        if(ranked.length>=5)allOppsResult=ranked;
+                        allOppsResult.forEach(function(o){if(ranked.indexOf(o)===-1)ranked.push(o);});
+                        if(ranked.length>=5){allOppsResult=ranked;console.log('Threat reordered: top is "'+ranked[0].title+'"');}
                         break;
                     }}
                 }catch(e){console.error('Gemini threat rank attempt '+(attempt+1)+':',e);}
@@ -3674,15 +3688,16 @@ async function submitSupport(){
     btn.disabled = false;
 }
 
-// Handle password reset from email link
+// Handle password reset from email link (called on page load)
 async function handleResetToken() {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    
-    if(token && window.location.hash.includes('reset')) {
-        // Show reset password modal
+    // Supabase sends recovery links with hash: #access_token=xxx&type=recovery
+    var hp = new URLSearchParams(window.location.hash.substring(1));
+    var at = hp.get('access_token');
+    var tt = hp.get('type');
+    if(at && tt === 'recovery') {
         S.modal = 'resetPassword';
-        S.resetToken = token;
+        S.recoveryAccessToken = at;
+        S.screen = 'resetPassword';
         render();
     }
 }
@@ -3701,41 +3716,36 @@ async function completePasswordReset() {
         return;
     }
     
-    // Find user with this token
-    const users = await db('users','GET',null,`?reset_token=eq.${S.resetToken}`);
+    const btn = document.querySelector('#reset-password-form button');
+    btn.textContent = 'Updating...';
+    btn.disabled = true;
     
-    if(!users?.length) {
-        alert('Invalid or expired reset link. Please request a new one.');
+    try {
+        // Use the recovery access token from Supabase to update password
+        const result = await authUpdatePassword(S.recoveryAccessToken, newPass);
+        
+        if(result.error) {
+            console.error('Password update error:', result.error);
+            alert('Reset link has expired. Please request a new one.');
+            S.modal = null;
+            S.screen = 'forgot';
+            render();
+            return;
+        }
+        
+        alert('Password updated successfully! Please sign in.');
         S.modal = null;
-        S.screen = 'forgot';
+        S.recoveryAccessToken = null;
+        // Clear the hash/params from URL
+        history.replaceState({}, '', location.pathname);
+        S.screen = 'login';
         render();
-        return;
+    } catch(e) {
+        console.error('Reset error:', e);
+        alert('Something went wrong. Please try again.');
+        btn.textContent = 'Set New Password';
+        btn.disabled = false;
     }
-    
-    const user = users[0];
-    
-    // Check if token expired
-    if(new Date(user.reset_expiry) < new Date()) {
-        alert('Reset link has expired. Please request a new one.');
-        S.modal = null;
-        S.screen = 'forgot';
-        render();
-        return;
-    }
-    
-    // Update password and clear token
-    await db('users','PATCH',{ 
-        password: newPass, 
-        reset_token: null, 
-        reset_expiry: null 
-    },`?email=eq.${encodeURIComponent(user.email)}`);
-    
-    alert('Password reset successfully! You can now log in.');
-    S.modal = null;
-    S.resetToken = null;
-    S.screen = 'login';
-    history.replaceState({}, '', location.pathname);
-    render();
 }
 
 async function save(){
@@ -9811,12 +9821,26 @@ async function init(){
     if(params.get('mode')==='company'||hash==='company'){S.companyStep=0;S.companyUrl='';S.companyEmail='';S.companyIndustry='';S.companyDesc='';S.companyResult=null;S.companyLoadingStep=0;S.companyUnlocked=false;S.reportSlide=0;S.plans={};S.screen='company';render();return;}
     // Threat mode
     var _tm=params.get('threat');if(_tm&&typeof THREAT_PROVIDERS!=='undefined'&&THREAT_PROVIDERS[_tm]){S.threatProvider=_tm;S.threatStep=0;S.threatUrl='';S.threatEmail='';S.threatIndustry='';S.threatDesc='';S.threatResult=null;S.threatLoadingStep=0;S.threatUnlocked=false;S.threatSlide=0;S.threatPlans={};S.screen='threat';render();return;}
-    // Check for password reset token
-    const resetToken = params.get('token');
-    if(resetToken && hash === 'reset') {
+    // Check for Supabase Auth password recovery (hash fragment: #access_token=xxx&type=recovery)
+    var hashParams = new URLSearchParams(location.hash.substring(1));
+    var recoveryToken = hashParams.get('access_token');
+    var tokenType = hashParams.get('type');
+    if(recoveryToken && tokenType === 'recovery') {
+        console.log('Password recovery detected');
         S.modal = 'resetPassword';
-        S.resetToken = resetToken;
-        S.screen = 'login';
+        S.recoveryAccessToken = recoveryToken;
+        S.screen = 'resetPassword';
+        render();
+        return;
+    }
+    // Also check query params (some Supabase configs use PKCE flow)
+    var qToken = params.get('token');
+    var qType = params.get('type');
+    if(qToken && qType === 'recovery') {
+        console.log('Password recovery detected (query param)');
+        S.modal = 'resetPassword';
+        S.recoveryAccessToken = qToken;
+        S.screen = 'resetPassword';
         render();
         return;
     }
