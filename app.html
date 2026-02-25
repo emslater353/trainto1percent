@@ -1684,7 +1684,8 @@ function companyH(){
     }
     if(S.companyStep===1){
         var steps=['Reading website...','Identifying business model...','Matching predictions...','Finding opportunities...','Building report...'];
-        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center" style="padding:40px"><div style="font-size:28px;margin-bottom:15px">\ud83d\udd0d</div><h2 class="card-title">Analyzing ${S.companyUrl.replace(/https?:\/\//,'').replace(/\/$/,'')}</h2><div style="margin-top:20px">${steps.map((st,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;opacity:${i<=S.companyLoadingStep?1:0.3}"><span style="color:${i<S.companyLoadingStep?'var(--success)':i===S.companyLoadingStep?'var(--accent)':'var(--text-muted)'};font-size:14px">${i<S.companyLoadingStep?'\u2713':i===S.companyLoadingStep?'\u25c9':'\u25cb'}</span><span class="text-small">${st}</span></div>`).join('')}</div></div></div></div>`;
+        var allDone=S.companyLoadingStep>=steps.length;
+        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center" style="padding:40px"><div style="font-size:28px;margin-bottom:15px">${allDone?'🧠':'🔍'}</div><h2 class="card-title">Analyzing ${S.companyUrl.replace(/https?:\/\//,'').replace(/\/$/,'')}</h2><div style="margin-top:20px">${steps.map((st,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;opacity:${i<=S.companyLoadingStep?1:0.3}"><span style="color:${i<S.companyLoadingStep?'var(--success)':i===S.companyLoadingStep?'var(--accent)':'var(--text-muted)'};font-size:14px">${i<S.companyLoadingStep?'✓':i===S.companyLoadingStep?'◉':'○'}</span><span class="text-small">${st}</span></div>`).join('')}</div>${allDone?`<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--bg-tertiary)"><div style="display:flex;align-items:center;justify-content:center;gap:12px"><div style="width:20px;height:20px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></div><span style="font-size:13px;color:var(--text-secondary)">AI is reasoning about your company...</span></div><div style="margin-top:16px;font-size:11px;color:var(--text-muted);line-height:1.6">Cross-referencing 119 predictions against your business model.<br>This usually takes 15-30 seconds.</div></div>`:''}</div></div></div>`;
     }
     if(S.companyStep===2&&S.companyResult){
         var r=S.companyResult,domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
@@ -2513,7 +2514,7 @@ function bindEvents(){
         // Save custom fields to public.users
         await db('users','POST',{email:S.companyEmail,password:'auth_managed',industry:S.companyIndustry,role:S.companyUrl,source:'company_risk',start_date:new Date().toISOString(),user_type:'lead',name:S.companyDesc||''});
         S.companyStep=1;S.companyLoadingStep=0;S.reportSlide=0;S.plans={};render();
-        setTimeout(()=>{S.companyLoadingStep=1;render();},800);setTimeout(()=>{S.companyLoadingStep=2;render();},2000);setTimeout(()=>{S.companyLoadingStep=3;render();},3500);setTimeout(()=>{S.companyLoadingStep=4;render();},5000);
+        setTimeout(()=>{S.companyLoadingStep=1;render();},800);setTimeout(()=>{S.companyLoadingStep=2;render();},2000);setTimeout(()=>{S.companyLoadingStep=3;render();},3500);setTimeout(()=>{S.companyLoadingStep=4;render();},5000);setTimeout(()=>{S.companyLoadingStep=5;render();},7000);
         var ctx=S.companyDesc?domain+': '+S.companyDesc+'. '+S.companyIndustry+'.':domain+' ('+S.companyIndustry+').';
         
         // STEP 1: Fetch forecasts + opportunities from Supabase
@@ -2530,9 +2531,10 @@ function bindEvents(){
             var f=forecasts.find(function(fc){return fc.id===fo.forecast_id;});
             if(f)oppList.push({id:fo.id,prediction:f.title,title:fo.title,desc:fo.description});
         });
-        // Shuffle and take up to 50 to keep prompt size manageable
-        oppList.sort(function(){return Math.random()-0.5;});
+        // Fisher-Yates shuffle for true randomization
+        for(var si=oppList.length-1;si>0;si--){var sj=Math.floor(Math.random()*(si+1));var tmp=oppList[si];oppList[si]=oppList[sj];oppList[sj]=tmp;}
         var sample=oppList.slice(0,50);
+        console.log('Sampled '+sample.length+' opportunities from '+oppList.length+' total');
         
         // STEP 2: AI Call 1 - Generate 15 opportunities customized for this company
         var oppListText=sample.map(function(o,i){return (i+1)+'. ['+o.prediction+'] '+o.title+': '+o.desc;}).join('\n');
@@ -2550,18 +2552,22 @@ function bindEvents(){
         
         // STEP 3: Gemini ranks opportunities by relevance to this company
         if(allOppsResult.length>=5){
-            var rankPrompt='Company: '+ctx+' ('+companyDesc+')\n\nRank these opportunities from MOST to LEAST relevant for '+domain+'. Score each 1-10 on how well it fits what '+domain+' actually does.\n\nOpportunities:\n'+allOppsResult.map(function(o,i){return(i+1)+'. ['+o.prediction+'] '+o.title+': '+o.description;}).join('\n')+'\n\nReturn ONLY JSON:\n{"ranked":[indexes in order best to worst],"scores":[score 1-10 for each]}\n\nMost relevant first. ONLY JSON, no other text.';
+            var rankPrompt='You are ranking opportunities for '+domain+' ('+companyDesc+', '+S.companyIndustry+').\n\nIMPORTANT: The order MUST reflect what matters most to THIS specific company. A meme site cares about different things than a luxury brand or a SaaS tool.\n\nFor '+domain+', consider:\n- What is their primary revenue model?\n- What is their core user behavior?\n- Which predictions would transform their specific industry?\n- Which opportunities leverage what they ALREADY do well?\n\nOpportunities to rank:\n'+allOppsResult.map(function(o,i){return(i+1)+'. ['+o.prediction+'] '+o.title+': '+o.description;}).join('\n')+'\n\nReturn ONLY a JSON object with "ranked" as an array of the opportunity numbers (1-'+allOppsResult.length+') ordered from BEST fit to WORST fit for '+domain+' specifically. The top 3 should be opportunities that '+domain+' could act on TOMORROW.\n\n{"ranked":[numbers in best-to-worst order]}\n\nDo NOT return them in the original order. Think carefully about what '+domain+' actually does.';
             for(var attempt=0;attempt<2;attempt++){
                 try{
                     var r2=await gemini(rankPrompt,500);
-                    if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}','}}',']}}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
+                    console.log('Gemini ranking raw:',r2);
+                    if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}','}}',']}}',']','}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
                     if(parsed&&parsed.ranked&&parsed.ranked.length>=5){
+                        console.log('Gemini rank order:',parsed.ranked);
                         var ranked=[];
                         parsed.ranked.forEach(function(idx){
                             var i=typeof idx==='number'?idx-1:parseInt(idx)-1;
-                            if(allOppsResult[i])ranked.push(allOppsResult[i]);
+                            if(i>=0&&i<allOppsResult.length&&allOppsResult[i])ranked.push(allOppsResult[i]);
                         });
-                        if(ranked.length>=5)allOppsResult=ranked;
+                        // Add any that Gemini missed
+                        allOppsResult.forEach(function(o){if(ranked.indexOf(o)===-1)ranked.push(o);});
+                        if(ranked.length>=5){allOppsResult=ranked;console.log('Reordered: top opp is now "'+ranked[0].title+'"');}
                         break;
                     }}
                 }catch(e){console.error('Gemini rank attempt '+(attempt+1)+':',e);}
