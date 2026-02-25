@@ -886,6 +886,22 @@ async function ai(msgs, tokens=500, type='general') {
     } catch(e) { console.error(e); return null; }
 }
 
+const GEMINI_KEY = 'AIzaSyD3cIGLMy4CYIVHSUpx9qNc9XTvYXX8kK0';
+async function gemini(prompt, tokens=1000) {
+    try {
+        const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+GEMINI_KEY, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:tokens,temperature:0.3}})
+        });
+        const d = await r.json();
+        if(d.candidates&&d.candidates[0]&&d.candidates[0].content){
+            return d.candidates[0].content.parts.map(p=>p.text).join('');
+        }
+        console.error('Gemini response:',d);
+        return null;
+    } catch(e) { console.error('Gemini error:',e); return null; }
+}
+
 const Qs = [
     // DECISION MAKING (Ideas)
     {t:"When facing a complex decision, you typically:",o:[
@@ -2110,7 +2126,7 @@ function questsH(){
     const active=S.quests.filter(q=>!q.done && !S.hiddenQuests.includes(q.id));
     const custom=S.customQuests.filter(q=>!q.done);
     const forecastQuests=getFollowedForecastQuests();
-    const done=[...S.quests.filter(q=>q.done), ...S.customQuests.filter(q=>q.done)];
+    const done=[...S.quests.filter(q=>q.done), ...S.customQuests.filter(q=>q.done), ...S.receipts.filter(r=>r.forecastId).map(r=>({t:r.title,xp:r.xp,mode:r.mode,done:true}))];
     const allOpen = [...active, ...custom, ...forecastQuests];
     
     return `<div class="page-header"><h1 class="page-title">IRL Quests</h1><p class="page-subtitle">Focus: ${weakest()} mode</p></div>
@@ -2456,30 +2472,64 @@ function bindEvents(){
         await db('users','POST',{email:S.companyEmail,password:'auth_managed',industry:S.companyIndustry,role:S.companyUrl,source:'company_risk',start_date:new Date().toISOString(),user_type:'lead',name:S.companyDesc||''});
         S.companyStep=1;S.companyLoadingStep=0;render();
         setTimeout(()=>{S.companyLoadingStep=1;render();},800);setTimeout(()=>{S.companyLoadingStep=2;render();},2000);setTimeout(()=>{S.companyLoadingStep=3;render();},3500);setTimeout(()=>{S.companyLoadingStep=4;render();},5000);
-        var PREDICTIONS_A=['Self-driving cars become a new lifestyle space — gaming, commerce, mobile offices, therapy rooms, goods transport, insurance reinvention','Humans and AI merge through neural interfaces — skills become downloadable, thought-controlled devices, memory augmentation','Loneliness epidemic intensifies — community becomes the ultimate product, belonging is monetizable','Mental health demand far exceeds supply — AI therapy, meme therapy, wellness integrated into every product','Full-length movies made with a single AI prompt — any company can produce cinematic content for pennies','DeFi reaches 100M users — crypto payments, decentralized finance, new economic rails','AI tutors outperform human teachers — personalized education embedded everywhere','Experience economy has explosive growth — people pay for moments not things'];
-        var PREDICTIONS_B=['Traditional resume becomes obsolete — skills-based hiring, proof of work over credentials','Universal basic income tested globally — spending shifts to identity, community, self-improvement','Creator middle class disappears — only niche authorities survive, top 1% captures everything','80% of jobs disappear or transform — every company must redesign around human-AI collaboration','AI agents act autonomously for consumers — your product must be discoverable by AI, not just humans','Perfect voice cloning becomes trivial — trust in audio collapses, authenticity becomes premium','Restaurant automation goes mainstream — physical spaces become experience-first, not service-first'];
         var ctx=S.companyDesc?domain+': '+S.companyDesc+'. '+S.companyIndustry+'.':domain+' ('+S.companyIndustry+').';
-        var basePrompt='You are a visionary AI strategist. Company: '+ctx+'\n\nCRITICAL RULE: Every single opportunity MUST use '+domain+' actual product/service as the vehicle. If '+domain+' makes memes, the opportunity is about MEMES. If '+domain+' sells insurance, the opportunity is about INSURANCE. Never suggest something unrelated to what '+domain+' actually does.\n\nThink BIG about each prediction:\n- Self-driving cars = NEW LIFESTYLE SPACE (gaming, shopping, therapy, goods transport, mobile offices - NOT just free time)\n- Neural interfaces = skills downloadable, thought-controlled devices, memory augmentation, emotions transmittable\n- Loneliness = community IS the product, belonging is monetizable, real friendships through shared experiences\n- AI tutors = humor helps people learn, education gets embedded in entertainment, learning through play\n- Movies in one prompt = any company becomes a content studio overnight\n\nFor EACH prediction, create ONE wildly creative opportunity for '+domain+'. Each must:\n- Start with what '+domain+' ACTUALLY does and extend it into the prediction\n- Be 2 vivid sentences showing exactly what '+domain+' builds\n- NEVER suggest generic consulting, advising, or coaching unrelated to '+domain+' core product\n\nExamples of GREAT company-specific thinking:\n- memelord (memes) + self-driving cars = in-car meme gaming where passengers battle with memes during rides, location-based memes that change as you drive through neighborhoods\n- memelord + loneliness = meme buddy system pairing users by humor style to build real friendships, group meme creation rooms that become support groups through laughter\n- memelord + neural interfaces = thought-to-meme instant creation, downloadable humor packs you can feel, meme memories implanted\n- memelord + AI tutors = integrate memes into learning platforms since humor dramatically improves retention, become the humor layer of education\n- memelord + space = memes ARE news, memelord becomes how Gen Z learns about space launches through humor\n- LVMH (luxury) + self-driving cars = in-car luxury showrooms, autonomous delivery of curated luxury boxes\n- howie (AI assistant) + neural interfaces = thought-controlled task management, contextual memory\n\n';
-        var allOppsResult=[],allRisksResult=[];
-        // Call 1: first 8 predictions
+        
+        // STEP 1: Fetch forecasts + opportunities from Supabase
+        var forecasts=await db('forecasts','GET',null,'?active=eq.true&select=id,title,category,probability,timeframe,threat_reason');
+        var forecastOpps=await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description');
+        var forecastRisks=await db('forecast_risks','GET',null,'?active=eq.true&select=title,description,default_probability');
+        
+        if(!forecasts||!forecastOpps){forecasts=[];forecastOpps=[];}
+        if(!forecastRisks)forecastRisks=[];
+        
+        // Build a compact list of forecast + opportunity pairs for the AI
+        var oppList=[];
+        forecastOpps.forEach(function(fo){
+            var f=forecasts.find(function(fc){return fc.id===fo.forecast_id;});
+            if(f)oppList.push({id:fo.id,prediction:f.title,title:fo.title,desc:fo.description});
+        });
+        // Shuffle and take up to 50 to keep prompt size manageable
+        oppList.sort(function(){return Math.random()-0.5;});
+        var sample=oppList.slice(0,50);
+        
+        // STEP 2: AI Call 1 - Generate 15 opportunities customized for this company
+        var oppListText=sample.map(function(o,i){return (i+1)+'. ['+o.prediction+'] '+o.title+': '+o.desc;}).join('\n');
+        
+        var generatePrompt='You are a visionary AI strategist.\n\nCompany: '+ctx+'\n\nBelow are '+sample.length+' opportunity templates based on major predictions. Your job: pick the 15 MOST RELEVANT to '+domain+' and REWRITE each one specifically for this company.\n\nCRITICAL RULES:\n- Every opportunity MUST use what '+domain+' actually does as the vehicle\n- If '+domain+' makes memes, the opportunity is about MEMES. If it sells insurance, about INSURANCE\n- Rewrite the description in 2 vivid, actionable sentences specific to '+domain+'\n- Think BIG: self-driving cars = new lifestyle spaces (gaming, shopping, therapy). Neural interfaces = thought-controlled products. Loneliness = community IS the product\n- NEVER suggest generic consulting/advising unrelated to the company product\n\nOpportunity templates:\n'+oppListText+'\n\nReturn ONLY valid JSON:\n{"d":"1 sentence what '+domain+' does","o":[{"id":template_number,"p":"prediction","t":"rewritten title for '+domain+'","s":"2 vivid sentences specific to '+domain+'"}],"m":"2 sentence summary"}\n\n15 in o. Pick the best fits and rewrite them.';
+        
+        var allOppsResult=[],companyDesc='',summary='';
         for(var attempt=0;attempt<3;attempt++){
             try{
-                var p1=basePrompt+'Predictions:\n'+PREDICTIONS_A.map((p,i)=>(i+1)+'. '+p).join('\n')+'\n\nAlso create 4 SPECIFIC risks for '+domain+'.\n\nReturn ONLY JSON:\n{"d":"1 sentence what '+domain+' does","o":[{"p":"prediction name","t":"title","s":"2 vivid sentences"}],"r":[{"p":"risk","n":50-95,"s":"1 sentence"}],"m":"2 sentence summary"}\n\n8 in o, 4 in r.';
-                var r1=await ai([{role:'user',content:p1}],2500,'general');
+                var r1=await ai([{role:'user',content:generatePrompt}],3000,'general');
                 if(r1){var c=r1.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}]}',']}]}','}]}}','}]}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
-                if(parsed&&parsed.o&&parsed.o.length>=3){allOppsResult.push(...parsed.o.map(x=>({prediction:x.p||'',title:x.t||'',description:x.s||''})));allRisksResult.push(...(parsed.r||[]).map(x=>({prediction:x.p||'',probability:x.n||80,impact:x.s||''})));var companyDesc=parsed.d||'';var summary=parsed.m||'';break;}}
-            }catch(e){console.error('Company AI call 1 attempt '+(attempt+1)+':',e);}
+                if(parsed&&parsed.o&&parsed.o.length>=5){allOppsResult=parsed.o.map(function(x){return{prediction:x.p||'',title:x.t||'',description:x.s||''};});companyDesc=parsed.d||'';summary=parsed.m||'';break;}}
+            }catch(e){console.error('Generate attempt '+(attempt+1)+':',e);}
         }
-        // Call 2: next 7 predictions
-        for(var attempt=0;attempt<3;attempt++){
-            try{
-                var p2=basePrompt+'Predictions:\n'+PREDICTIONS_B.map((p,i)=>(i+1)+'. '+p).join('\n')+'\n\nAlso create 3 SPECIFIC risks for '+domain+'.\n\nReturn ONLY JSON:\n{"o":[{"p":"prediction name","t":"title","s":"2 vivid sentences"}],"r":[{"p":"risk","n":50-95,"s":"1 sentence"}]}\n\n7 in o, 3 in r.';
-                var r2=await ai([{role:'user',content:p2}],2000,'general');
-                if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}]}',']}]}','}]}}','}]}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
-                if(parsed&&parsed.o&&parsed.o.length>=3){allOppsResult.push(...parsed.o.map(x=>({prediction:x.p||'',title:x.t||'',description:x.s||''})));allRisksResult.push(...(parsed.r||[]).map(x=>({prediction:x.p||'',probability:x.n||80,impact:x.s||''})));break;}}
-            }catch(e){console.error('Company AI call 2 attempt '+(attempt+1)+':',e);}
+        
+        // STEP 3: Gemini ranks opportunities by relevance to this company
+        if(allOppsResult.length>=5){
+            var rankPrompt='Company: '+ctx+' ('+companyDesc+')\n\nRank these opportunities from MOST to LEAST relevant for '+domain+'. Score each 1-10 on how well it fits what '+domain+' actually does.\n\nOpportunities:\n'+allOppsResult.map(function(o,i){return(i+1)+'. ['+o.prediction+'] '+o.title+': '+o.description;}).join('\n')+'\n\nReturn ONLY JSON:\n{"ranked":[indexes in order best to worst],"scores":[score 1-10 for each]}\n\nMost relevant first. ONLY JSON, no other text.';
+            for(var attempt=0;attempt<2;attempt++){
+                try{
+                    var r2=await gemini(rankPrompt,500);
+                    if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}','}}',']}}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
+                    if(parsed&&parsed.ranked&&parsed.ranked.length>=5){
+                        var ranked=[];
+                        parsed.ranked.forEach(function(idx){
+                            var i=typeof idx==='number'?idx-1:parseInt(idx)-1;
+                            if(allOppsResult[i])ranked.push(allOppsResult[i]);
+                        });
+                        if(ranked.length>=5)allOppsResult=ranked;
+                        break;
+                    }}
+                }catch(e){console.error('Gemini rank attempt '+(attempt+1)+':',e);}
+            }
         }
-        S.companyResult={company_description:companyDesc||S.companyDesc||domain,opportunities:allOppsResult.slice(0,15),threats:allRisksResult.slice(0,7),summary:summary||domain+' has real opportunities to leverage these shifts, but needs to move fast on the ones that match its strengths.'};
+        
+        // STEP 4: Build risks from Supabase + AI-generated
+        var risks=forecastRisks.map(function(r){return{prediction:r.title,probability:r.default_probability,impact:r.description};});
+        
+        S.companyResult={company_description:companyDesc||S.companyDesc||domain,opportunities:allOppsResult.slice(0,15),threats:risks.length>=3?risks.slice(0,7):[...risks,...generateCompanyRisks(domain)].slice(0,7),summary:summary||domain+' has real opportunities to leverage these shifts, but needs to move fast on the ones that match its strengths.'};
         // Save result to DB
         await db('leads','PATCH',{company_result:JSON.stringify(S.companyResult)},`?email=eq.${encodeURIComponent(S.companyEmail)}&source=eq.company_risk`);
         S.companyStep=2;render();
@@ -2505,34 +2555,65 @@ function bindEvents(){
         setTimeout(()=>{S.threatLoadingStep=1;render();},800);setTimeout(()=>{S.threatLoadingStep=2;render();},2000);setTimeout(()=>{S.threatLoadingStep=3;render();},3500);setTimeout(()=>{S.threatLoadingStep=4;render();},5000);
         var ctx=S.threatDesc?domain+': '+S.threatDesc+'. '+S.threatIndustry+'.':domain+' ('+S.threatIndustry+').';
         var plist=provider.products.map(p=>'- '+p.name+': '+p.desc).join('\n');
-        var PREDICTIONS_A=['Self-driving cars become a new lifestyle space — gaming, commerce, mobile offices, therapy rooms, goods transport, insurance reinvention','Humans and AI merge through neural interfaces — skills become downloadable, thought-controlled devices, memory augmentation','Loneliness epidemic intensifies — community becomes the ultimate product, belonging is monetizable','Mental health demand far exceeds supply — AI therapy, meme therapy, wellness integrated into every product','Full-length movies made with a single AI prompt — any company can produce cinematic content for pennies','DeFi reaches 100M users — crypto payments, decentralized finance, new economic rails','AI tutors outperform human teachers — personalized education embedded everywhere','Experience economy has explosive growth — people pay for moments not things'];
-        var PREDICTIONS_B=['Traditional resume becomes obsolete — skills-based hiring, proof of work over credentials','Universal basic income tested globally — spending shifts to identity, community, self-improvement','Creator middle class disappears — only niche authorities survive, top 1% captures everything','80% of jobs disappear or transform — every company must redesign around human-AI collaboration','AI agents act autonomously for consumers — your product must be discoverable by AI, not just humans','Perfect voice cloning becomes trivial — trust in audio collapses, authenticity becomes premium','Restaurant automation goes mainstream — physical spaces become experience-first, not service-first'];
-        var basePrompt='You are a visionary AI strategist. Company: '+ctx+'\n\n'+provider.name+' has launched: '+plist+'\n\nCRITICAL RULE: Every single opportunity MUST use '+domain+' actual product/service as the vehicle. If '+domain+' makes memes, the opportunity is about MEMES. If '+domain+' sells insurance, the opportunity is about INSURANCE. Never suggest something unrelated to what '+domain+' actually does.\n\nThink BIG about each prediction:\n- Self-driving cars = NEW LIFESTYLE SPACE (gaming, shopping, therapy, goods transport, mobile offices - NOT just free time)\n- Neural interfaces = skills downloadable, thought-controlled devices, memory augmentation, emotions transmittable\n- Loneliness = community IS the product, belonging is monetizable, real friendships through shared experiences\n- AI tutors = humor helps people learn, education gets embedded in entertainment, learning through play\n- Movies in one prompt = any company becomes a content studio overnight\n\nFor EACH prediction, create ONE wildly creative opportunity for '+domain+'. Each must:\n- Start with what '+domain+' ACTUALLY does and extend it into the prediction\n- Be 2 vivid sentences showing exactly what '+domain+' builds\n- NEVER suggest generic consulting, advising, or coaching unrelated to '+domain+' core product\n\nExamples of GREAT company-specific thinking:\n- memelord (memes) + self-driving cars = in-car meme gaming where passengers battle with memes during rides, location-based memes that change as you drive through neighborhoods\n- memelord + loneliness = meme buddy system pairing users by humor style to build real friendships, group meme creation rooms that become support groups through laughter\n- memelord + neural interfaces = thought-to-meme instant creation, downloadable humor packs you can feel\n- memelord + AI tutors = integrate memes into learning platforms since humor dramatically improves retention, become the humor layer of education\n\n';
-        var allOppsResult=[],allRisksResult=[],companyDesc='',summary='',threatLevel='',threatSummary='',monthsUntil=0,timelineReason='';
-        // Call 1: first 8 predictions + threat assessment
+        
+        // STEP 1: Fetch forecasts + opportunities from Supabase
+        var forecasts=await db('forecasts','GET',null,'?active=eq.true&select=id,title,category,probability,timeframe,threat_reason');
+        var forecastOpps=await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description');
+        var forecastRisks=await db('forecast_risks','GET',null,'?active=eq.true&select=title,description,default_probability');
+        
+        if(!forecasts||!forecastOpps){forecasts=[];forecastOpps=[];}
+        if(!forecastRisks)forecastRisks=[];
+        
+        var oppList=[];
+        forecastOpps.forEach(function(fo){
+            var f=forecasts.find(function(fc){return fc.id===fo.forecast_id;});
+            if(f)oppList.push({id:fo.id,prediction:f.title,title:fo.title,desc:fo.description});
+        });
+        oppList.sort(function(){return Math.random()-0.5;});
+        var sample=oppList.slice(0,50);
+        
+        // STEP 2: AI Call 1 - Generate 15 opportunities + threat assessment
+        var oppListText=sample.map(function(o,i){return (i+1)+'. ['+o.prediction+'] '+o.title+': '+o.desc;}).join('\n');
+        
+        var generatePrompt='You are a visionary AI strategist.\n\nCompany: '+ctx+'\n'+provider.name+' has launched: '+plist+'\n\nBelow are '+sample.length+' opportunity templates based on major predictions. Pick the 15 MOST RELEVANT to '+domain+' and REWRITE each one specifically for this company.\n\nCRITICAL RULES:\n- Every opportunity MUST use what '+domain+' actually does as the vehicle\n- Rewrite descriptions in 2 vivid, actionable sentences specific to '+domain+'\n- Think BIG about each prediction\n- NEVER suggest generic consulting unrelated to the company product\n\nAlso assess threat from '+provider.name+':\n- THREAT LEVEL: "Critical Exposure" (direct competitor), "High Exposure" (software), "Moderate Exposure" (service), "Positioned but Must Adapt" (physical goods)\n- Timeline in months\n\nOpportunity templates:\n'+oppListText+'\n\nReturn ONLY valid JSON:\n{"d":"1 sentence what '+domain+' does","l":"threat level","ts":"what is threatened vs safe","m":months,"mr":"reason","o":[{"id":number,"p":"prediction","t":"rewritten title","s":"2 vivid sentences"}],"m2":"2 sentence summary"}\n\n15 in o.';
+        
+        var allOppsResult=[],companyDesc='',summary='',threatLevel='',threatSummary='',monthsUntil=0,timelineReason='';
         for(var attempt=0;attempt<3;attempt++){
             try{
-                var p1=basePrompt+'Predictions:\n'+PREDICTIONS_A.map((p,i)=>(i+1)+'. '+p).join('\n')+'\n\nAlso:\n- Assess THREAT LEVEL: "Critical Exposure" (direct competitor), "High Exposure" (software), "Moderate Exposure" (service), "Positioned but Must Adapt" (physical goods)\n- Create 4 SPECIFIC risks from '+provider.name+' for '+domain+'\n\nReturn ONLY JSON:\n{"d":"1 sentence what '+domain+' does","l":"threat level","ts":"what is threatened vs safe","m":months,"mr":"reason","o":[{"p":"prediction","t":"title","s":"2 vivid sentences"}],"r":[{"p":"risk","n":50-95,"s":"1 sentence"}]}\n\n8 in o, 4 in r.';
-                var r1=await ai([{role:'user',content:p1}],2500,'general');
+                var r1=await ai([{role:'user',content:generatePrompt}],3000,'general');
                 if(r1){var c=r1.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}]}',']}]}','}]}}','}]}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
-                if(parsed&&parsed.o&&parsed.o.length>=3){allOppsResult.push(...parsed.o.map(x=>({prediction:x.p||'',title:x.t||'',description:x.s||''})));allRisksResult.push(...(parsed.r||[]).map(x=>({prediction:x.p||'',probability:x.n||80,impact:x.s||''})));companyDesc=parsed.d||'';threatLevel=parsed.l||'';threatSummary=parsed.ts||'';monthsUntil=parsed.m||0;timelineReason=parsed.mr||'';break;}}
-            }catch(e){console.error('Threat AI call 1 attempt '+(attempt+1)+':',e);}
+                if(parsed&&parsed.o&&parsed.o.length>=5){allOppsResult=parsed.o.map(function(x){return{prediction:x.p||'',title:x.t||'',description:x.s||''};});companyDesc=parsed.d||'';threatLevel=parsed.l||'';threatSummary=parsed.ts||'';monthsUntil=parsed.m||0;timelineReason=parsed.mr||'';summary=parsed.m2||'';break;}}
+            }catch(e){console.error('Threat generate attempt '+(attempt+1)+':',e);}
         }
-        // Call 2: next 7 predictions
-        for(var attempt=0;attempt<3;attempt++){
-            try{
-                var p2=basePrompt+'Predictions:\n'+PREDICTIONS_B.map((p,i)=>(i+1)+'. '+p).join('\n')+'\n\nAlso create 3 SPECIFIC risks from '+provider.name+' for '+domain+'.\n\nReturn ONLY JSON:\n{"o":[{"p":"prediction","t":"title","s":"2 vivid sentences"}],"r":[{"p":"risk","n":50-95,"s":"1 sentence"}]}\n\n7 in o, 3 in r.';
-                var r2=await ai([{role:'user',content:p2}],2000,'general');
-                if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}]}',']}]}','}]}}','}]}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
-                if(parsed&&parsed.o&&parsed.o.length>=3){allOppsResult.push(...parsed.o.map(x=>({prediction:x.p||'',title:x.t||'',description:x.s||''})));allRisksResult.push(...(parsed.r||[]).map(x=>({prediction:x.p||'',probability:x.n||80,impact:x.s||''})));break;}}
-            }catch(e){console.error('Threat AI call 2 attempt '+(attempt+1)+':',e);}
+        
+        // STEP 3: Gemini ranks opportunities by relevance
+        if(allOppsResult.length>=5){
+            var rankPrompt='Company: '+ctx+' ('+companyDesc+')\n\nRank these opportunities from MOST to LEAST relevant for '+domain+'.\n\nOpportunities:\n'+allOppsResult.map(function(o,i){return(i+1)+'. ['+o.prediction+'] '+o.title+': '+o.description;}).join('\n')+'\n\nReturn ONLY JSON:\n{"ranked":[indexes best to worst]}\n\nMost relevant first. ONLY JSON, no other text.';
+            for(var attempt=0;attempt<2;attempt++){
+                try{
+                    var r2=await gemini(rankPrompt,500);
+                    if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}','}}',']}}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
+                    if(parsed&&parsed.ranked&&parsed.ranked.length>=5){
+                        var ranked=[];
+                        parsed.ranked.forEach(function(idx){
+                            var i=typeof idx==='number'?idx-1:parseInt(idx)-1;
+                            if(allOppsResult[i])ranked.push(allOppsResult[i]);
+                        });
+                        if(ranked.length>=5)allOppsResult=ranked;
+                        break;
+                    }}
+                }catch(e){console.error('Gemini threat rank attempt '+(attempt+1)+':',e);}
+            }
         }
+        
+        // STEP 4: Build risks from Supabase
+        var risks=forecastRisks.map(function(r){return{prediction:r.title,probability:r.default_probability,impact:r.description};});
         var fallbackLevel='Moderate Exposure';var fallbackMonths=provider.defaultMonths;
         var softwareInd=['Technology','SaaS','Software','AI/ML','Web3/Crypto'];
         var physicalInd=['Manufacturing','Retail','Real Estate','Healthcare','Construction'];
         if(softwareInd.some(s=>S.threatIndustry.includes(s))){fallbackLevel='High Exposure';fallbackMonths=Math.max(8,provider.defaultMonths-6);}
         if(physicalInd.some(s=>S.threatIndustry.includes(s))){fallbackLevel='Positioned but Must Adapt';fallbackMonths=provider.defaultMonths+6;}
-        S.threatResult={company_description:companyDesc||S.threatDesc||domain,threat_level:threatLevel||fallbackLevel,threat_summary:threatSummary||provider.name+' is advancing into areas that directly impact '+domain+"'s core operations.",months_until_threat:monthsUntil||fallbackMonths,timeline_reason:timelineReason||'Based on '+provider.name+"'s product velocity and "+S.threatIndustry+' dynamics.',opportunities:allOppsResult.slice(0,15),threats:allRisksResult.slice(0,7)};
+        S.threatResult={company_description:companyDesc||S.threatDesc||domain,threat_level:threatLevel||fallbackLevel,threat_summary:threatSummary||provider.name+' is advancing into areas that directly impact '+domain+"'s core operations.",months_until_threat:monthsUntil||fallbackMonths,timeline_reason:timelineReason||'Based on '+provider.name+"'s product velocity and "+S.threatIndustry+' dynamics.',opportunities:allOppsResult.slice(0,15),threats:risks.length>=3?risks.slice(0,7):[...risks,...generateCompanyRisks(domain)].slice(0,7)};
         // Save result to DB
         await db('users','PATCH',{company_result:JSON.stringify(S.threatResult)},`?email=eq.${encodeURIComponent(S.threatEmail)}&source=eq.threat_${S.threatProvider}`);
         S.threatStep=2;render();
@@ -2936,11 +3017,12 @@ async function toggleFollowForecast(forecastId){
 }
 
 function completeForecastQuest(forecastId, oppIndex){
+    oppIndex = parseInt(oppIndex);
     const forecast = FORECAST_DATABASE.find(f => f.id === forecastId);
-    if(!forecast) return;
+    if(!forecast){console.error('Forecast not found:',forecastId);return;}
     
     const opp = forecast.opportunities[oppIndex];
-    if(!opp) return;
+    if(!opp){console.error('Opp not found:',forecastId,'index:',oppIndex,'total opps:',forecast.opportunities.length);return;}
     
     // Initialize progress if needed
     if(!S.forecastProgress[forecastId]) S.forecastProgress[forecastId] = {};
