@@ -855,6 +855,9 @@ const S = {
     expandedOpp: null, // which opportunity is expanded in modal
     opportunities: {},
     companyStep:0,companyUrl:'',companyEmail:'',companyIndustry:'',companyDesc:'',companyResult:null,companyLoadingStep:0,companyUnlocked:false,
+    reportSlide:0, // 0=status, 1..N=opps, N+1=risks, N+2=bottom line/actions
+    planGenerating:null, // index of opp currently generating plan
+    plans:{}, // {oppIndex: {steps:[],generating:false}}
     threatProvider:null,threatStep:0,threatUrl:'',threatEmail:'',threatIndustry:'',threatDesc:'',threatResult:null,threatLoadingStep:0,threatUnlocked:false
 };
 
@@ -1686,21 +1689,60 @@ function companyH(){
     if(S.companyStep===2&&S.companyResult){
         var r=S.companyResult,domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
         var allOpps=r.opportunities||[],allRisks=r.threats||[];
-        var opps=allOpps; // TESTING: show all
-        var risks=allRisks; // TESTING: show all
-        var lc=Math.max(0,allOpps.length-3);
-        var h=`<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>${S.companyUnlocked?'<div style="text-align:center;margin-bottom:15px;padding:10px;background:var(--accent);color:#000;font-size:11px;text-transform:uppercase;letter-spacing:2px;font-weight:700">\u2713 Full Report Unlocked</div>':''}<div style="margin-bottom:20px;padding:20px 24px;background:linear-gradient(135deg,rgba(255,170,0,0.12),rgba(255,170,0,0.04));border:1px solid rgba(255,170,0,0.3);position:relative"><div style="position:absolute;top:0;left:0;width:4px;height:100%;background:var(--warning)"></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">\u26a0\ufe0f</span><span style="font-size:10px;color:var(--warning);text-transform:uppercase;letter-spacing:2px;font-weight:700">AI-Proof Status</span></div><h2 style="font-size:22px;font-weight:700;margin-bottom:8px">Moderately Positioned</h2><p style="font-size:13px;color:var(--text-secondary);line-height:1.5">You're ahead of most companies, but missing key shifts.</p>${r.company_description?`<p style="font-size:11px;color:var(--text-muted);margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,170,0,0.15)">${domain} \u2014 ${r.company_description}</p>`:''}</div><div style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Opportunities based on AI predictions${S.companyUnlocked?' ('+allOpps.length+')':''}</div>`;
-        opps.forEach(function(o){h+=`<div class="card" style="margin-bottom:12px;border-left:3px solid var(--accent)">${o.prediction?`<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Prediction: ${o.prediction}</div>`:''}<div style="font-size:15px;font-weight:700;margin-bottom:6px">${o.title}</div><p class="text-small text-secondary" style="line-height:1.6">${o.description}</p></div>`;});
-        h+=`<div class="card" style="margin-bottom:15px;border-left:3px solid var(--warning)"><h3 style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Risks to Watch${S.companyUnlocked?' ('+allRisks.length+')':''}</h3>`;
-        risks.forEach(function(t){h+=`<div style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:600">${t.prediction}</span><span style="font-size:11px;font-weight:700;color:var(--warning)">${t.probability}%</span></div><p style="font-size:11px;color:var(--text-secondary);margin-top:3px">${t.impact}</p></div>`;});
-        if(false){h+=`<div style="padding:10px 0 2px 0">\ud83d\udd12 <span style="font-size:11px;color:var(--text-muted)">${allRisks.length-2} more risks in full report</span></div>`;}
-        h+=`</div>`;
-        h+=`<div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">The Bottom Line</h3><p class="text-small" style="line-height:1.7">${r.summary||''}</p></div>`;
-        if(false){
-            h+=`<p style="font-size:13px;text-align:center;margin-bottom:15px;color:var(--text-muted)">\ud83d\udd12 ${lc} more opportunities identified</p><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:16px;font-weight:700;margin-bottom:6px">Unlock Your Full 15 Opportunity Report</p><p class="text-secondary text-small" style="margin-bottom:15px">See the shifts that will impact your company.</p><button class="btn btn-primary btn-full" id="unlock-company-report">Unlock Full Report →</button><a href="${STRATEGY_CALL_URL}" target="_blank" style="display:block;margin-top:12px;font-size:12px;color:var(--text-secondary)">or <span style="color:var(--accent);text-decoration:underline">book a strategy call</span></a></div>`;
-        } else {
-            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-company-pdf">\u2193 Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:8px"><input type="email" class="form-input" id="team-email-company" placeholder="teammate@company.com" style="flex:1;font-size:12px"><button class="btn btn-primary btn-small" id="send-company-email">Send</button></div><p id="company-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none">\u2713 Email client opened</p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call \u2192</a></div>`;
+        var opps=allOpps;
+        var risks=allRisks;
+        var totalSlides=opps.length+3; // 0=status, 1..N=opps, N+1=risks, N+2=actions
+        var slide=Math.max(0,Math.min(S.reportSlide||0,totalSlides-1));
+        var statusData=r.ai_status||{};
+        
+        // Slide navigation bar
+        var navDots='';for(var di=0;di<totalSlides;di++){navDots+=`<div style="width:${di===slide?'20px':'8px'};height:8px;border-radius:4px;background:${di===slide?'var(--accent)':'rgba(255,255,255,0.2)'};transition:all 0.3s"></div>`;}
+        
+        var h=`<div class="screen-center" style="align-items:flex-start;padding-top:40px"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>${S.companyUnlocked?'<div style="text-align:center;margin-bottom:15px;padding:10px;background:var(--accent);color:#000;font-size:11px;text-transform:uppercase;letter-spacing:2px;font-weight:700">\u2713 Full Report Unlocked</div>':''}`;
+        
+        // --- SLIDE: STATUS (slide 0) ---
+        if(slide===0){
+            var statusIcon=statusData.level==='High Risk'?'🔴':statusData.level==='Well Positioned'?'🟢':'🟡';
+            var statusColor=statusData.level==='High Risk'?'var(--danger)':statusData.level==='Well Positioned'?'var(--success)':'var(--warning)';
+            var statusBg=statusData.level==='High Risk'?'rgba(255,60,60,0.12)':statusData.level==='Well Positioned'?'rgba(0,200,100,0.12)':'rgba(255,170,0,0.12)';
+            var statusBorder=statusData.level==='High Risk'?'rgba(255,60,60,0.3)':statusData.level==='Well Positioned'?'rgba(0,200,100,0.3)':'rgba(255,170,0,0.3)';
+            h+=`<div style="margin-bottom:20px;padding:24px;background:linear-gradient(135deg,${statusBg},rgba(0,0,0,0.02));border:1px solid ${statusBorder};position:relative"><div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${statusColor}"></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:18px">${statusIcon}</span><span style="font-size:10px;color:${statusColor};text-transform:uppercase;letter-spacing:2px;font-weight:700">AI-Proof Status</span></div><h2 style="font-size:24px;font-weight:700;margin-bottom:12px">${statusData.level||'Moderately Positioned'}</h2><p style="font-size:14px;color:var(--text-secondary);line-height:1.7">${statusData.summary||''}</p>${r.company_description?`<p style="font-size:11px;color:var(--text-muted);margin-top:14px;padding-top:12px;border-top:1px solid ${statusBorder}">${domain} — ${r.company_description}</p>`:''}</div>`;
+            h+=`<div style="text-align:center;padding:10px 0"><p style="font-size:12px;color:var(--text-muted);margin-bottom:4px">${opps.length} opportunities · ${risks.length} risks identified</p></div>`;
         }
+        // --- SLIDES: INDIVIDUAL OPPORTUNITIES (slides 1..N) ---
+        else if(slide>=1&&slide<=opps.length){
+            var oi=slide-1,o=opps[oi];
+            var plan=S.plans[oi];
+            h+=`<div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Opportunity ${oi+1} of ${opps.length}</div>`;
+            h+=`<div class="card" style="margin-bottom:16px;border-left:3px solid var(--accent);padding:20px 24px">${o.prediction?`<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">🔮 Prediction: ${o.prediction}</div>`:''}<div style="font-size:18px;font-weight:700;margin-bottom:10px">${o.title}</div><p style="font-size:14px;color:var(--text-secondary);line-height:1.7">${o.description}</p>`;
+            // Generate Plan button or plan display
+            if(plan&&plan.steps&&plan.steps.length>0){
+                h+=`<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--bg-tertiary)"><div style="font-size:10px;color:var(--success);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">✓ Action Plan</div>`;
+                plan.steps.forEach(function(step,si){h+=`<div style="display:flex;gap:10px;margin-bottom:10px"><span style="color:var(--accent);font-weight:700;font-size:13px;min-width:20px">${si+1}.</span><div><div style="font-size:13px;font-weight:600;margin-bottom:3px">${step.title}</div><p style="font-size:12px;color:var(--text-secondary);line-height:1.5">${step.desc}</p>${step.timeline?`<span style="font-size:10px;color:var(--text-muted)">⏱ ${step.timeline}</span>`:''}</div></div>`;});
+                h+=`</div>`;
+            } else if(plan&&plan.generating){
+                h+=`<div style="margin-top:16px;text-align:center;padding:20px 0"><div style="display:inline-block;width:20px;height:20px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></div><p style="font-size:12px;color:var(--text-muted);margin-top:8px">Generating action plan...</p></div>`;
+            } else {
+                h+=`<button class="btn btn-secondary btn-full" style="margin-top:16px" id="gen-plan-${oi}">⚡ Generate Action Plan</button>`;
+            }
+            h+=`</div>`;
+        }
+        // --- SLIDE: RISKS (slide N+1) ---
+        else if(slide===opps.length+1){
+            h+=`<div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Risks to Watch</div>`;
+            h+=`<div class="card" style="margin-bottom:16px;border-left:3px solid var(--warning);padding:20px 24px"><h3 style="font-size:11px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">⚠️ ${risks.length} Risks Identified</h3>`;
+            risks.forEach(function(t,ti){h+=`<div style="padding:10px 0;${ti<risks.length-1?'border-bottom:1px solid var(--bg-tertiary)':''}"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">${t.prediction}</span><span style="font-size:11px;font-weight:700;color:var(--warning);background:rgba(255,170,0,0.12);padding:2px 8px;border-radius:10px">${t.probability}%</span></div><p style="font-size:12px;color:var(--text-secondary);margin-top:4px;line-height:1.5">${t.impact}</p></div>`;});
+            h+=`</div>`;
+        }
+        // --- SLIDE: BOTTOM LINE + ACTIONS (last slide) ---
+        else {
+            h+=`<div class="card" style="margin-bottom:16px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">The Bottom Line</h3><p style="font-size:14px;line-height:1.7">${r.summary||''}</p></div>`;
+            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-company-pdf">↓ Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:8px"><input type="email" class="form-input" id="team-email-company" placeholder="teammate@company.com" style="flex:1;font-size:12px"><button class="btn btn-primary btn-small" id="send-company-email">Send</button></div><p id="company-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none">✓ Email client opened</p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
+        }
+        
+        // Navigation: dots + prev/next buttons
+        h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:20px 0 30px 0"><button class="btn btn-secondary" id="slide-prev" style="min-width:90px;font-size:13px;${slide===0?'opacity:0.3;pointer-events:none':''}">← Back</button><div style="display:flex;gap:4px;align-items:center">${navDots}</div><button class="btn btn-primary" id="slide-next" style="min-width:90px;font-size:13px;${slide>=totalSlides-1?'opacity:0.3;pointer-events:none':''}">${slide===0?'See Opportunities →':slide===opps.length?'See Risks →':slide===opps.length+1?'Summary →':'Next →'}</button></div>`;
+        
         h+=`</div></div>`;
         return h;
     }
@@ -2470,7 +2512,7 @@ function bindEvents(){
         if(authRes.error&&authRes.error.message!=='User already registered'){console.error('Auth:',authRes.error);}
         // Save custom fields to public.users
         await db('users','POST',{email:S.companyEmail,password:'auth_managed',industry:S.companyIndustry,role:S.companyUrl,source:'company_risk',start_date:new Date().toISOString(),user_type:'lead',name:S.companyDesc||''});
-        S.companyStep=1;S.companyLoadingStep=0;render();
+        S.companyStep=1;S.companyLoadingStep=0;S.reportSlide=0;S.plans={};render();
         setTimeout(()=>{S.companyLoadingStep=1;render();},800);setTimeout(()=>{S.companyLoadingStep=2;render();},2000);setTimeout(()=>{S.companyLoadingStep=3;render();},3500);setTimeout(()=>{S.companyLoadingStep=4;render();},5000);
         var ctx=S.companyDesc?domain+': '+S.companyDesc+'. '+S.companyIndustry+'.':domain+' ('+S.companyIndustry+').';
         
@@ -2526,10 +2568,35 @@ function bindEvents(){
             }
         }
         
-        // STEP 4: Build risks from Supabase + AI-generated
+        // STEP 4: Build risks from Supabase + always include Big 3
         var risks=forecastRisks.map(function(r){return{prediction:r.title,probability:r.default_probability,impact:r.description};});
+        // Always include OpenAI, Claude, Gemini as competitive risks
+        var big3=[
+            {prediction:'OpenAI builds competing product',probability:78,impact:'OpenAI\'s expanding product suite (ChatGPT, GPTs, API) could directly replicate or replace what '+domain+' offers, with massive distribution advantage.'},
+            {prediction:'Anthropic\'s Claude enters your space',probability:72,impact:'Claude\'s rapid capability gains and enterprise focus mean Anthropic could build features that overlap with '+domain+'\'s core value proposition.'},
+            {prediction:'Google Gemini commoditizes your niche',probability:75,impact:'Google can bundle Gemini into Search, Workspace, and Android — giving away for free what '+domain+' charges for, overnight.'}
+        ];
+        big3.forEach(function(b3){
+            if(!risks.find(function(r){return r.prediction.toLowerCase().includes('openai')&&b3.prediction.includes('OpenAI')||r.prediction.toLowerCase().includes('claude')&&b3.prediction.includes('Claude')||r.prediction.toLowerCase().includes('gemini')&&b3.prediction.includes('Gemini');})){
+                risks.push(b3);
+            }
+        });
+        risks=risks.slice(0,10); // cap at 10
         
-        S.companyResult={company_description:companyDesc||S.companyDesc||domain,opportunities:allOppsResult.slice(0,15),threats:risks.length>=3?risks.slice(0,7):[...risks,...generateCompanyRisks(domain)].slice(0,7),summary:summary||domain+' has real opportunities to leverage these shifts, but needs to move fast on the ones that match its strengths.'};
+        // STEP 5: AI-Proof Status — OpenAI generates, Gemini validates
+        var aiStatus={level:'Moderately Positioned',summary:'Your company has opportunities ahead but needs to act on key AI shifts.'};
+        try {
+            var statusPrompt='You are an AI industry analyst. Evaluate how AI-proof this company is.\n\nCompany: '+ctx+' ('+companyDesc+')\nIndustry: '+S.companyIndustry+'\n\nTop opportunities found:\n'+allOppsResult.slice(0,5).map(function(o,i){return(i+1)+'. '+o.title;}).join('\n')+'\n\nRisks:\n'+risks.slice(0,5).map(function(r,i){return(i+1)+'. '+r.prediction;}).join('\n')+'\n\nRate this company\'s AI-proof status. Consider:\n- How easily AI could replicate their core offering\n- Whether their industry is being rapidly transformed by AI\n- How much of their value depends on things AI is good at (content, analysis, code, support)\n- Whether they have defensible moats (brand, network effects, physical assets, regulation)\n\nReturn ONLY JSON:\n{"level":"High Risk" or "Moderately Positioned" or "Well Positioned","strengths":"what the company is good at that protects it (1-2 sentences)","gaps":"what key shifts they are missing (1-2 sentences)","summary":"You\'re ahead of [X%] of companies in [industry] because [strength]. Your core advantage is [specific thing]. But [specific gap/risk]. The window to act is [timeframe]."}\n\nBe specific to '+domain+'. Reference what they actually do. The summary should read like a personalized briefing, not generic advice.';
+            var statusR=await ai([{role:'user',content:statusPrompt}],1000,'general');
+            if(statusR){var sc=statusR.replace(/```json|```/g,'').trim();try{var sp=JSON.parse(sc);if(sp.level&&sp.summary){aiStatus=sp;}}catch(e){console.error('Status parse:',e);}}
+            
+            // Gemini validates/adjusts the level
+            var validatePrompt='A company analysis AI rated '+domain+' ('+companyDesc+', '+S.companyIndustry+') as "'+aiStatus.level+'" for AI-proof status.\n\nTheir reasoning: '+aiStatus.summary+'\n\nDo you agree with this rating? Consider:\n- "High Risk" = AI can easily replicate their core value, no strong moat, industry being disrupted fast\n- "Moderately Positioned" = Some AI threats but has some defensible advantages, needs to adapt\n- "Well Positioned" = Strong moats (brand, physical, regulatory, network effects), AI is more opportunity than threat\n\nExamples: LVMH = Well Positioned (luxury brand moat, physical goods). Notion = High Risk (AI can build note/doc tools easily). A meme website = Moderately Positioned (creative/community moat but AI generates content).\n\nReturn ONLY JSON:\n{"agree":true/false,"adjusted_level":"High Risk" or "Moderately Positioned" or "Well Positioned","reason":"1 sentence why you agree or disagree"}\n\nOnly JSON.';
+            var valR=await gemini(validatePrompt,300);
+            if(valR){var vc=valR.replace(/```json|```/g,'').trim();try{var vp=JSON.parse(vc);if(vp&&!vp.agree&&vp.adjusted_level){aiStatus.level=vp.adjusted_level;aiStatus.summary=aiStatus.summary+' ('+vp.reason+')';}}catch(e){console.error('Validate parse:',e);}}
+        } catch(e){console.error('Status generation:',e);}
+        
+        S.companyResult={company_description:companyDesc||S.companyDesc||domain,opportunities:allOppsResult.slice(0,15),threats:risks,summary:summary||domain+' has real opportunities to leverage these shifts, but needs to move fast on the ones that match its strengths.',ai_status:aiStatus};
         // Save result to DB
         await db('leads','PATCH',{company_result:JSON.stringify(S.companyResult)},`?email=eq.${encodeURIComponent(S.companyEmail)}&source=eq.company_risk`);
         S.companyStep=2;render();
@@ -2628,6 +2695,51 @@ function bindEvents(){
     document.getElementById('download-threat-pdf')?.addEventListener('click',()=>downloadReportPDF('threat'));
     document.getElementById('send-company-email')?.addEventListener('click',()=>emailReportToTeam('company'));
     document.getElementById('send-threat-email')?.addEventListener('click',()=>emailReportToTeam('threat'));
+    
+    // Slide navigation
+    document.getElementById('slide-prev')?.addEventListener('click',()=>{if(S.reportSlide>0){S.reportSlide--;render();}});
+    document.getElementById('slide-next')?.addEventListener('click',()=>{var totalSlides=(S.companyResult?.opportunities?.length||0)+3;if(S.reportSlide<totalSlides-1){S.reportSlide++;render();}});
+    
+    // Generate Plan buttons
+    for(var pi=0;pi<(S.companyResult?.opportunities?.length||0);pi++){
+        (function(idx){
+            document.getElementById('gen-plan-'+idx)?.addEventListener('click',async function(){
+                if(S.plans[idx]&&S.plans[idx].generating)return;
+                S.plans[idx]={generating:true,steps:[]};render();
+                var opp=S.companyResult.opportunities[idx];
+                var domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+                var ctx=S.companyDesc?domain+': '+S.companyDesc+'. '+S.companyIndustry+'.':domain+' ('+S.companyIndustry+').';
+                
+                // Step 1: OpenAI generates action plan
+                var planPrompt='You are a strategic AI consultant. Create a specific, actionable plan for this opportunity.\n\nCompany: '+ctx+'\nOpportunity: '+opp.title+'\nPrediction: '+(opp.prediction||'')+'\nDescription: '+opp.description+'\n\nCreate a 5-step action plan that is SPECIFIC to '+domain+'. Each step should be concrete, not generic consulting advice.\n\nRules:\n- Step 1 should be something they can do THIS WEEK\n- Steps should build on each other\n- Include specific tools, platforms, or approaches where relevant\n- Reference what '+domain+' actually does as the vehicle\n- Include estimated timeline for each step\n\nReturn ONLY JSON:\n{"steps":[{"title":"short action title","desc":"2-3 specific sentences","timeline":"e.g. Week 1, Month 1-2, etc."}]}\n\n5 steps exactly.';
+                var planSteps=[];
+                try{
+                    var pr=await ai([{role:'user',content:planPrompt}],2000,'general');
+                    if(pr){var pc=pr.replace(/```json|```/g,'').trim();try{var pp=JSON.parse(pc);if(pp.steps)planSteps=pp.steps;}catch(e){console.error('Plan parse:',e);}}
+                }catch(e){console.error('Plan gen:',e);}
+                
+                // Step 2: Gemini ranks/validates the plan steps
+                if(planSteps.length>=3){
+                    try{
+                        var valPlanPrompt='Company: '+ctx+'\nOpportunity: '+opp.title+': '+opp.description+'\n\nAn AI generated this action plan. Review it and improve the ordering. Move the highest-impact, most actionable steps first. Remove any step that is generic/vague and replace with something specific to '+domain+'.\n\nCurrent plan:\n'+planSteps.map(function(s,i){return(i+1)+'. '+s.title+': '+s.desc+' ('+s.timeline+')';}).join('\n')+'\n\nReturn ONLY JSON:\n{"steps":[{"title":"...","desc":"...","timeline":"..."}]}\n\n5 steps, best order. Be specific to '+domain+'.';
+                        var vr=await gemini(valPlanPrompt,1500);
+                        if(vr){var vc=vr.replace(/```json|```/g,'').trim();try{var vp=JSON.parse(vc);if(vp.steps&&vp.steps.length>=3)planSteps=vp.steps;}catch(e){console.error('Gemini plan validate:',e);}}
+                    }catch(e){console.error('Gemini plan:',e);}
+                }
+                
+                // Step 3: Quick OpenAI polish pass
+                if(planSteps.length>=3){
+                    try{
+                        var polishPrompt='Polish this action plan for '+domain+' ('+S.companyIndustry+'). Make it punchier. Each description should be max 2 vivid sentences. Keep timelines realistic.\n\nPlan:\n'+JSON.stringify(planSteps)+'\n\nReturn ONLY JSON: {"steps":[{"title":"...","desc":"...","timeline":"..."}]}';
+                        var polR=await ai([{role:'user',content:polishPrompt}],1500,'general');
+                        if(polR){var plc=polR.replace(/```json|```/g,'').trim();try{var plp=JSON.parse(plc);if(plp.steps&&plp.steps.length>=3)planSteps=plp.steps;}catch(e){}}
+                    }catch(e){}
+                }
+                
+                S.plans[idx]={generating:false,steps:planSteps.slice(0,5)};render();
+            });
+        })(pi);
+    }
 
     // Onboarding flow - Step 1: Email + Industry
     document.getElementById('onboard-email-form')?.addEventListener('submit',e=>{
@@ -9561,7 +9673,7 @@ async function init(){
     }
     if(path==='diagnostic'){params.set('mode','diagnostic');}
     if(path==='company'){
-        S.companyStep=0;S.companyUrl='';S.companyEmail='';S.companyIndustry='';S.companyDesc='';S.companyResult=null;S.companyLoadingStep=0;S.companyUnlocked=false;S.screen='company';render();return;
+        S.companyStep=0;S.companyUrl='';S.companyEmail='';S.companyIndustry='';S.companyDesc='';S.companyResult=null;S.companyLoadingStep=0;S.companyUnlocked=false;S.reportSlide=0;S.plans={};S.screen='company';render();return;
     }
     if(['google','claude','openai'].includes(path)){
         S.threatProvider=path;S.threatStep=0;S.threatUrl='';S.threatEmail='';S.threatIndustry='';S.threatDesc='';S.threatResult=null;S.threatLoadingStep=0;S.threatUnlocked=false;S.screen='threat';render();return;
@@ -9577,7 +9689,7 @@ async function init(){
                 localStorage.removeItem('apc_report');
                 if(data.type==='company'){
                     S.companyUrl=data.url||'';S.companyEmail=data.email||'';S.companyIndustry=data.industry||'';
-                    S.companyDesc=data.desc||'';S.companyResult=data.result;S.companyStep=2;S.companyUnlocked=true;
+                    S.companyDesc=data.desc||'';S.companyResult=data.result;S.companyStep=2;S.companyUnlocked=true;S.reportSlide=0;S.plans={};
                     // Update plan from lead to report_paid
                     await db('users','PATCH',{user_type:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.company_risk`);
                     S.screen='company';render();return;
@@ -9607,7 +9719,7 @@ async function init(){
     }
     
     // Company mode
-    if(params.get('mode')==='company'||hash==='company'){S.companyStep=0;S.companyUrl='';S.companyEmail='';S.companyIndustry='';S.companyDesc='';S.companyResult=null;S.companyLoadingStep=0;S.companyUnlocked=false;S.screen='company';render();return;}
+    if(params.get('mode')==='company'||hash==='company'){S.companyStep=0;S.companyUrl='';S.companyEmail='';S.companyIndustry='';S.companyDesc='';S.companyResult=null;S.companyLoadingStep=0;S.companyUnlocked=false;S.reportSlide=0;S.plans={};S.screen='company';render();return;}
     // Threat mode
     var _tm=params.get('threat');if(_tm&&typeof THREAT_PROVIDERS!=='undefined'&&THREAT_PROVIDERS[_tm]){S.threatProvider=_tm;S.threatStep=0;S.threatUrl='';S.threatEmail='';S.threatIndustry='';S.threatDesc='';S.threatResult=null;S.threatLoadingStep=0;S.threatUnlocked=false;S.screen='threat';render();return;}
     // Check for password reset token
