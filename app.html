@@ -1796,6 +1796,10 @@ async function toggleFollowForecast(forecastId){
     render();
 }
 
+function updateScores(mode, xp){
+    S.scores[mode]=Math.min(100,S.scores[mode]+Math.floor(xp/20));
+}
+
 function completeForecastQuest(forecastId, oppIndex){
     oppIndex = parseInt(oppIndex);
     const forecast = FORECAST_DATABASE.find(f => f.id === forecastId);
