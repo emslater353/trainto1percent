@@ -745,7 +745,7 @@
 <div id="app"></div>
 <script>
 const OPENAI_API = '/.netlify/functions/openai';
-const APP_VERSION = 'v2025.02.25.C'; // Version tracker
+const APP_VERSION = 'v2025.02.25.D'; // Version tracker
 console.log('AI Proof Club version:', APP_VERSION);
 const SUPABASE_URL = 'https://snbchuvvnbwvghmbxehv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuYmNodXZ2bmJ3dmdobWJ4ZWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MDg5NzMsImV4cCI6MjA4NTQ4NDk3M30.cKPieraN3FRT_5ilAQL0X2b9kIpklzE49xGzVJwYxZo';
@@ -892,20 +892,10 @@ async function ai(msgs, tokens=500, type='general') {
     } catch(e) { console.error(e); return null; }
 }
 
-const GEMINI_KEY = 'AIzaSyD3cIGLMy4CYIVHSUpx9qNc9XTvYXX8kK0';
-async function gemini(prompt, tokens=1000) {
-    try {
-        const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+GEMINI_KEY, {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:tokens,temperature:0.3}})
-        });
-        const d = await r.json();
-        if(d.candidates&&d.candidates[0]&&d.candidates[0].content){
-            return d.candidates[0].content.parts.map(p=>p.text).join('');
-        }
-        console.error('Gemini response:',d);
-        return null;
-    } catch(e) { console.error('Gemini error:',e); return null; }
+// Ranking/validation via OpenAI (routed through Netlify function - no exposed keys)
+async function aiRank(prompt, tokens) {
+    tokens = tokens || 1000;
+    return await ai([{role:'user',content:prompt}], tokens, 'general');
 }
 
 const Qs = [
@@ -2598,11 +2588,11 @@ function bindEvents(){
             
             for(var attempt=0;attempt<2;attempt++){
                 try{
-                    var r2=await gemini(rankPrompt,800);
-                    console.log('Gemini ranking raw:',r2);
+                    var r2=await aiRank(rankPrompt,800);
+                    console.log('AI ranking raw:',r2);
                     if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}','}}',']}}',']','}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
                     if(parsed&&parsed.ranked&&parsed.ranked.length>=5){
-                        console.log('Gemini rank order:',parsed.ranked,'Reason:',parsed.reasoning||'');
+                        console.log('AI rank order:',parsed.ranked,'Reason:',parsed.reasoning||'');
                         var ranked=[];
                         parsed.ranked.forEach(function(idx){
                             var i=typeof idx==='number'?idx-1:parseInt(idx)-1;
@@ -2613,12 +2603,12 @@ function bindEvents(){
                         if(ranked.length>=5){allOppsResult=ranked;console.log('Reordered: top opp is now "'+ranked[0].title+'" ['+ranked[0].prediction+']');}
                         break;
                     } else {
-                        console.warn('Gemini ranking parse failed, attempt '+(attempt+1));
+                        console.warn('AI ranking parse failed, attempt '+(attempt+1));
                     }}
-                }catch(e){console.error('Gemini rank attempt '+(attempt+1)+':',e);}
+                }catch(e){console.error('AI rank attempt '+(attempt+1)+':',e);}
             }
         } else {
-            console.warn('Skipping Gemini ranking: only '+allOppsResult.length+' opps');
+            console.warn('Skipping AI ranking: only '+allOppsResult.length+' opps');
         }
         
         // STEP 4: Build risks from Supabase + always include Big 3
@@ -2653,7 +2643,7 @@ function bindEvents(){
             
             // Gemini validates/adjusts the level
             var validatePrompt='A company analysis AI rated '+domain+' ('+companyDesc+', '+S.companyIndustry+') as "'+aiStatus.level+'" for AI-proof status.\n\nTheir reasoning: '+aiStatus.summary+'\n\nDo you agree with this rating? Consider:\n- "High Risk" = AI can easily replicate their core value, no strong moat, industry being disrupted fast\n- "Moderately Positioned" = Some AI threats but has some defensible advantages, needs to adapt\n- "Well Positioned" = Strong moats (brand, physical, regulatory, network effects), AI is more opportunity than threat\n\nExamples: LVMH = Well Positioned (luxury brand moat, physical goods). Notion = High Risk (AI can build note/doc tools easily). A meme website = Moderately Positioned (creative/community moat but AI generates content).\n\nReturn ONLY JSON:\n{"agree":true/false,"adjusted_level":"High Risk" or "Moderately Positioned" or "Well Positioned","reason":"1 sentence why you agree or disagree"}\n\nOnly JSON.';
-            var valR=await gemini(validatePrompt,300);
+            var valR=await aiRank(validatePrompt,300);
             if(valR){var vc=valR.replace(/```json|```/g,'').trim();try{var vp=JSON.parse(vc);if(vp&&!vp.agree&&vp.adjusted_level){aiStatus.level=vp.adjusted_level;aiStatus.summary=aiStatus.summary+' ('+vp.reason+')';}}catch(e){console.error('Validate parse:',e);}}
         } catch(e){console.error('Status generation:',e);}
         
@@ -2720,7 +2710,7 @@ function bindEvents(){
             var rankPrompt='You are an expert business strategist ranking AI opportunities for a specific company.\n\nCOMPANY: '+domain+'\nDESCRIPTION: '+(companyDesc||ctx)+'\nINDUSTRY: '+S.threatIndustry+'\nTHREAT FROM: '+provider.name+'\n\nReorder these '+allOppsResult.length+' opportunities so the MOST impactful and actionable ones come first.\n\nRANKING CRITERIA:\n1. IMMEDIATE ACTIONABILITY: Could they start this within 2 weeks?\n2. CORE BUSINESS FIT: Does this leverage what they already do?\n3. DEFENSIVE VALUE: Does this protect against '+provider.name+'?\n4. REVENUE POTENTIAL: New revenue or protect existing?\n\nCRITICAL: Do NOT return the original order. A meme site should see community/content first, not self-driving cars. A SaaS tool should see AI features first, not physical goods.\n\nOpportunities:\n'+allOppsResult.map(function(o,i){return(i+1)+'. ['+o.prediction+'] '+o.title+': '+o.description;}).join('\n')+'\n\n{"ranked":[numbers best-to-worst],"reasoning":"why #1 is top"}\n\nJSON only.';
             for(var attempt=0;attempt<2;attempt++){
                 try{
-                    var r2=await gemini(rankPrompt,800);
+                    var r2=await aiRank(rankPrompt,800);
                     console.log('Gemini threat ranking raw:',r2);
                     if(r2){var c=r2.replace(/```json|```/g,'').trim(),parsed=null;try{parsed=JSON.parse(c);}catch(e1){for(var f of ['}]}','}}',']}}',']','}']){try{parsed=JSON.parse(c+f);break;}catch(e2){}}}
                     if(parsed&&parsed.ranked&&parsed.ranked.length>=5){
@@ -2806,7 +2796,7 @@ function bindEvents(){
                 if(planSteps.length>=3){
                     try{
                         var valPlanPrompt='Company: '+ctx+'\nOpportunity: '+opp.title+': '+opp.description+'\n\nAn AI generated this action plan. Review it and improve the ordering. Move the highest-impact, most actionable steps first. Remove any step that is generic/vague and replace with something specific to '+domain+'.\n\nCurrent plan:\n'+planSteps.map(function(s,i){return(i+1)+'. '+s.title+': '+s.desc+' ('+s.timeline+')';}).join('\n')+'\n\nReturn ONLY JSON:\n{"steps":[{"title":"...","desc":"...","timeline":"..."}]}\n\n5 steps, best order. Be specific to '+domain+'.';
-                        var vr=await gemini(valPlanPrompt,1500);
+                        var vr=await aiRank(valPlanPrompt,1500);
                         if(vr){var vc=vr.replace(/```json|```/g,'').trim();try{var vp=JSON.parse(vc);if(vp.steps&&vp.steps.length>=3)planSteps=vp.steps;}catch(e){console.error('Gemini plan validate:',e);}}
                     }catch(e){console.error('Gemini plan:',e);}
                 }
@@ -2838,7 +2828,7 @@ function bindEvents(){
                 var planPrompt='You are a strategic AI consultant. Create a specific, actionable plan for this opportunity.\n\nCompany: '+ctx+'\nOpportunity: '+opp.title+'\nPrediction: '+(opp.prediction||'')+'\nDescription: '+opp.description+'\n\nCreate a 5-step action plan that is SPECIFIC to '+domain+'.\n\nRules:\n- Step 1 should be something they can do THIS WEEK\n- Steps should build on each other\n- Include specific tools, platforms, or approaches\n- Reference what '+domain+' actually does\n- Include estimated timeline for each step\n\nReturn ONLY JSON:\n{"steps":[{"title":"short action title","desc":"2-3 specific sentences","timeline":"e.g. Week 1, Month 1-2"}]}\n\n5 steps exactly.';
                 var planSteps=[];
                 try{var pr=await ai([{role:'user',content:planPrompt}],2000,'general');if(pr){var pc=pr.replace(/```json|```/g,'').trim();try{var pp=JSON.parse(pc);if(pp.steps)planSteps=pp.steps;}catch(e){}}}catch(e){}
-                if(planSteps.length>=3){try{var valPlanPrompt='Company: '+ctx+'\nOpportunity: '+opp.title+'\n\nReview and reorder this plan. Most impactful first. Replace anything generic.\n\nPlan:\n'+planSteps.map(function(s,i){return(i+1)+'. '+s.title+': '+s.desc;}).join('\n')+'\n\nReturn ONLY JSON:\n{"steps":[{"title":"...","desc":"...","timeline":"..."}]}';var vr=await gemini(valPlanPrompt,1500);if(vr){var vc=vr.replace(/```json|```/g,'').trim();try{var vp=JSON.parse(vc);if(vp.steps&&vp.steps.length>=3)planSteps=vp.steps;}catch(e){}}}catch(e){}}
+                if(planSteps.length>=3){try{var valPlanPrompt='Company: '+ctx+'\nOpportunity: '+opp.title+'\n\nReview and reorder this plan. Most impactful first. Replace anything generic.\n\nPlan:\n'+planSteps.map(function(s,i){return(i+1)+'. '+s.title+': '+s.desc;}).join('\n')+'\n\nReturn ONLY JSON:\n{"steps":[{"title":"...","desc":"...","timeline":"..."}]}';var vr=await aiRank(valPlanPrompt,1500);if(vr){var vc=vr.replace(/```json|```/g,'').trim();try{var vp=JSON.parse(vc);if(vp.steps&&vp.steps.length>=3)planSteps=vp.steps;}catch(e){}}}catch(e){}}
                 S.threatPlans[idx]={generating:false,steps:planSteps.slice(0,5)};render();
             });
         })(tpi);
