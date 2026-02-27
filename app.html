@@ -1070,13 +1070,18 @@ function bindEvents(){
         }
         
         // Also save industry info to users table (Auth doesn't store custom fields)
-        await db('users', 'POST', {
+        await db('profiles', 'POST', {
+            id: crypto.randomUUID(),
             email: S.diagnosticEmail,
             industry: S.diagnosticIndustry,
             source: 'diagnostic_quiz',
             start_date: new Date().toISOString(),
-            user_type: 'lead'
+            user_type: 'lead',
+            plan: 'lead'
         });
+
+        // Subscribe to beehiiv as a free lead (will see paywalled newsletter content)
+        subscribeToBeehiiv(S.diagnosticEmail, 'lead', S.diagnosticIndustry, '');
         
         S.diagnosticStep = 1;
         render();
@@ -1116,7 +1121,9 @@ function bindEvents(){
         var authRes=await authSignUp(S.companyEmail,tempPw,{user_type:'lead',role:S.companyUrl,website:S.companyUrl,source:'company_risk',industry:S.companyIndustry,company_desc:S.companyDesc||''});
         if(authRes.error&&authRes.error.message!=='User already registered'){console.error('Auth:',authRes.error);}
         // Save custom fields to public.users
-        await db('users','POST',{email:S.companyEmail,password:'auth_managed',industry:S.companyIndustry,role:S.companyUrl,source:'company_risk',start_date:new Date().toISOString(),user_type:'lead',name:S.companyDesc||''});
+        await db('profiles','POST',{id:crypto.randomUUID(),email:S.companyEmail,industry:S.companyIndustry,source:'company_risk',start_date:new Date().toISOString(),user_type:'lead',plan:'lead',name:S.companyDesc||''});
+        // Subscribe to beehiiv as a free lead
+        subscribeToBeehiiv(S.companyEmail, 'lead', S.companyIndustry, '');
         S.companyStep=1;S.companyLoadingStep=0;S.reportSlide=0;S.plans={};render();
         setTimeout(()=>{S.companyLoadingStep=1;render();},800);setTimeout(()=>{S.companyLoadingStep=2;render();},2000);setTimeout(()=>{S.companyLoadingStep=3;render();},3500);setTimeout(()=>{S.companyLoadingStep=4;render();},5000);setTimeout(()=>{S.companyLoadingStep=5;render();},7000);
         var ctx=S.companyDesc?domain+': '+S.companyDesc+'. '+S.companyIndustry+'.':domain+' ('+S.companyIndustry+').';
@@ -1224,7 +1231,7 @@ function bindEvents(){
         
         S.companyResult={company_description:companyDesc||S.companyDesc||domain,opportunities:allOppsResult.slice(0,15),threats:risks,summary:summary||domain+' has real opportunities to leverage these shifts, but needs to move fast on the ones that match its strengths.',ai_status:aiStatus};
         // Save result to DB
-        await db('leads','PATCH',{company_result:JSON.stringify(S.companyResult)},`?email=eq.${encodeURIComponent(S.companyEmail)}&source=eq.company_risk`);
+        await db('profiles','PATCH',{company_result:JSON.stringify(S.companyResult)},`?email=eq.${encodeURIComponent(S.companyEmail)}`);
         S.companyStep=2;render();
     });
     document.getElementById('unlock-company-report')?.addEventListener('click',()=>{
@@ -1243,7 +1250,9 @@ function bindEvents(){
         var authRes=await authSignUp(S.threatEmail,tempPw,{user_type:'lead',role:S.threatUrl,website:S.threatUrl,source:'threat_'+S.threatProvider,industry:S.threatIndustry,company_desc:S.threatDesc||''});
         if(authRes.error&&authRes.error.message!=='User already registered'){console.error('Auth:',authRes.error);}
         // Save custom fields to public.users
-        await db('users','POST',{email:S.threatEmail,password:'auth_managed',industry:S.threatIndustry,role:S.threatUrl,source:'threat_'+S.threatProvider,start_date:new Date().toISOString(),user_type:'lead',name:S.threatDesc||''});
+        await db('profiles','POST',{id:crypto.randomUUID(),email:S.threatEmail,industry:S.threatIndustry,source:'threat_'+S.threatProvider,start_date:new Date().toISOString(),user_type:'lead',plan:'lead',name:S.threatDesc||''});
+        // Subscribe to beehiiv as a free lead
+        subscribeToBeehiiv(S.threatEmail, 'lead', S.threatIndustry, '');
         S.threatStep=1;S.threatLoadingStep=0;S.threatSlide=0;S.threatPlans={};render();
         setTimeout(()=>{S.threatLoadingStep=1;render();},800);setTimeout(()=>{S.threatLoadingStep=2;render();},2000);setTimeout(()=>{S.threatLoadingStep=3;render();},3500);setTimeout(()=>{S.threatLoadingStep=4;render();},5000);setTimeout(()=>{S.threatLoadingStep=5;render();},7000);
         var ctx=S.threatDesc?domain+': '+S.threatDesc+'. '+S.threatIndustry+'.':domain+' ('+S.threatIndustry+').';
@@ -1329,7 +1338,7 @@ function bindEvents(){
         if(physicalInd.some(s=>S.threatIndustry.includes(s))){fallbackLevel='Positioned but Must Adapt';fallbackMonths=provider.defaultMonths+6;}
         S.threatResult={company_description:companyDesc||S.threatDesc||domain,threat_level:threatLevel||fallbackLevel,threat_summary:threatSummary||provider.name+' is advancing into areas that directly impact '+domain+"'s core operations.",months_until_threat:monthsUntil||fallbackMonths,timeline_reason:timelineReason||'Based on '+provider.name+"'s product velocity and "+S.threatIndustry+' dynamics.',opportunities:allOppsResult.slice(0,15),threats:risks};
         // Save result to DB
-        await db('users','PATCH',{company_result:JSON.stringify(S.threatResult)},`?email=eq.${encodeURIComponent(S.threatEmail)}&source=eq.threat_${S.threatProvider}`);
+        await db('profiles','PATCH',{company_result:JSON.stringify(S.threatResult)},`?email=eq.${encodeURIComponent(S.threatEmail)}`);
         S.threatStep=2;render();
     });
     document.getElementById('unlock-threat-report')?.addEventListener('click',()=>{
@@ -1450,14 +1459,14 @@ function bindEvents(){
         S.user.onboarded = false; // Will be true after they finish all steps
         
         // Save to database NOW so they can always log back in (no password stored here)
-        const existing = await db('users','GET',null,`?email=eq.${encodeURIComponent(S.user.email)}`);
+        const existing = await db('profiles','GET',null,`?email=eq.${encodeURIComponent(S.user.email)}`);
         if(existing?.length){
             // Update existing user
-            await db('users','PATCH', S.user, `?email=eq.${encodeURIComponent(S.user.email)}`);
+            await db('profiles','PATCH', S.user, `?email=eq.${encodeURIComponent(S.user.email)}`);
             S.user = {...existing[0], ...S.user};
         } else {
             // Create new user
-            const res = await db('users','POST', S.user);
+            const res = await db('profiles','POST', {...S.user, id: crypto.randomUUID()});
             if(res?.length) S.user = res[0];
         }
         
@@ -1887,8 +1896,8 @@ async function login(){
         const accessToken = authResult.access_token;
         localStorage.setItem('apc_auth_token', accessToken);
         
-        // Load user data from users table
-        const users = await db('users', 'GET', null, `?email=eq.${encodeURIComponent(email)}`);
+        // Load user data from profiles table
+        const users = await db('profiles', 'GET', null, `?email=eq.${encodeURIComponent(email)}`);
         if (users?.length) {
             S.user = users[0];
             S.scores = users[0].scores || {ideas:50, personality:50, execution:50};
@@ -1907,10 +1916,10 @@ async function login(){
         }
     }
     
-    // Step 2: Supabase Auth failed - check if they exist in SQL with old password
-    const users = await db('users', 'GET', null, `?email=eq.${encodeURIComponent(email)}`);
+    // Step 2: Supabase Auth failed - check old users table for plaintext password (legacy migration)
+    const legacyUsers = await db('users', 'GET', null, `?email=eq.${encodeURIComponent(email)}`);
     
-    if (users?.length && users[0].password === pass) {
+    if (legacyUsers?.length && legacyUsers[0].password === pass) {
         // Old password matches! Migrate them to Supabase Auth
         console.log('Migrating user to Supabase Auth...');
         
@@ -1926,19 +1935,25 @@ async function login(){
         const newAuthResult = await authSignIn(email, pass);
         
         if (newAuthResult.error) {
-            // Might need to confirm email - just let them in with old method for now
             console.log('Auth signin after migration failed, using legacy login');
         } else {
             localStorage.setItem('apc_auth_token', newAuthResult.access_token);
         }
         
-        // Load user data and proceed
-        S.user = users[0];
-        S.scores = users[0].scores || {ideas:50, personality:50, execution:50};
-        S.receipts = users[0].receipts || [];
-        S.quests = users[0].quests?.length ? users[0].quests : genQuests();
-        S.diff = users[0].diff || 'standard';
+        // Load from profiles (source of truth), fall back to legacy users data
+        const profileData = await db('profiles', 'GET', null, `?email=eq.${encodeURIComponent(email)}`);
+        const userData = profileData?.length ? profileData[0] : legacyUsers[0];
+        
+        S.user = userData;
+        S.scores = userData.scores || {ideas:50, personality:50, execution:50};
+        S.receipts = userData.receipts || [];
+        S.quests = userData.quests?.length ? userData.quests : genQuests();
+        S.diff = userData.diff || 'standard';
         localStorage.setItem('apc_session', JSON.stringify(S.user));
+        
+        // Subscribe to beehiiv on first migration - use their actual plan status
+        const beehiivType = (S.user.plan === 'paid' || S.user.onboarded) ? 'member' : 'lead';
+        subscribeToBeehiiv(S.user.email, beehiivType, S.user.industry || '', S.user.name || '');
         
         if (S.user.plan === 'paid' || S.user.onboarded) {
             S.screen = 'dashboard';
@@ -1957,8 +1972,8 @@ async function signup(){
     const email = document.getElementById('email').value;
     const pass = document.getElementById('pass').value;
     
-    // Check if email exists in users table
-    const ex = await db('users', 'GET', null, `?email=eq.${encodeURIComponent(email)}`);
+    // Check if email exists in profiles table
+    const ex = await db('profiles', 'GET', null, `?email=eq.${encodeURIComponent(email)}`);
     if (ex?.length) {
         alert('Email exists');
         return;
@@ -2059,13 +2074,15 @@ async function completeOnboarding(){
     }
     
     S.quests = genQuests();
-    const res = await db('users','POST',S.user);
+    const res = await db('profiles','PATCH',S.user,`?email=eq.${encodeURIComponent(S.user.email)}`);
     if(res?.length){
         S.user = res[0];
         localStorage.setItem('apc_session',JSON.stringify(S.user));
         localStorage.removeItem('apc_pending');
         // Send welcome email (don't await - fire and forget)
         sendWelcomeEmail(S.user.name || 'there', S.user.email);
+        // Subscribe/upgrade to beehiiv as a paying member (gets full newsletter access)
+        subscribeToBeehiiv(S.user.email, 'member', S.user.industry || '', S.user.name || '');
     }
     S.screen = 'dashboard';
     render();
@@ -2084,13 +2101,15 @@ async function startApp(){
     S.user.forecast_interests = S.onboardData.forecastInterests;
     
     S.quests = genQuests();
-    const res = await db('users','POST',S.user);
+    const res = await db('profiles','PATCH',S.user,`?email=eq.${encodeURIComponent(S.user.email)}`);
     if(res?.length){
         S.user = res[0];
         localStorage.setItem('apc_session',JSON.stringify(S.user));
         localStorage.removeItem('apc_pending');
         // Send welcome email (don't await - fire and forget)
         sendWelcomeEmail(S.user.name, S.user.email);
+        // Subscribe/upgrade to beehiiv as a paying member
+        subscribeToBeehiiv(S.user.email, 'member', S.user.industry || '', S.user.name || '');
     }
     S.screen = 'dashboard';
     render();
@@ -2159,6 +2178,31 @@ async function sendWelcomeEmail(name, email) {
     return sendEmail('welcome', { name, email });
 }
 
+// ==================== BEEHIIV NEWSLETTER ====================
+// Subscribes any user to the AI Proof Club beehiiv newsletter
+// user_type: 'lead' (quiz takers, non-paying) or 'member' (paying subscribers)
+// Free subscribers see paywalled content in beehiiv; members see everything
+
+async function subscribeToBeehiiv(email, user_type = 'lead', industry = '', name = '') {
+    try {
+        const response = await fetch('/.netlify/functions/subscribe-beehiiv', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, user_type, industry, name })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            console.error('beehiiv subscribe failed:', data);
+            return false;
+        }
+        console.log(`beehiiv: subscribed ${email} as ${user_type}`);
+        return true;
+    } catch (e) {
+        console.error('beehiiv subscribe error:', e);
+        return false; // Never block the user flow on this
+    }
+}
+
 // Password reset email
 async function resetPassword(){
     const email = document.getElementById('reset-email').value;
@@ -2201,9 +2245,9 @@ async function changePassword(){
     const authResult = await authSignIn(S.user.email, currentPass);
     
     if (authResult.error) {
-        // Fallback: check old SQL password for users not yet migrated
-        const users = await db('users', 'GET', null, `?email=eq.${encodeURIComponent(S.user.email)}`);
-        if (!users?.length || users[0].password !== currentPass) {
+        // Fallback: check old users table for plaintext password (legacy users only)
+        const legacyCheck = await db('users', 'GET', null, `?email=eq.${encodeURIComponent(S.user.email)}`);
+        if (!legacyCheck?.length || legacyCheck[0].password !== currentPass) {
             alert('Current password is incorrect.');
             return;
         }
@@ -2333,7 +2377,7 @@ async function save(){
         forecastProgress: S.forecastProgress,
         lastQuestWeek: S.user.lastQuestWeek
     };
-    const result = await db('users','PATCH',data,`?email=eq.${encodeURIComponent(S.user.email)}`);
+    const result = await db('profiles','PATCH',data,`?email=eq.${encodeURIComponent(S.user.email)}`);
     if(!result) console.error('Save to Supabase failed');
     localStorage.setItem('apc_session',JSON.stringify({...S.user,...data}));
 }
@@ -2768,7 +2812,7 @@ async function init(){
                     S.companyUrl=data.url||'';S.companyEmail=data.email||'';S.companyIndustry=data.industry||'';
                     S.companyDesc=data.desc||'';S.companyResult=data.result;S.companyStep=2;S.companyUnlocked=true;S.reportSlide=0;S.plans={};
                     // Update plan from lead to report_paid
-                    await db('users','PATCH',{user_type:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.company_risk`);
+                    await db('profiles','PATCH',{user_type:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}`);
                     S.screen='company';render();return;
                 }
                 if(data.type==='threat'){
@@ -2776,7 +2820,7 @@ async function init(){
                     S.threatIndustry=data.industry||'';S.threatDesc=data.desc||'';S.threatResult=data.result;
                     S.threatStep=2;S.threatUnlocked=true;
                     // Update plan from lead to report_paid
-                    await db('users','PATCH',{user_type:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.threat_${data.provider}`);
+                    await db('profiles','PATCH',{user_type:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}`);
                     S.screen='threat';render();return;
                 }
             }catch(e){console.error('Report restore:',e);}
@@ -2849,7 +2893,7 @@ async function init(){
     const session=localStorage.getItem('apc_session');
     if(session){
         const data=JSON.parse(session);
-        const users=await db('users','GET',null,`?email=eq.${encodeURIComponent(data.email)}`);
+        const users=await db('profiles','GET',null,`?email=eq.${encodeURIComponent(data.email)}`);
         if(users?.length){
             S.user=users[0];S.scores=users[0].scores||{ideas:50,personality:50,execution:50};
             S.receipts=users[0].receipts||[];S.diff=users[0].diff||'standard';
