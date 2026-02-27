@@ -46,8 +46,9 @@ exports.handler = async (event) => {
                 },
                 body: JSON.stringify({
                     email,
-                    reactivate_existing: true,   // Re-subscribe if they previously unsubscribed
-                    send_welcome_email: false,    // We handle welcome emails via Resend already
+                    reactivate_existing: true,
+                    send_welcome_email: false,
+                    double_opt_override: 'on',   // Skip double opt-in confirmation
                     utm_source: user_type === 'lead' ? 'quiz' : 'signup',
                     utm_medium: 'organic',
                     custom_fields: customFields,
