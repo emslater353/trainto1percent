@@ -303,6 +303,13 @@ function downloadReportPDF(type){
 }
 
 async function emailReportToTeam(type){
+    // Read ALL values from DOM immediately — before any render/async that could destroy elements
+    var firstName=(document.getElementById('sender-first-'+type)?.value||'').trim();
+    var lastName=(document.getElementById('sender-last-'+type)?.value||'').trim();
+    var senderName=(firstName+' '+lastName).trim()||'Someone';
+    var senderNote=(document.getElementById('sender-note-'+type)?.value||'').trim();
+    var rawEmails=document.getElementById('team-email-'+type)?.value?.trim()||'';
+
     var domain,result,senderEmail,providerName='',providerColor='#00e5c7';
     if(type==='company'){
         domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
@@ -316,11 +323,6 @@ async function emailReportToTeam(type){
         providerName=p?p.name:'';
         providerColor=p?p.color:'#00e5c7';
     }
-    var firstName=(document.getElementById('sender-first-'+type)?.value||'').trim();
-    var lastName=(document.getElementById('sender-last-'+type)?.value||'').trim();
-    var senderName=(firstName+' '+lastName).trim()||'Someone';
-    var senderNote=(document.getElementById('sender-note-'+type)?.value||'').trim();
-    var rawEmails=document.getElementById('team-email-'+type)?.value?.trim()||'';
     // Split by semicolons, filter valid-looking emails
     var recipients=rawEmails.split(';').map(e=>e.trim()).filter(e=>e.includes('@'));
     if(!recipients.length||!result)return;
