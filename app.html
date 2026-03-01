@@ -302,13 +302,14 @@ function downloadReportPDF(type){
     setTimeout(function(){w.print();},500);
 }
 
-async function emailReportToTeam(type){
-    // Read ALL values from DOM immediately — before any render/async that could destroy elements
-    var firstName=(document.getElementById('sender-first-'+type)?.value||'').trim();
-    var lastName=(document.getElementById('sender-last-'+type)?.value||'').trim();
+async function emailReportToTeam(type, firstName, lastName, rawEmails, senderNote){
+    // All values passed directly as arguments — no DOM reads that can fail
+    firstName=(firstName||'').trim();
+    lastName=(lastName||'').trim();
     var senderName=(firstName+' '+lastName).trim()||'Someone';
-    var senderNote=(document.getElementById('sender-note-'+type)?.value||'').trim();
-    var rawEmails=document.getElementById('team-email-'+type)?.value?.trim()||'';
+    senderNote=(senderNote||'').trim();
+    rawEmails=(rawEmails||'').trim();
+    var recipients=rawEmails.split(';').map(e=>e.trim()).filter(e=>e.includes('@'));
 
     var domain,result,senderEmail,providerName='',providerColor='#00e5c7';
     if(type==='company'){
@@ -323,7 +324,6 @@ async function emailReportToTeam(type){
         providerName=p?p.name:'';
         providerColor=p?p.color:'#00e5c7';
     }
-    // Split by semicolons, filter valid-looking emails
     var recipients=rawEmails.split(';').map(e=>e.trim()).filter(e=>e.includes('@'));
     if(!recipients.length||!result)return;
 
@@ -441,7 +441,7 @@ function companyH(){
         // --- SLIDE: BOTTOM LINE + ACTIONS (last slide) ---
         else {
             h+=`<div class="card" style="margin-bottom:16px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">The Bottom Line</h3><p style="font-size:14px;line-height:1.7">${r.summary||''}</p></div>`;
-            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-company-pdf">↓ Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:6px;margin-bottom:6px"><input type="text" class="form-input" id="sender-first-company" placeholder="First name" style="flex:1;font-size:12px"><input type="text" class="form-input" id="sender-last-company" placeholder="Last name" style="flex:1;font-size:12px"></div><input type="text" class="form-input" id="team-email-company" placeholder="teammate@co.com; another@co.com" style="width:100%;font-size:12px;margin-bottom:6px"><textarea class="form-input" id="sender-note-company" placeholder="Add a personal note (optional)..." rows="2" style="width:100%;font-size:12px;resize:none;margin-bottom:6px"></textarea><button class="btn btn-primary btn-full btn-small" id="send-company-email">Send Report →</button><p id="company-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none"></p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
+            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-company-pdf">↓ Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:6px;margin-bottom:6px"><input type="text" class="form-input" id="sender-first-company" placeholder="First name" style="flex:1;font-size:12px"><input type="text" class="form-input" id="sender-last-company" placeholder="Last name" style="flex:1;font-size:12px"></div><input type="text" class="form-input" id="team-email-company" placeholder="teammate@co.com; another@co.com" style="width:100%;font-size:12px;margin-bottom:6px"><textarea class="form-input" id="sender-note-company" placeholder="Add a personal note (optional)..." rows="2" style="width:100%;font-size:12px;resize:none;margin-bottom:6px"></textarea><button class="btn btn-primary btn-full btn-small" onclick="emailReportToTeam('company',document.getElementById('sender-first-company').value,document.getElementById('sender-last-company').value,document.getElementById('team-email-company').value,document.getElementById('sender-note-company').value)">Send Report →</button><p id="company-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none"></p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
         }
         
         // Navigation: dots + prev/next buttons
@@ -515,7 +515,7 @@ function threatH(){
         }
         // --- SLIDE: ACTIONS (last slide) ---
         else {
-            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-threat-pdf">↓ Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:6px;margin-bottom:6px"><input type="text" class="form-input" id="sender-first-threat" placeholder="First name" style="flex:1;font-size:12px"><input type="text" class="form-input" id="sender-last-threat" placeholder="Last name" style="flex:1;font-size:12px"></div><input type="text" class="form-input" id="team-email-threat" placeholder="teammate@co.com; another@co.com" style="width:100%;font-size:12px;margin-bottom:6px"><textarea class="form-input" id="sender-note-threat" placeholder="Add a personal note (optional)..." rows="2" style="width:100%;font-size:12px;resize:none;margin-bottom:6px"></textarea><button class="btn btn-primary btn-full btn-small" id="send-threat-email">Send Report →</button><p id="threat-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none"></p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
+            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-threat-pdf">↓ Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:6px;margin-bottom:6px"><input type="text" class="form-input" id="sender-first-threat" placeholder="First name" style="flex:1;font-size:12px"><input type="text" class="form-input" id="sender-last-threat" placeholder="Last name" style="flex:1;font-size:12px"></div><input type="text" class="form-input" id="team-email-threat" placeholder="teammate@co.com; another@co.com" style="width:100%;font-size:12px;margin-bottom:6px"><textarea class="form-input" id="sender-note-threat" placeholder="Add a personal note (optional)..." rows="2" style="width:100%;font-size:12px;resize:none;margin-bottom:6px"></textarea><button class="btn btn-primary btn-full btn-small" onclick="emailReportToTeam('threat',document.getElementById('sender-first-threat').value,document.getElementById('sender-last-threat').value,document.getElementById('team-email-threat').value,document.getElementById('sender-note-threat').value)">Send Report →</button><p id="threat-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none"></p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
         }
         
         // Navigation
