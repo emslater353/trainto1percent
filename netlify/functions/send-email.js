@@ -25,7 +25,6 @@ exports.handler = async (event) => {
 
         switch (type) {
             case 'welcome':
-                // Welcome email to new user
                 emailPayload = {
                     from: FROM_EMAIL,
                     to: data.email,
@@ -35,7 +34,6 @@ exports.handler = async (event) => {
                 break;
 
             case 'password-reset':
-                // Password reset email
                 const resetToken = generateToken();
                 emailPayload = {
                     from: FROM_EMAIL,
@@ -43,11 +41,9 @@ exports.handler = async (event) => {
                     subject: 'Reset Your AI Proof Club Password',
                     html: generatePasswordResetEmail(data.name, resetToken)
                 };
-                // Return the token so we can store it
                 break;
 
             case 'weekly-tasks':
-                // Weekly task reminder
                 emailPayload = {
                     from: FROM_EMAIL,
                     to: data.email,
@@ -57,7 +53,6 @@ exports.handler = async (event) => {
                 break;
 
             case 'support':
-                // Support/feedback form - send to admin
                 emailPayload = {
                     from: FROM_EMAIL,
                     to: SUPPORT_EMAIL,
@@ -65,13 +60,23 @@ exports.handler = async (event) => {
                     html: generateSupportEmail(data),
                     reply_to: data.email
                 };
-                // Also send confirmation to user
                 await sendEmail({
                     from: FROM_EMAIL,
                     to: data.email,
                     subject: 'We received your message — AI Proof Club',
                     html: generateSupportConfirmation(data.name)
                 });
+                break;
+
+            case 'report':
+                // Send AI report to a teammate directly via Resend
+                emailPayload = {
+                    from: FROM_EMAIL,
+                    to: data.teamEmail,
+                    reply_to: data.senderEmail,
+                    subject: data.subject || `AI Opportunity Report — ${data.domain}`,
+                    html: generateReportEmail(data)
+                };
                 break;
 
             default:
@@ -123,6 +128,100 @@ function generateToken() {
 }
 
 // ==================== EMAIL TEMPLATES ====================
+
+function generateReportEmail(data) {
+    const { domain, reportType, result, providerName, providerColor } = data;
+    const accentColor = providerColor || '#00e5c7';
+    const opps = (result && result.opportunities) || [];
+    const risks = (result && result.threats) || [];
+    const title = reportType === 'threat'
+        ? `${providerName || 'AI'} Threat Assessment: ${domain}`
+        : `AI Opportunity Report: ${domain}`;
+
+    const oppRows = opps.map((o, i) => `
+        <div style="border-left: 3px solid ${accentColor}; padding: 12px 16px; margin-bottom: 12px; background: #0d0d12;">
+            ${o.prediction ? `<div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: ${accentColor}; margin-bottom: 4px;">${o.prediction}</div>` : ''}
+            <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px; color: #e8e8ec;">${i + 1}. ${o.title}</div>
+            <div style="font-size: 13px; color: #9090a0;">${o.description}</div>
+        </div>
+    `).join('');
+
+    const riskRows = risks.map(t => `
+        <div style="margin-bottom: 10px; padding: 10px 0; border-bottom: 1px solid #1a1a24;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600; font-size: 13px; color: #e8e8ec;">${t.prediction}</span>
+                <span style="font-weight: 700; color: #e67e22; font-size: 12px;">${t.probability}%</span>
+            </div>
+            <div style="font-size: 12px; color: #6e7087; margin-top: 3px;">${t.impact}</div>
+        </div>
+    `).join('');
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: 'Courier New', monospace; background: #050508; color: #e8e8ec; padding: 40px 20px; margin: 0;">
+    <div style="max-width: 650px; margin: 0 auto;">
+
+        <div style="text-align: center; background: #0a0a14; padding: 14px; margin-bottom: 0; letter-spacing: 3px; font-size: 13px; font-weight: 700; color: ${accentColor};">
+            AIPROOF.CLUB
+        </div>
+
+        <div style="background: #0d0d12; border: 1px solid #1a1a24; padding: 30px; margin-bottom: 0;">
+            <h1 style="font-size: 20px; font-weight: 700; margin: 0 0 6px 0; color: #e8e8ec;">${title}</h1>
+            <p style="color: #6e7087; font-size: 13px; margin: 0 0 20px 0;">${(result && result.company_description) || domain}</p>
+
+            ${reportType === 'threat' && result && result.threat_level ? `
+            <div style="background: #050508; border-left: 4px solid ${accentColor}; padding: 14px 18px; margin-bottom: 24px;">
+                <p style="margin: 0 0 6px 0; font-size: 13px;"><strong style="color: ${accentColor};">Threat Level:</strong> ${result.threat_level}</p>
+                <p style="margin: 0 0 6px 0; font-size: 13px;"><strong>Timeline:</strong> ${result.months_until_threat || '—'} months</p>
+                ${result.timeline_reason ? `<p style="margin: 0; font-size: 12px; color: #6e7087;">${result.timeline_reason}</p>` : ''}
+            </div>
+            ` : ''}
+
+            ${result && result.ai_status ? `
+            <div style="background: #050508; padding: 16px; margin-bottom: 24px; border-left: 3px solid #6e7087;">
+                <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #6e7087; margin-bottom: 6px;">AI-Proof Status</div>
+                <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #e8e8ec;">${result.ai_status.level || ''}</div>
+                <p style="font-size: 13px; color: #9090a0; margin: 0; line-height: 1.7;">${result.ai_status.summary || ''}</p>
+            </div>
+            ` : ''}
+
+            <h2 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #6e7087; margin: 0 0 14px 0; padding-top: 10px; border-top: 1px solid #1a1a24;">
+                Opportunities (${opps.length})
+            </h2>
+            ${oppRows}
+
+            <h2 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #6e7087; margin: 24px 0 14px 0; padding-top: 10px; border-top: 1px solid #1a1a24;">
+                Risks (${risks.length})
+            </h2>
+            ${riskRows}
+
+            ${result && result.summary ? `
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #1a1a24;">
+                <h2 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #6e7087; margin: 0 0 10px 0;">Summary</h2>
+                <p style="font-size: 13px; color: #9090a0; line-height: 1.7; margin: 0;">${result.summary}</p>
+            </div>
+            ` : ''}
+
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #1a1a24; text-align: center;">
+                <a href="https://aiproof.club" style="display: inline-block; background: ${accentColor}; color: #050508; padding: 13px 26px; text-decoration: none; font-weight: bold; font-size: 11px; letter-spacing: 2px;">
+                    RUN YOUR OWN REPORT →
+                </a>
+            </div>
+        </div>
+
+        <p style="color: #3a3a4a; font-size: 11px; text-align: center; margin-top: 20px;">
+            Generated by AIProof.Club &middot; aiproof.club &middot; Questions? erica@aiproof.club
+        </p>
+    </div>
+</body>
+</html>
+    `;
+}
 
 function generateWelcomeEmail(name) {
     return `
