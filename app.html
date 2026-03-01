@@ -86,6 +86,14 @@ function diagnosticH(){
                         ${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}
                     </select>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Your Role</label>
+                    <input type="text" class="form-input" id="diag-role" required placeholder="e.g. Operations Manager, Data Analyst, Designer">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">What do you actually do day-to-day?</label>
+                    <textarea class="form-input" id="diag-daytoday" required placeholder="e.g. I run reports in Excel, manage vendor relationships, coordinate with the ops team on inventory..." rows="3" style="resize:none"></textarea>
+                </div>
                 <button type="submit" class="btn btn-primary btn-full">Get My Score →</button>
             </form>
             <p class="text-center text-secondary text-small mt-15">Takes 60 seconds.</p>
@@ -114,6 +122,16 @@ function diagnosticH(){
         const percentile = getPercentile(avgScore);
         const weak = ['ideas','personality','execution'].reduce((a,b)=>scores[a]<scores[b]?a:b);
         
+        // Trigger AI assessment generation if not already done
+        if(!S.diagnosticAssessment && !S.diagnosticAssessmentLoading){
+            S.diagnosticAssessmentLoading = true;
+            generateDiagnosticAssessment(scores).then(assessment => {
+                S.diagnosticAssessment = assessment;
+                S.diagnosticAssessmentLoading = false;
+                render();
+            });
+        }
+        
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
         <div class="card text-center">
             <h2 class="card-title">Your AI-Proof Score</h2>
@@ -123,13 +141,25 @@ function diagnosticH(){
                 <div class="meter"><div class="meter-circle personality">${p}%</div><div class="meter-label">Personality</div></div>
                 <div class="meter"><div class="meter-circle execution">${e}%</div><div class="meter-label">Execution</div></div>
             </div>
-            
+
             <div class="verdict">
                 <div class="verdict-title">Your Position</div>
                 <div class="verdict-text">You're in the <strong>${percentile}th percentile</strong>. The AI-Proof threshold is 85%+.</div>
             </div>
+
+            ${S.diagnosticAssessmentLoading ? `
+            <div style="background:var(--bg-primary);padding:20px;margin-top:20px;text-align:left">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                    <div style="width:16px;height:16px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+                    <span style="font-size:12px;color:var(--text-secondary)">Generating your personal assessment...</span>
+                </div>
+            </div>` : S.diagnosticAssessment ? `
+            <div style="background:var(--bg-primary);padding:20px;margin-top:20px;text-align:left;border-left:3px solid var(--accent)">
+                <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Your Personal Assessment</div>
+                <p style="font-size:14px;line-height:1.8;color:var(--text-primary)">${S.diagnosticAssessment}</p>
+            </div>` : ''}
             
-            <div class="verdict" style="border-color:var(--${weak})">
+            <div class="verdict" style="border-color:var(--${weak});margin-top:20px">
                 <div class="verdict-title">Your Weakest Mode</div>
                 <div class="verdict-text"><strong style="text-transform:capitalize">${weak}</strong> is where AI will hit you hardest. This is where your training starts.</div>
             </div>
@@ -176,6 +206,59 @@ function calculateDiagnosticScores(){
     return scores;
 }
 
+async function generateDiagnosticAssessment(scores){
+    const role = S.diagnosticRole || '';
+    const dayToDay = S.diagnosticDayToDay || '';
+    const industry = S.diagnosticIndustry || '';
+    const weak = ['ideas','personality','execution'].reduce((a,b)=>scores[a]<scores[b]?a:b);
+    const avgScore = Math.round((scores.ideas+scores.personality+scores.execution)/3);
+
+    const prompt1 = `You are an honest AI career strategist. Be direct, specific, and avoid generic advice.
+
+Person's profile:
+- Role: ${role}
+- Industry: ${industry}
+- Day-to-day work: ${dayToDay}
+- AI-Proof scores: Ideas ${scores.ideas}%, Personality ${scores.personality}%, Execution ${scores.execution}%
+- Overall: ${avgScore}% (weakest mode: ${weak})
+
+Write a 3-4 sentence personal assessment of their AI risk level. 
+
+Rules:
+- Reference their ACTUAL role and what they described doing day-to-day
+- Be honest about risk level — don't sugarcoat
+- Name one specific threat to their current work
+- Name one specific opportunity given their background
+- Write in second person ("your role", "you", "your work")
+- Sound like a smart friend telling them the truth, not a consultant
+- NO generic phrases like "in today's rapidly evolving landscape" or "AI is transforming everything"
+
+Example style: "You're in ops at a fashion company running data — that's a high-risk combination because inventory forecasting and reporting are exactly what AI does first. The good news is you come from an industry of tangible goods and real supplier relationships, which AI can't replicate. Your opportunity is to become the person who bridges the AI tools with the physical supply chain reality your team lives in."
+
+Write the assessment now:`;
+
+    let assessment = '';
+    try {
+        const r1 = await ai([{role:'user', content: prompt1}], 500, 'general');
+        if(!r1) return null;
+        assessment = r1.trim();
+
+        // Second pass: verify it's specific not generic
+        const prompt2 = `Review this AI career assessment and check if it references the person's specific role (${role}) and their actual work (${dayToDay}). If it's too generic or could apply to anyone, rewrite it to be more specific. If it's already specific, return it unchanged.
+
+Assessment: "${assessment}"
+
+Return ONLY the final assessment text, nothing else.`;
+
+        const r2 = await ai([{role:'user', content: prompt2}], 500, 'general');
+        if(r2) assessment = r2.trim();
+
+    } catch(e) {
+        console.error('Assessment generation error:', e);
+    }
+    return assessment || null;
+}
+
 // ===== THREAT PROVIDERS =====
 var THREAT_PROVIDERS={google:{name:'Google',color:'#4285F4',tagline:'Google is launching AI products faster than any company in history.',products:[{name:'Gemini 2.5 Pro',date:'2025',desc:'Most capable reasoning model'},{name:'AI Overviews in Search',date:'2024-2025',desc:'AI answers replacing website clicks'},{name:'Gemini in Workspace',date:'2024-2025',desc:'AI in Gmail, Docs, Sheets'},{name:'Google Veo 2',date:'2025',desc:'AI video generation from text'},{name:'Project Astra',date:'2025',desc:'Real-time AI assistant with vision'},{name:'Waymo Expansion',date:'2025',desc:'Autonomous ride-hailing in 10+ cities'},{name:'Gemini Code Assist',date:'2025',desc:'AI pair-programmer'},{name:'AI-Powered Ads',date:'2025',desc:'Fully automated ad creation'}],defaultMonths:18},claude:{name:'Anthropic (Claude)',color:'#D97706',tagline:"Anthropic is building the most trusted AI \u2014 coming for knowledge work.",products:[{name:'Claude Opus 4',date:'2025',desc:'Most capable AI for complex reasoning'},{name:'Computer Use',date:'2025',desc:'AI that operates your computer'},{name:'Claude for Enterprise',date:'2024-2025',desc:'Enterprise AI with team collaboration'},{name:'Claude Code',date:'2025',desc:'AI coding agent'},{name:'Claude in Excel/Chrome',date:'2025',desc:'AI agents in spreadsheets and browsers'},{name:'MCP Protocol',date:'2024-2025',desc:'AI connecting to any tool or API'},{name:'Extended Thinking',date:'2025',desc:'AI reasoning for minutes'}],defaultMonths:14},openai:{name:'OpenAI',color:'#10A37F',tagline:'OpenAI is racing to build AGI \u2014 every product reshapes your industry.',products:[{name:'ChatGPT',date:'2024-2025',desc:'200M+ weekly users doing specialist work'},{name:'Sora',date:'2025',desc:'AI video generation'},{name:'GPT Store',date:'2024-2025',desc:'Marketplace of AI apps'},{name:'o3 Reasoning',date:'2025',desc:'PhD-level reasoning'},{name:'Operator',date:'2025',desc:'AI completing tasks'},{name:'Codex',date:'2024-2025',desc:'AI writing code'},{name:'Voice Mode',date:'2024-2025',desc:'Natural voice replacing support'},{name:'DALL-E',date:'2024-2025',desc:'AI images'}],defaultMonths:12}};
 
@@ -210,23 +293,53 @@ function downloadReportPDF(type){
     setTimeout(function(){w.print();},500);
 }
 
-function emailReportToTeam(type){
-    var domain,result,email,providerName='';
-    if(type==='company'){domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');result=S.companyResult;email=S.companyEmail;}
-    else{domain=S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');result=S.threatResult;email=S.threatEmail;var p=THREAT_PROVIDERS[S.threatProvider];providerName=p?p.name+' ':'';}
-    var teamEmail=document.getElementById('team-email-'+type)?.value;
+async function emailReportToTeam(type){
+    var domain,result,senderEmail,providerName='',providerColor='#00e5c7';
+    if(type==='company'){
+        domain=S.companyUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        result=S.companyResult;
+        senderEmail=S.companyEmail;
+    } else {
+        domain=S.threatUrl.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        result=S.threatResult;
+        senderEmail=S.threatEmail;
+        var p=THREAT_PROVIDERS[S.threatProvider];
+        providerName=p?p.name:'';
+        providerColor=p?p.color:'#00e5c7';
+    }
+    var teamEmail=document.getElementById('team-email-'+type)?.value?.trim();
     if(!teamEmail||!result)return;
-    var opps=result.opportunities||[];
-    var subject=encodeURIComponent('AI Threat + Opportunity Snapshot for '+domain);
-    var body='Hi,\n\nI ran an AI threat and opportunity assessment on '+domain+' using AI Proof Club. It is a platform that takes major AI and technology predictions (like timelines for self-driving cars, AI-human integration etc.) and translates them into actionable opportunities for companies.\n\nThought this was interesting and worth sharing:\n\n';
-    if(result.threat_level)body+='Threat Level: '+result.threat_level+'\n';
-    if(result.months_until_threat)body+='Timeline: '+result.months_until_threat+' months\n\n';
-    body+='Top Opportunities:\n';
-    opps.forEach(function(o,i){body+=(i+1)+'. '+o.title+' \u2014 '+o.description+'\n\n';});
-    body+='If you want to go deeper on what this could look like in practice, the founder is available here: erica@aiproof.club\n\n\u2014 Shared via AI Proof Club';
-    window.open('mailto:'+teamEmail+'?subject='+subject+'&body='+encodeURIComponent(body));
+
     var statusEl=document.getElementById(type+'-email-status');
-    if(statusEl){statusEl.style.display='block';setTimeout(function(){statusEl.style.display='none';},3000);}
+    if(statusEl){statusEl.style.display='block';statusEl.textContent='Sending...';statusEl.style.color='var(--text-secondary)';}
+
+    try {
+        var res = await fetch('/.netlify/functions/send-email', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({
+                type: 'report',
+                data: {
+                    teamEmail,
+                    senderEmail,
+                    domain,
+                    reportType: type,
+                    providerName,
+                    providerColor,
+                    result,
+                    subject: (providerName||'AI')+' Report for '+domain+' — AI Proof Club'
+                }
+            })
+        });
+        var json = await res.json();
+        if(json.success){
+            if(statusEl){statusEl.textContent='✓ Report sent to '+teamEmail;statusEl.style.color='var(--success)';setTimeout(function(){statusEl.style.display='none';},4000);}
+        } else {
+            throw new Error('Send failed');
+        }
+    } catch(e) {
+        if(statusEl){statusEl.textContent='Failed to send — try again';statusEl.style.color='var(--danger)';setTimeout(function(){statusEl.style.display='none';},4000);}
+    }
 }
 
 function generateCompanyOpportunities(d,ind){return [{prediction:'Loneliness epidemic',title:'Community-Powered Growth',description:d+' could build community features that turn customers into a tribe.'},{prediction:'AI-generated movies',title:'AI Content Studio',description:'Use generative AI to produce brand content at 100x speed.'},{prediction:'Human-AI merge',title:'Human Premium Positioning',description:'What makes '+d+' uniquely human becomes more valuable.'},{prediction:'Self-driving cars',title:'In-Transit Experiences',description:'Autonomous vehicles free up commute hours for '+d+'.'},{prediction:'Continuous learning',title:'AI Upskilling Platform',description:'Build a learning system that keeps your team current.'},{prediction:'AI copilots',title:'AI Workflow Integration',description:'Embed AI copilot features before competitors.'},{prediction:'Trust collapses',title:'Verified Authenticity',description:d+' can build verified-authentic brand signals.'},{prediction:'Filter bubbles',title:'Shared Experiences',description:d+' could create live non-algorithmic moments.'},{prediction:'Mental health',title:'Wellbeing Integration',description:'Integrate wellbeing features for lower turnover.'},{prediction:'AI agents',title:'Agent-Ready Infrastructure',description:'Prepare for AI agents acting for customers.'},{prediction:'Data privacy',title:'Privacy-First',description:'Turn data protection into a selling point.'},{prediction:'Voice interfaces',title:'Voice-First Features',description:'Design voice interaction for core product.'},{prediction:'Personalization',title:'Personalized Journeys',description:'AI-powered individualized experiences.'},{prediction:'Automation',title:'Human+AI Model',description:'Redesign teams around human-AI collaboration.'},{prediction:'Creator economy',title:'Creator Partnerships',description:'Build a creator ecosystem around '+d+'.'}];}
@@ -1051,7 +1164,11 @@ function bindEvents(){
         S.diagnosticStep=0;
         S.diagnosticEmail='';
         S.diagnosticIndustry='';
+        S.diagnosticRole='';
+        S.diagnosticDayToDay='';
         S.diagnosticAnswers=[];
+        S.diagnosticAssessment=null;
+        S.diagnosticAssessmentLoading=false;
         S.screen='diagnostic';
         render();
     });
@@ -1059,6 +1176,8 @@ function bindEvents(){
         e.preventDefault();
         S.diagnosticEmail = document.getElementById('diag-email').value;
         S.diagnosticIndustry = document.getElementById('diag-industry').value;
+        S.diagnosticRole = document.getElementById('diag-role').value;
+        S.diagnosticDayToDay = document.getElementById('diag-daytoday').value;
         
         // Create Auth user with random password (they'll set real password if they convert)
         const tempPassword = 'temp_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
