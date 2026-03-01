@@ -9692,9 +9692,7 @@ async function generateDiagnosticAssessment(role, industry, dayToDay) {
     const forecastSample = (typeof FORECAST_DATABASE !== 'undefined' ? FORECAST_DATABASE : []).slice(0,40).map(function(f){return {title:f.title||f.name||''};}).filter(function(f){return f.title;});
     const forecastList = forecastSample.map(function(f){return f.title;}).join(' | ');
     const systemPrompt = 'You are an AI displacement analyst. Assess AI displacement risk for this person. Be honest but constructive. Respond ONLY with valid JSON: {"riskLevel":"HIGH|MEDIUM|LOW","riskReason":"One sentence why.","atRisk":["task at risk","another","a third"],"stillAhead":["strength AI cant replace","another","a third"],"forecastsToWatch":[{"title":"exact forecast title from list","why":"one sentence why it matters to them"},{"title":"exact title","why":"one sentence"},{"title":"exact title","why":"one sentence"}]}. For forecastsToWatch pick ONLY from this list: ' + forecastList;
-    const userMsg = 'Role: ' + role + '
-Industry: ' + industry + '
-Day-to-day: ' + dayToDay;
+    const userMsg = 'Role: ' + role + '\nIndustry: ' + industry + '\nDay-to-day: ' + dayToDay;
     try {
         const resp = await fetch('/.netlify/functions/openai-proxy', {
             method: 'POST',
