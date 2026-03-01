@@ -848,6 +848,8 @@ const S = {
     diagnosticStep: 0, // 0=email/industry, 1-4=questions, 5=results (gated)
     diagnosticEmail: '',
     diagnosticIndustry: '',
+    diagnosticRole: '',
+    diagnosticDayToDay: '',
     diagnosticAnswers: [],
     // Forecasts
     forecasts: [],
@@ -1488,7 +1490,7 @@ function diagnosticH(){
         return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
         <div class="card">
             <h2 class="card-title text-center">Get Your AI-Proof Score</h2>
-            <p class="card-subtitle text-center">4 quick questions to see where you stand</p>
+            <p class="card-subtitle text-center">60 seconds to see where you stand</p>
             
             <div style="background:var(--bg-primary);padding:20px;margin:20px 0;text-align:center">
                 <div style="display:flex;gap:15px;justify-content:center;margin-bottom:15px">
@@ -1511,7 +1513,7 @@ function diagnosticH(){
                         ${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary btn-full">Get My Score →</button>
+                <div class="form-group"><label class="form-label">Your Role</label><input type="text" class="form-input" id="diag-role" required placeholder="e.g. Operations Manager, Designer, Sales Rep"></div><div class="form-group"><label class="form-label">What do you actually do day-to-day?</label><textarea class="form-input" id="diag-daytoday" required placeholder="e.g. I run reports, manage vendors, coordinate with the ops team..." rows="3" style="resize:none"></textarea></div><button type="submit" class="btn btn-primary btn-full">Get My Score →</button>
             </form>
             <p class="text-center text-secondary text-small mt-15">Takes 60 seconds.</p>
         </div>
@@ -2484,6 +2486,8 @@ function bindEvents(){
         e.preventDefault();
         S.diagnosticEmail = document.getElementById('diag-email').value;
         S.diagnosticIndustry = document.getElementById('diag-industry').value;
+        S.diagnosticRole = document.getElementById('diag-role').value;
+        S.diagnosticDayToDay = document.getElementById('diag-daytoday').value;
         
         // Create Auth user with random password (they'll set real password if they convert)
         const tempPassword = 'temp_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -2503,7 +2507,7 @@ function bindEvents(){
             user_type: 'lead'
         });
         
-        S.diagnosticStep = 1;
+        S.diagnosticStep = 5;
         render();
     });
     document.querySelectorAll('.diag-option').forEach(o=>o.addEventListener('click',()=>{

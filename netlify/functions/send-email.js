@@ -130,7 +130,9 @@ function generateToken() {
 // ==================== EMAIL TEMPLATES ====================
 
 function generateReportEmail(data) {
-    const { domain, reportType, result, providerName, providerColor } = data;
+    const { domain, reportType, result, providerName, providerColor, senderName, senderNote } = data;
+    const displayName = (senderName && senderName.trim() && senderName !== "Someone") ? senderName.trim() : "Someone";
+    const displayNote = senderNote && senderNote.trim() ? senderNote.trim() : "";
     const accentColor = providerColor || '#00e5c7';
     const opps = (result && result.opportunities) || [];
     const risks = (result && result.threats) || [];
