@@ -205,42 +205,61 @@ async function generateDiagnosticAssessment(){
     const dayToDay = S.diagnosticDayToDay || '';
     const industry = S.diagnosticIndustry || '';
 
+    // Pull a sample of real forecasts from the database to ground the AI's response
+    const forecastSample = (typeof FORECAST_DATABASE !== 'undefined' && FORECAST_DATABASE.length)
+        ? FORECAST_DATABASE.slice(0, 40).map(f => ({
+            id: f.id,
+            title: f.title,
+            category: f.category,
+            probability: f.probability,
+            horizon: f.horizon,
+            threatMode: f.threatMode
+          }))
+        : [];
+
+    const forecastContext = forecastSample.length
+        ? `\n\nHere are real forecasts from our database (use these to pick the most relevant one for this person's situation):\n${forecastSample.map(f=>`- [${f.id}] ${f.title} (${f.probability}% probability, ${f.horizon}, threatens: ${f.threatMode})`).join('\n')}`
+        : '';
+
     const prompt1 = `You are an honest AI career strategist. Be direct and specific. No corporate speak.
 
 Person's profile:
 - Role: ${role}
-- Industry: ${industry}  
+- Industry: ${industry}
 - Day-to-day work: ${dayToDay}
+${forecastContext}
 
-Return ONLY a JSON object with this exact structure (no markdown, no backticks):
+Return ONLY a valid JSON object with this exact structure (no markdown, no backticks, no extra text):
 {
-  "risk_level": "High Risk" | "Moderate Risk" | "Low Risk",
-  "risk_color": "danger" | "warning" | "success",
-  "assessment": "2-3 sentences. Reference their ACTUAL role and day-to-day. Be honest. Name one specific threat to their work. Sound like a smart friend telling the truth, not a consultant. No generic phrases.",
+  "risk_level": "High Risk" or "Moderate Risk" or "Low Risk",
+  "risk_color": "danger" or "warning" or "success",
+  "assessment": "2-3 sentences. Reference their ACTUAL role and day-to-day. Be honest about displacement risk. Sound like a smart friend, not a consultant. No generic phrases like 'in today's rapidly evolving landscape'.",
   "forecast_to_watch": {
-    "title": "Short forecast title (e.g. AI agents replace data entry roles by 2026)",
-    "why": "1 sentence: why this specific forecast matters for their role"
+    "title": "The actual forecast title from the list above that is most relevant to their work",
+    "why": "One sentence: exactly why this forecast hits their specific role/work"
   },
   "opportunity": {
-    "title": "Short opportunity title suited for their background",
-    "why": "1 sentence: why they are specifically positioned for this"
+    "title": "One specific opportunity for someone with their background and role",
+    "why": "One sentence: why they specifically are positioned for this, given what they actually do"
   }
 }`;
 
     try {
-        const r1 = await ai([{role:'user', content: prompt1}], 600, 'general');
+        const r1 = await ai([{role:'user', content: prompt1}], 700, 'general');
         if(!r1) return null;
 
-        // Strip any markdown fences
         let clean = r1.trim().replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
-        
-        // Second pass: verify specificity
-        const prompt2 = `Review this AI career assessment JSON. Check if "assessment" references the person's specific role (${role}) and actual work (${dayToDay}). If it's too generic, rewrite only the "assessment" field to be more specific. Return the complete JSON unchanged except potentially updating "assessment". No markdown, no backticks, just JSON.
+
+        // Second pass: verify the assessment references their actual work specifically
+        const prompt2 = `You wrote this career risk assessment. Check: does the "assessment" field specifically reference the person's role (${role}) and their actual day-to-day work (${dayToDay})? If it's generic and could apply to anyone, rewrite ONLY the "assessment" field to be more specific. Everything else stays unchanged. Return the complete JSON, no markdown, no backticks.
 
 ${clean}`;
 
-        const r2 = await ai([{role:'user', content: prompt2}], 600, 'general');
-        if(r2) clean = r2.trim().replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+        const r2 = await ai([{role:'user', content: prompt2}], 700, 'general');
+        if(r2){
+            const clean2 = r2.trim().replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+            try { return JSON.parse(clean2); } catch(e) {}
+        }
 
         return JSON.parse(clean);
     } catch(e) {
@@ -297,9 +316,14 @@ async function emailReportToTeam(type){
         providerName=p?p.name:'';
         providerColor=p?p.color:'#00e5c7';
     }
-    var teamEmail=document.getElementById('team-email-'+type)?.value?.trim();
-    var senderName=document.getElementById('sender-name-'+type)?.value?.trim()||'Someone';
-    if(!teamEmail||!result)return;
+    var firstName=(document.getElementById('sender-first-'+type)?.value||'').trim();
+    var lastName=(document.getElementById('sender-last-'+type)?.value||'').trim();
+    var senderName=(firstName+' '+lastName).trim()||'Someone';
+    var senderNote=(document.getElementById('sender-note-'+type)?.value||'').trim();
+    var rawEmails=document.getElementById('team-email-'+type)?.value?.trim()||'';
+    // Split by semicolons, filter valid-looking emails
+    var recipients=rawEmails.split(';').map(e=>e.trim()).filter(e=>e.includes('@'));
+    if(!recipients.length||!result)return;
 
     var statusEl=document.getElementById(type+'-email-status');
     if(statusEl){statusEl.style.display='block';statusEl.textContent='Sending...';statusEl.style.color='var(--text-secondary)';}
@@ -311,9 +335,12 @@ async function emailReportToTeam(type){
             body: JSON.stringify({
                 type: 'report',
                 data: {
-                    teamEmail,
+                    teamEmails: recipients,   // array
+                    teamEmail: recipients[0], // Resend primary (cc rest)
+                    teamEmailCc: recipients.slice(1),
                     senderEmail,
                     senderName,
+                    senderNote,
                     domain,
                     reportType: type,
                     providerName,
@@ -325,7 +352,8 @@ async function emailReportToTeam(type){
         });
         var json = await res.json();
         if(json.success){
-            if(statusEl){statusEl.textContent='✓ Report sent to '+teamEmail;statusEl.style.color='var(--success)';setTimeout(function(){statusEl.style.display='none';},4000);}
+            var sent=recipients.length>1?recipients.length+' recipients':''+recipients[0];
+            if(statusEl){statusEl.textContent='✓ Sent to '+sent;statusEl.style.color='var(--success)';setTimeout(function(){statusEl.style.display='none';},5000);}
         } else {
             throw new Error('Send failed');
         }
@@ -411,7 +439,7 @@ function companyH(){
         // --- SLIDE: BOTTOM LINE + ACTIONS (last slide) ---
         else {
             h+=`<div class="card" style="margin-bottom:16px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">The Bottom Line</h3><p style="font-size:14px;line-height:1.7">${r.summary||''}</p></div>`;
-            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-company-pdf">↓ Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="margin-bottom:8px"><input type="text" class="form-input" id="sender-name-company" placeholder="Your name (so they know who sent it)" style="width:100%;font-size:12px;margin-bottom:6px"><input type="email" class="form-input" id="team-email-company" placeholder="teammate@company.com or team list" style="width:100%;font-size:12px"></div><button class="btn btn-primary btn-full btn-small" id="send-company-email" style="margin-top:6px">Send Report →</button><p id="company-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none">✓ Email client opened</p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
+            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-company-pdf">↓ Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:6px;margin-bottom:6px"><input type="text" class="form-input" id="sender-first-company" placeholder="First name" style="flex:1;font-size:12px"><input type="text" class="form-input" id="sender-last-company" placeholder="Last name" style="flex:1;font-size:12px"></div><input type="text" class="form-input" id="team-email-company" placeholder="teammate@co.com; another@co.com" style="width:100%;font-size:12px;margin-bottom:6px"><textarea class="form-input" id="sender-note-company" placeholder="Add a personal note (optional)..." rows="2" style="width:100%;font-size:12px;resize:none;margin-bottom:6px"></textarea><button class="btn btn-primary btn-full btn-small" id="send-company-email">Send Report →</button><p id="company-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none"></p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
         }
         
         // Navigation: dots + prev/next buttons
@@ -485,7 +513,7 @@ function threatH(){
         }
         // --- SLIDE: ACTIONS (last slide) ---
         else {
-            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-threat-pdf">↓ Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="margin-bottom:8px"><input type="text" class="form-input" id="sender-name-threat" placeholder="Your name (so they know who sent it)" style="width:100%;font-size:12px;margin-bottom:6px"><input type="email" class="form-input" id="team-email-threat" placeholder="teammate@company.com or team list" style="width:100%;font-size:12px"></div><button class="btn btn-primary btn-full btn-small" id="send-threat-email" style="margin-top:6px">Send Report →</button><p id="threat-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none">✓ Email client opened</p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
+            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-threat-pdf">↓ Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:6px;margin-bottom:6px"><input type="text" class="form-input" id="sender-first-threat" placeholder="First name" style="flex:1;font-size:12px"><input type="text" class="form-input" id="sender-last-threat" placeholder="Last name" style="flex:1;font-size:12px"></div><input type="text" class="form-input" id="team-email-threat" placeholder="teammate@co.com; another@co.com" style="width:100%;font-size:12px;margin-bottom:6px"><textarea class="form-input" id="sender-note-threat" placeholder="Add a personal note (optional)..." rows="2" style="width:100%;font-size:12px;resize:none;margin-bottom:6px"></textarea><button class="btn btn-primary btn-full btn-small" id="send-threat-email">Send Report →</button><p id="threat-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none"></p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
         }
         
         // Navigation
