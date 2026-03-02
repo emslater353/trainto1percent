@@ -845,10 +845,12 @@ const S = {
     weeklyEmailOptIn: null, // {email, optedIn} for weekly quest emails
     freeQuizMode: false, // true if taking quiz from landing page (not logged in)
     freeQuizScores: null, // store scores from free quiz
-    diagnosticStep: 0, // 0=email/industry, 1-4=questions, 5=results (gated)
+    diagnosticStep: 0, // 0=form, 1=loading, 2=results
     diagnosticEmail: '',
     diagnosticIndustry: '',
-    diagnosticAnswers: [],
+    diagnosticTitle: '',
+    diagnosticDayToDay: '',
+    diagnosticResult: null,
     // Forecasts
     forecasts: [],
     forecastFilter: 'all', // all, ai, tech, crypto, politics, science
@@ -1482,106 +1484,109 @@ function render(){
 // 4-question AI-Proof Score flow
 function diagnosticH(){
     const step = S.diagnosticStep;
-    
-    // Step 0: Email + Industry collection
+
+    // Step 0: Input form
     if(step === 0){
         return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
         <div class="card">
-            <h2 class="card-title text-center">Get Your AI-Proof Score</h2>
-            <p class="card-subtitle text-center">4 quick questions to see where you stand</p>
-            
-            <div style="background:var(--bg-primary);padding:20px;margin:20px 0;text-align:center">
-                <div style="display:flex;gap:15px;justify-content:center;margin-bottom:15px">
-                    <div><span style="font-size:24px">💡</span><div style="font-size:10px;color:var(--ideas)">Ideas</div></div>
-                    <div><span style="font-size:24px">⚡</span><div style="font-size:10px;color:var(--personality)">Personality</div></div>
-                    <div><span style="font-size:24px">🎯</span><div style="font-size:10px;color:var(--execution)">Execution</div></div>
-                </div>
-                <p class="text-secondary text-small">We measure the 3 modes that separate people who thrive with AI vs get replaced by it.</p>
-            </div>
-            
+            <h2 class="card-title text-center">Are You AI-Proof?</h2>
+            <p class="card-subtitle text-center">Tell us about your role and we'll assess where you stand.</p>
             <form id="diagnostic-start-form">
                 <div class="form-group">
                     <label class="form-label">Your Email</label>
-                    <input type="email" class="form-input" id="diag-email" required placeholder="you@email.com">
+                    <input type="email" class="form-input" id="diag-email" required placeholder="you@email.com" value="${S.diagnosticEmail||''}">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Your Industry</label>
                     <select class="form-input" id="diag-industry" required>
                         <option value="">Select your industry...</option>
-                        ${INDUSTRIES.map(i=>`<option value="${i}">${i}</option>`).join('')}
+                        ${INDUSTRIES.map(i=>`<option value="${i}" ${S.diagnosticIndustry===i?'selected':''}>${i}</option>`).join('')}
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary btn-full">Get My Score →</button>
+                <div class="form-group">
+                    <label class="form-label">Your Title</label>
+                    <input type="text" class="form-input" id="diag-title" required placeholder="e.g. Marketing Manager" value="${S.diagnosticTitle||''}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">What do you do day-to-day?</label>
+                    <textarea class="form-input" id="diag-daytoday" required placeholder="Briefly describe your main responsibilities..." style="min-height:100px;resize:vertical">${S.diagnosticDayToDay||''}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Run My Assessment &#x2192;</button>
             </form>
-            <p class="text-center text-secondary text-small mt-15">Takes 60 seconds.</p>
+            <p class="text-center text-secondary text-small mt-15">Takes about 30 seconds.</p>
         </div>
-        <p class="text-center mt-20"><a class="text-link text-small" id="back-to-login">← Back to login</a></p>
+        <p class="text-center mt-20"><a class="text-link text-small" id="back-to-login">&#x2190; Back to login</a></p>
         </div></div>`;
     }
-    
-    // Steps 1-4: Questions
-    if(step >= 1 && step <= 4){
-        const q = DiagnosticQs[step - 1];
-        return `<div class="screen-center"><div class="container-md">
-            <div class="logo">AI PROOF <span>CLUB</span></div>
-            <div class="progress-bar">${[1,2,3,4].map(i=>`<div class="progress-dot ${i<step?'done':i===step?'active':''}"></div>`).join('')}</div>
-            <div class="q-number">Question ${step} of 4</div>
-            <div class="q-text">${q.t}</div>
-            <div class="options">${q.o.map((o,i)=>`<button class="option diag-option" data-idx="${i}">${o.t}</button>`).join('')}</div>
+
+    // Step 1: Loading
+    if(step === 1){
+        return `<div class="screen-center"><div class="container-sm">
+        <div class="card text-center" style="padding:60px 40px">
+            <div style="font-size:40px;margin-bottom:20px">&#x27F3;</div>
+            <h3 style="margin-bottom:8px">Analyzing your profile...</h3>
+            <p class="text-secondary" style="font-size:13px">Running AI assessment. This takes about 30 seconds.</p>
+        </div>
         </div></div>`;
     }
-    
-    // Step 5: Results
-    if(step === 5){
-        const scores = calculateDiagnosticScores();
-        const {ideas:i,personality:p,execution:e} = scores;
-        const avgScore = Math.round((i+p+e)/3);
-        const percentile = getPercentile(avgScore);
-        const weak = ['ideas','personality','execution'].reduce((a,b)=>scores[a]<scores[b]?a:b);
-        
+
+    // Step 2: Results
+    if(step === 2){
+        const R = S.diagnosticResult || {};
+
+        const forecastCards = (R.forecasts || []).map(f => `
+            <div style="background:var(--bg-primary);border-left:3px solid var(--accent);padding:16px;margin-bottom:12px">
+                <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px">Forecast to Watch</div>
+                <div style="font-size:14px;font-weight:700;margin-bottom:4px">${f.title}</div>
+                <div style="font-size:11px;color:var(--text-secondary)">${f.timeframe || ''} &middot; ${f.probability || ''}% probability</div>
+                <div style="font-size:12px;color:var(--text-secondary);margin-top:6px;line-height:1.5">${f.threatReason || ''}</div>
+            </div>
+        `).join('');
+
+        const oppCards = (R.opportunities || []).map((o, i) => `
+            <div style="display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--bg-tertiary)">
+                <div style="color:var(--accent);font-size:12px;font-weight:700;min-width:20px;padding-top:1px">${i+1}</div>
+                <div>
+                    <div style="font-size:13px;font-weight:700;margin-bottom:3px">${o.title}</div>
+                    <div style="font-size:12px;color:var(--text-secondary);line-height:1.5">${o.why}</div>
+                </div>
+            </div>
+        `).join('');
+
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
-        <div class="card text-center">
-            <h2 class="card-title">Your AI-Proof Score</h2>
-            
-            <div class="results-meters">
-                <div class="meter"><div class="meter-circle ideas">${i}%</div><div class="meter-label">Ideas</div></div>
-                <div class="meter"><div class="meter-circle personality">${p}%</div><div class="meter-label">Personality</div></div>
-                <div class="meter"><div class="meter-circle execution">${e}%</div><div class="meter-label">Execution</div></div>
+        <div class="card" style="padding:32px">
+            <h2 style="font-size:18px;font-weight:700;margin-bottom:16px">Your AI-Proof Assessment</h2>
+            <p style="font-size:14px;line-height:1.8;color:var(--text-primary);margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${R.summary || ''}</p>
+
+            <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);margin-bottom:14px">Forecasts That Will Impact You</h4>
+            <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${forecastCards || '<p class="text-secondary text-small">No forecasts matched.</p>'}</div>
+
+            <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:14px">Your 3 Best Opportunities</h4>
+            <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${oppCards}</div>
+
+            <div style="background:var(--bg-primary);padding:20px;margin-bottom:24px">
+                <h4 style="font-size:13px;margin-bottom:8px">What happens next?</h4>
+                <p class="text-secondary text-small">AI Proof Club gives you weekly quests built around forecasts like these — so you're always preparing for what's coming, not what already happened.</p>
             </div>
-            
-            <div class="verdict">
-                <div class="verdict-title">Your Position</div>
-                <div class="verdict-text">You're in the <strong>${percentile}th percentile</strong>. The AI-Proof threshold is 85%+.</div>
-            </div>
-            
-            <div class="verdict" style="border-color:var(--${weak})">
-                <div class="verdict-title">Your Weakest Mode</div>
-                <div class="verdict-text"><strong style="text-transform:capitalize">${weak}</strong> is where AI will hit you hardest. This is where your training starts.</div>
-            </div>
-            
-            <div style="background:var(--bg-primary);padding:20px;margin-top:25px;text-align:left">
-                <h4 style="font-size:13px;margin-bottom:10px">What happens next?</h4>
-                <p class="text-secondary text-small">AI Proof Club gives you weekly quests based on your profile to build real-world proof that you can do what AI can't. Track forecasts. Level up. Become irreplaceable.</p>
-            </div>
-            
-            <div style="display:flex;flex-direction:column;gap:15px;margin-top:20px">
+
+            <div style="display:flex;flex-direction:column;gap:15px">
                 <div style="border:2px solid var(--accent);padding:15px;background:var(--bg-primary)">
                     <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Monthly</div>
                     <div style="font-size:24px;font-weight:700">$9.99<span style="font-size:12px;color:var(--text-secondary)">/month</span></div>
-                    <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}" class="btn btn-primary btn-full mt-10" id="diag-to-signup-link">Start Monthly →</a>
+                    <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}" class="btn btn-primary btn-full mt-10" id="diag-to-signup-link">Start Monthly &#x2192;</a>
                 </div>
                 <div style="border:1px solid var(--success);padding:15px">
                     <div style="font-size:10px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Best Value — 2 Months Free</div>
                     <div style="font-size:24px;font-weight:700">$99<span style="font-size:12px;color:var(--text-secondary)">/year</span></div>
-                    <a href="${STRIPE_ANNUAL}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}" class="btn btn-secondary btn-full mt-10" id="diag-to-signup-annual">Start Annual →</a>
+                    <a href="${STRIPE_ANNUAL}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}" class="btn btn-secondary btn-full mt-10" id="diag-to-signup-annual">Start Annual &#x2192;</a>
                 </div>
             </div>
             <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
+            <p class="text-center mt-15"><a class="text-link text-small" onclick="S.diagnosticStep=0;render()">&#x2190; Retake Assessment</a></p>
         </div>
-        <p class="text-center mt-20"><a class="text-link text-small" id="back-to-login">← Back to login</a></p>
         </div></div>`;
     }
-    
+
     return loginH();
 }
 
@@ -2476,42 +2481,40 @@ function bindEvents(){
         S.diagnosticStep=0;
         S.diagnosticEmail='';
         S.diagnosticIndustry='';
-        S.diagnosticAnswers=[];
-        S.screen='diagnostic';
+                S.screen='diagnostic';
         render();
     });
     document.getElementById('diagnostic-start-form')?.addEventListener('submit',async e=>{
         e.preventDefault();
         S.diagnosticEmail = document.getElementById('diag-email').value;
         S.diagnosticIndustry = document.getElementById('diag-industry').value;
-        
-        // Create Auth user with random password (they'll set real password if they convert)
-        const tempPassword = 'temp_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-        const authResult = await authSignUp(S.diagnosticEmail, tempPassword, {user_type:'lead',source:'diagnostic_quiz',industry:S.diagnosticIndustry});
-        
-        if (authResult.error && authResult.error.message !== 'User already registered') {
-            console.error('Lead capture error:', authResult.error);
-            // Still let them continue the quiz even if auth fails
-        }
-        
-        // Also save industry info to users table (Auth doesn't store custom fields)
-        await db('users', 'POST', {
-            email: S.diagnosticEmail,
-            industry: S.diagnosticIndustry,
-            source: 'diagnostic_quiz',
-            start_date: new Date().toISOString(),
-            user_type: 'lead'
-        });
-        
+        S.diagnosticTitle = document.getElementById('diag-title').value;
+        S.diagnosticDayToDay = document.getElementById('diag-daytoday').value;
+
+        // Show loading spinner
         S.diagnosticStep = 1;
         render();
-    });
-    document.querySelectorAll('.diag-option').forEach(o=>o.addEventListener('click',()=>{
-        const idx = parseInt(o.dataset.idx);
-        S.diagnosticAnswers.push(idx);
-        S.diagnosticStep++;
+
+        // Capture lead in background
+        try {
+            const tempPassword = 'temp_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+            await authSignUp(S.diagnosticEmail, tempPassword, {user_type:'lead',source:'diagnostic_quiz',industry:S.diagnosticIndustry});
+            await db('users', 'POST', {
+                email: S.diagnosticEmail,
+                industry: S.diagnosticIndustry,
+                source: 'diagnostic_quiz',
+                start_date: new Date().toISOString(),
+                user_type: 'lead'
+            });
+        } catch(err) { console.error('Lead capture error:', err); }
+
+        // Run AI assessment
+        S.diagnosticResult = await generateDiagnosticAssessment(
+            S.diagnosticEmail, S.diagnosticIndustry, S.diagnosticTitle, S.diagnosticDayToDay
+        );
+        S.diagnosticStep = 2;
         render();
-    }));
+    });
     document.getElementById('back-to-login')?.addEventListener('click',()=>{
         S.screen='login';
         render();
@@ -9801,8 +9804,7 @@ async function init(){
         S.diagnosticStep = 0;
         S.diagnosticEmail = '';
         S.diagnosticIndustry = '';
-        S.diagnosticAnswers = [];
-        S.screen = 'diagnostic';
+                S.screen = 'diagnostic';
         render();
         return;
     }
@@ -9972,6 +9974,53 @@ window.addEventListener('popstate', () => {
         render();
     }
 });
+async function generateDiagnosticAssessment(email, industry, title, dayToDay) {
+    // Build a short list of forecast titles to send to AI
+    const sampleForecasts = (typeof FORECAST_DATABASE !== 'undefined' ? FORECAST_DATABASE : [])
+        .slice(0, 40)
+        .map(f => ({ id: f.id, title: f.title, category: f.category }));
+    const forecastList = sampleForecasts.map(f => f.id + ': ' + f.title).join('\n');
+
+    const systemPrompt = "You are an AI displacement analyst. Given a person's role, return ONLY valid JSON with no markdown or backticks: {\"summary\":\"2-3 sentences: one on where they are ahead, continuing into where AI puts them at risk\",\"forecastIds\":[\"id1\",\"id2\"],\"opportunities\":[{\"title\":\"specific opportunity title\",\"why\":\"one sentence why it applies to them\"},{\"title\":\"second opportunity\",\"why\":\"one sentence\"},{\"title\":\"third opportunity\",\"why\":\"one sentence\"}]}. Pick the 2 most impactful forecast IDs from the list provided. Pick 3 opportunities most applicable to their specific role. Be specific, not generic.";
+    const userMsg = 'Industry: ' + industry + '\nTitle: ' + title + '\nDay-to-day: ' + dayToDay + '\n\nForecast list (id: title):\n' + forecastList;
+
+    try {
+        const resp = await fetch(OPENAI_API, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                type: 'general',
+                messages: [{role:'system',content:systemPrompt},{role:'user',content:userMsg}]
+            })
+        });
+        if (!resp.ok) throw new Error('AI call failed: ' + resp.status);
+        const data = await resp.json();
+        let text = (data.content || '').trim();
+        const m = text.match(/\{[\s\S]*\}/);
+        if (m) text = m[0];
+        const result = JSON.parse(text);
+
+        // Hydrate forecast IDs into full forecast objects
+        result.forecasts = (result.forecastIds || [])
+            .map(id => (typeof FORECAST_DATABASE !== 'undefined' ? FORECAST_DATABASE : []).find(f => f.id === id))
+            .filter(Boolean)
+            .slice(0, 2);
+
+        return result;
+    } catch(e) {
+        console.error('Diagnostic AI error:', e);
+        return {
+            summary: 'We could not complete your assessment right now. Please try again.',
+            forecasts: [],
+            opportunities: [
+                {title: 'Develop AI tool fluency', why: 'Understanding what AI can and cannot do gives you a strategic edge.'},
+                {title: 'Build a personal knowledge system', why: 'Documented expertise AI cannot replicate becomes your moat.'},
+                {title: 'Systematize your decision-making', why: 'Frameworks and judgment calls are the last things AI automates.'}
+            ]
+        };
+    }
+}
+
 init();
 </script>
 </body>
