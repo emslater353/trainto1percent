@@ -2495,10 +2495,12 @@ function bindEvents(){
         S.diagnosticStep = 1;
         render();
 
-        // Capture lead in background
+        // Capture lead in background - split so profiles insert always runs
         try {
             const tempPassword = 'temp_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
             await authSignUp(S.diagnosticEmail, tempPassword, {user_type:'lead',source:'diagnostic_quiz',industry:S.diagnosticIndustry});
+        } catch(err) { console.error('Auth error (non-fatal):', err); }
+        try {
             await db('profiles', 'POST', {
                 email: S.diagnosticEmail,
                 industry: S.diagnosticIndustry,
