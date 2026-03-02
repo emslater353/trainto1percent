@@ -9989,14 +9989,13 @@ async function generateDiagnosticAssessment(email, industry, title, dayToDay) {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-                model: 'gpt-4o',
-                messages: [{role:'system',content:systemPrompt},{role:'user',content:userMsg}],
-                max_tokens: 700
+                type: 'general',
+                messages: [{role:'system',content:systemPrompt},{role:'user',content:userMsg}]
             })
         });
         if (!resp.ok) throw new Error('AI call failed: ' + resp.status);
         const data = await resp.json();
-        let text = data.choices[0].message.content.trim();
+        let text = (data.content || '').trim();
         const m = text.match(/\{[\s\S]*\}/);
         if (m) text = m[0];
         const result = JSON.parse(text);
