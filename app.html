@@ -1533,23 +1533,40 @@ function diagnosticH(){
     // Step 2: Results
     if(step === 2){
         const R = S.diagnosticResult || {};
-        const aheadItems = (R.ahead || []).map(x=>`<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--bg-tertiary)"><span style="color:var(--accent);font-size:16px">&#x25B2;</span><span style="font-size:13px;line-height:1.5">${x}</span></div>`).join('');
-        const improveItems = (R.improve || []).map(x=>`<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--bg-tertiary)"><span style="color:var(--danger);font-size:16px">&#x2192;</span><span style="font-size:13px;line-height:1.5">${x}</span></div>`).join('');
+
+        const forecastCards = (R.forecasts || []).map(f => `
+            <div style="background:var(--bg-primary);border-left:3px solid var(--accent);padding:16px;margin-bottom:12px">
+                <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px">Forecast to Watch</div>
+                <div style="font-size:14px;font-weight:700;margin-bottom:4px">${f.title}</div>
+                <div style="font-size:11px;color:var(--text-secondary)">${f.timeframe || ''} &middot; ${f.probability || ''}% probability</div>
+                <div style="font-size:12px;color:var(--text-secondary);margin-top:6px;line-height:1.5">${f.threatReason || ''}</div>
+            </div>
+        `).join('');
+
+        const oppCards = (R.opportunities || []).map((o, i) => `
+            <div style="display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--bg-tertiary)">
+                <div style="color:var(--accent);font-size:12px;font-weight:700;min-width:20px;padding-top:1px">${i+1}</div>
+                <div>
+                    <div style="font-size:13px;font-weight:700;margin-bottom:3px">${o.title}</div>
+                    <div style="font-size:12px;color:var(--text-secondary);line-height:1.5">${o.why}</div>
+                </div>
+            </div>
+        `).join('');
 
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
         <div class="card" style="padding:32px">
-            <h2 style="font-size:18px;font-weight:700;margin-bottom:8px">Your AI-Proof Assessment</h2>
-            <p class="text-secondary" style="font-size:13px;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${R.summary || ''}</p>
+            <h2 style="font-size:18px;font-weight:700;margin-bottom:16px">Your AI-Proof Assessment</h2>
+            <p style="font-size:14px;line-height:1.8;color:var(--text-primary);margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${R.summary || ''}</p>
 
-            <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px">You're Ahead Because</h4>
-            <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${aheadItems}</div>
+            <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);margin-bottom:14px">Forecasts That Will Impact You</h4>
+            <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${forecastCards || '<p class="text-secondary text-small">No forecasts matched.</p>'}</div>
 
-            <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--danger);margin-bottom:12px">Improve This to Stay Ahead</h4>
-            <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${improveItems}</div>
+            <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:14px">Your 3 Best Opportunities</h4>
+            <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${oppCards}</div>
 
             <div style="background:var(--bg-primary);padding:20px;margin-bottom:24px">
                 <h4 style="font-size:13px;margin-bottom:8px">What happens next?</h4>
-                <p class="text-secondary text-small">AI Proof Club gives you weekly quests to build on your strengths and close your gaps — before AI does it for you.</p>
+                <p class="text-secondary text-small">AI Proof Club gives you weekly quests built around forecasts like these — so you're always preparing for what's coming, not what already happened.</p>
             </div>
 
             <div style="display:flex;flex-direction:column;gap:15px">
@@ -9958,30 +9975,49 @@ window.addEventListener('popstate', () => {
     }
 });
 async function generateDiagnosticAssessment(email, industry, title, dayToDay) {
-    const systemPrompt = "You are an AI displacement analyst. Given a person's role, assess how AI-proof they currently are and give specific, actionable feedback. Respond ONLY with valid JSON in this exact shape: {\"summary\":\"2-3 sentence honest overall assessment\",\"ahead\":[\"specific reason they are ahead of AI\",\"another strength\",\"a third\"],\"improve\":[\"specific thing to improve to stay ahead\",\"another area\",\"a third\"]}. Be specific to their actual role and tasks, not generic.";
-    const userMsg = 'Industry: ' + industry + '\nTitle: ' + title + '\nDay-to-day: ' + dayToDay;
+    // Build a short list of forecast titles to send to AI
+    const sampleForecasts = (typeof FORECAST_DATABASE !== 'undefined' ? FORECAST_DATABASE : [])
+        .slice(0, 40)
+        .map(f => ({ id: f.id, title: f.title, category: f.category }));
+    const forecastList = sampleForecasts.map(f => f.id + ': ' + f.title).join('\n');
+
+    const systemPrompt = "You are an AI displacement analyst. Given a person's role, return ONLY valid JSON with no markdown or backticks: {\"summary\":\"2-3 sentences: one on where they are ahead, continuing into where AI puts them at risk\",\"forecastIds\":[\"id1\",\"id2\"],\"opportunities\":[{\"title\":\"specific opportunity title\",\"why\":\"one sentence why it applies to them\"},{\"title\":\"second opportunity\",\"why\":\"one sentence\"},{\"title\":\"third opportunity\",\"why\":\"one sentence\"}]}. Pick the 2 most impactful forecast IDs from the list provided. Pick 3 opportunities most applicable to their specific role. Be specific, not generic.";
+    const userMsg = 'Industry: ' + industry + '\nTitle: ' + title + '\nDay-to-day: ' + dayToDay + '\n\nForecast list (id: title):\n' + forecastList;
+
     try {
-        const resp = await fetch('/.netlify/functions/openai-proxy', {
+        const resp = await fetch(OPENAI_API, {
             method: 'POST',
-            headers: {'Content-Type':'application/json'},
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 model: 'gpt-4o',
                 messages: [{role:'system',content:systemPrompt},{role:'user',content:userMsg}],
-                max_tokens: 600
+                max_tokens: 700
             })
         });
         if (!resp.ok) throw new Error('AI call failed: ' + resp.status);
         const data = await resp.json();
         let text = data.choices[0].message.content.trim();
-        const m = text.match(/{[sS]*}/);
+        const m = text.match(/\{[\s\S]*\}/);
         if (m) text = m[0];
-        return JSON.parse(text);
+        const result = JSON.parse(text);
+
+        // Hydrate forecast IDs into full forecast objects
+        result.forecasts = (result.forecastIds || [])
+            .map(id => (typeof FORECAST_DATABASE !== 'undefined' ? FORECAST_DATABASE : []).find(f => f.id === id))
+            .filter(Boolean)
+            .slice(0, 2);
+
+        return result;
     } catch(e) {
         console.error('Diagnostic AI error:', e);
         return {
             summary: 'We could not complete your assessment right now. Please try again.',
-            ahead: ['Your human judgment and contextual understanding', 'Relationship-building and trust', 'Creative problem-solving in ambiguous situations'],
-            improve: ['Developing prompting and AI tool fluency', 'Building a personal knowledge system AI cannot replicate', 'Documenting and systematizing your expertise']
+            forecasts: [],
+            opportunities: [
+                {title: 'Develop AI tool fluency', why: 'Understanding what AI can and cannot do gives you a strategic edge.'},
+                {title: 'Build a personal knowledge system', why: 'Documented expertise AI cannot replicate becomes your moat.'},
+                {title: 'Systematize your decision-making', why: 'Frameworks and judgment calls are the last things AI automates.'}
+            ]
         };
     }
 }
