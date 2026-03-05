@@ -755,6 +755,18 @@ const STRATEGY_CALL_URL='https://calendly.com/erica-m-slater/aiproofclub';
 const COMPANY_REPORT_PRICE=29;
 const COMPANY_REPORT_STRIPE='https://buy.stripe.com/14A3cv4Sr1mzdk8gTg9ws03';
 
+async function subscribeToBeehiiv(email, source='aiproof_app') {
+    try {
+        await fetch('/.netlify/functions/subscribe-beehiiv', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, user_type: 'lead', utm_source: source })
+        });
+    } catch(err) {
+        console.error('Beehiiv error (non-fatal):', err);
+    }
+}
+
 // Supabase Auth helper functions
 async function supabaseAuth(action, data) {
     const url = `${SUPABASE_URL}/auth/v1/${action}`;
@@ -1737,7 +1749,7 @@ function companyH(){
         // --- SLIDE: BOTTOM LINE + ACTIONS (last slide) ---
         else {
             h+=`<div class="card" style="margin-bottom:16px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">The Bottom Line</h3><p style="font-size:14px;line-height:1.7">${r.summary||''}</p></div>`;
-            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-company-pdf">↓ Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:8px"><input type="email" class="form-input" id="team-email-company" placeholder="teammate@company.com" style="flex:1;font-size:12px"><button class="btn btn-primary btn-small" id="send-company-email">Send</button></div><p id="company-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none">✓ Email client opened</p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
+            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-company-pdf">↓ Download PDF</button></div><button class="btn btn-secondary btn-full" style="margin-bottom:15px" id="open-share-company">↗ Share with Your Team</button><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
         }
         
         // Navigation: dots + prev/next buttons
@@ -1813,7 +1825,7 @@ function threatH(){
         }
         // --- SLIDE: ACTIONS (last slide) ---
         else {
-            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-threat-pdf">↓ Download PDF</button></div><div class="card" style="margin-bottom:15px"><h3 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Share with Your Team</h3><div style="display:flex;gap:8px"><input type="email" class="form-input" id="team-email-threat" placeholder="teammate@company.com" style="flex:1;font-size:12px"><button class="btn btn-primary btn-small" id="send-threat-email">Send</button></div><p id="threat-email-status" style="font-size:11px;color:var(--success);margin-top:6px;display:none">✓ Email client opened</p></div><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
+            h+=`<div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn btn-secondary" style="flex:1" id="download-threat-pdf">↓ Download PDF</button></div><button class="btn btn-secondary btn-full" style="margin-bottom:15px" id="open-share-threat">↗ Share with Your Team</button><div class="card text-center" style="border-color:var(--accent)"><p style="font-size:14px;font-weight:600;margin-bottom:6px">Want help building your defense?</p><a href="${STRATEGY_CALL_URL}" target="_blank" class="btn btn-primary btn-full">Book a Strategy Call →</a></div>`;
         }
         
         // Navigation
@@ -2398,6 +2410,48 @@ function modalH(){
         <div class="flex gap-10"><button type="submit" class="btn btn-primary btn-full">Add Quest</button><button type="button" class="btn btn-secondary" id="cancel-modal">Cancel</button></div>
         </form></div></div>`;
     }
+    if(S.modal==='shareReport'){
+        const type = S.shareReportType || 'company';
+        const domain = type==='company'
+            ? (S.companyUrl||'').replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'')
+            : (S.threatUrl||'').replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        const senderEmail = type==='company' ? S.companyEmail : S.threatEmail;
+        return `<div class="modal-overlay" id="modal-bg">
+        <div class="modal" style="max-width:480px;max-height:90vh;overflow-y:auto">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                <h3 class="modal-title" style="margin:0">Share Report</h3>
+                <button style="background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;line-height:1" id="cancel-modal">×</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">From (your name)</label>
+                <input type="text" class="form-input" id="share-from-name" placeholder="Your name" value="${S.user?.name||''}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">From (your email)</label>
+                <input type="email" class="form-input" id="share-from-email" placeholder="you@email.com" value="${senderEmail||S.user?.email||''}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">To (separate multiple emails with commas)</label>
+                <input type="text" class="form-input" id="share-to-emails" placeholder="colleague@co.com, boss@co.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Personal message <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+                <textarea class="form-textarea" id="share-message" rows="3" placeholder="e.g. Thought this was worth a look given what we discussed last week..."></textarea>
+            </div>
+            <div style="background:var(--bg-tertiary);border:1px solid rgba(255,255,255,0.06);padding:14px;margin-bottom:18px;font-size:11px;color:var(--text-secondary);line-height:1.6">
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:8px">Report preview</div>
+                <strong style="color:var(--text)">${domain}</strong> — AI Opportunity + Risk Report<br>
+                Includes AI-Proof status, ${type==='company'?(S.companyResult?.opportunities?.length||0):( S.threatResult?.opportunities?.length||0)} opportunities, risks &amp; summary.<br>
+                <span style="color:var(--accent)">Generated by AIProof.Club</span>
+            </div>
+            <div id="share-status" style="display:none;font-size:12px;color:var(--success);margin-bottom:12px">✓ Report shared successfully!</div>
+            <div id="share-error" style="display:none;font-size:12px;color:var(--danger);margin-bottom:12px"></div>
+            <div style="display:flex;gap:10px">
+                <button class="btn btn-primary btn-full" id="confirm-share-report">Send Report →</button>
+                <button class="btn btn-secondary" id="cancel-modal" style="min-width:90px">Cancel</button>
+            </div>
+        </div></div>`;
+    }
     return '';
 }
 
@@ -2512,7 +2566,10 @@ function bindEvents(){
                 created_at: new Date().toISOString(),
                 user_type: 'lead'
             });
-        } catch(err) { console.error('Lead capture error:', err); }
+        } catch(err) { console.error('Lead capture error (profiles):', err); }
+
+        // Subscribe to Beehiiv newsletter
+        subscribeToBeehiiv(S.diagnosticEmail, 'diagnostic_quiz');
 
         // Run AI assessment
         S.diagnosticResult = await generateDiagnosticAssessment(
@@ -2550,7 +2607,8 @@ function bindEvents(){
         var authRes=await authSignUp(S.companyEmail,tempPw,{user_type:'lead',role:S.companyUrl,website:S.companyUrl,source:'company_risk',industry:S.companyIndustry,company_desc:S.companyDesc||''});
         if(authRes.error&&authRes.error.message!=='User already registered'){console.error('Auth:',authRes.error);}
         // Save custom fields to public.users
-        await db('users','POST',{email:S.companyEmail,password:'auth_managed',industry:S.companyIndustry,role:S.companyUrl,source:'company_risk',start_date:new Date().toISOString(),user_type:'lead',name:S.companyDesc||''});
+        await db('profiles','POST',{email:S.companyEmail,industry:S.companyIndustry,source:'company_risk',created_at:new Date().toISOString(),user_type:'lead'});
+        subscribeToBeehiiv(S.companyEmail, 'company_risk');
         S.companyStep=1;S.companyLoadingStep=0;S.reportSlide=0;S.plans={};render();
         setTimeout(()=>{S.companyLoadingStep=1;render();},800);setTimeout(()=>{S.companyLoadingStep=2;render();},2000);setTimeout(()=>{S.companyLoadingStep=3;render();},3500);setTimeout(()=>{S.companyLoadingStep=4;render();},5000);setTimeout(()=>{S.companyLoadingStep=5;render();},7000);
         var ctx=S.companyDesc?domain+': '+S.companyDesc+'. '+S.companyIndustry+'.':domain+' ('+S.companyIndustry+').';
@@ -2658,7 +2716,7 @@ function bindEvents(){
         
         S.companyResult={company_description:companyDesc||S.companyDesc||domain,opportunities:allOppsResult.slice(0,15),threats:risks,summary:summary||domain+' has real opportunities to leverage these shifts, but needs to move fast on the ones that match its strengths.',ai_status:aiStatus};
         // Save result to DB
-        await db('leads','PATCH',{company_result:JSON.stringify(S.companyResult)},`?email=eq.${encodeURIComponent(S.companyEmail)}&source=eq.company_risk`);
+        await db('profiles','PATCH',{company_result:JSON.stringify(S.companyResult)},`?email=eq.${encodeURIComponent(S.companyEmail)}&source=eq.company_risk`);
         S.companyStep=2;render();
     });
     document.getElementById('unlock-company-report')?.addEventListener('click',()=>{
@@ -2677,7 +2735,8 @@ function bindEvents(){
         var authRes=await authSignUp(S.threatEmail,tempPw,{user_type:'lead',role:S.threatUrl,website:S.threatUrl,source:'threat_'+S.threatProvider,industry:S.threatIndustry,company_desc:S.threatDesc||''});
         if(authRes.error&&authRes.error.message!=='User already registered'){console.error('Auth:',authRes.error);}
         // Save custom fields to public.users
-        await db('users','POST',{email:S.threatEmail,password:'auth_managed',industry:S.threatIndustry,role:S.threatUrl,source:'threat_'+S.threatProvider,start_date:new Date().toISOString(),user_type:'lead',name:S.threatDesc||''});
+        await db('profiles','POST',{email:S.threatEmail,industry:S.threatIndustry,source:'threat_'+S.threatProvider,created_at:new Date().toISOString(),user_type:'lead'});
+        subscribeToBeehiiv(S.threatEmail, 'threat_analysis');
         S.threatStep=1;S.threatLoadingStep=0;S.threatSlide=0;S.threatPlans={};render();
         setTimeout(()=>{S.threatLoadingStep=1;render();},800);setTimeout(()=>{S.threatLoadingStep=2;render();},2000);setTimeout(()=>{S.threatLoadingStep=3;render();},3500);setTimeout(()=>{S.threatLoadingStep=4;render();},5000);setTimeout(()=>{S.threatLoadingStep=5;render();},7000);
         var ctx=S.threatDesc?domain+': '+S.threatDesc+'. '+S.threatIndustry+'.':domain+' ('+S.threatIndustry+').';
@@ -2763,7 +2822,7 @@ function bindEvents(){
         if(physicalInd.some(s=>S.threatIndustry.includes(s))){fallbackLevel='Positioned but Must Adapt';fallbackMonths=provider.defaultMonths+6;}
         S.threatResult={company_description:companyDesc||S.threatDesc||domain,threat_level:threatLevel||fallbackLevel,threat_summary:threatSummary||provider.name+' is advancing into areas that directly impact '+domain+"'s core operations.",months_until_threat:monthsUntil||fallbackMonths,timeline_reason:timelineReason||'Based on '+provider.name+"'s product velocity and "+S.threatIndustry+' dynamics.',opportunities:allOppsResult.slice(0,15),threats:risks};
         // Save result to DB
-        await db('users','PATCH',{company_result:JSON.stringify(S.threatResult)},`?email=eq.${encodeURIComponent(S.threatEmail)}&source=eq.threat_${S.threatProvider}`);
+        await db('profiles','PATCH',{company_result:JSON.stringify(S.threatResult)},`?email=eq.${encodeURIComponent(S.threatEmail)}&source=eq.threat_${S.threatProvider}`);
         S.threatStep=2;render();
     });
     document.getElementById('unlock-threat-report')?.addEventListener('click',()=>{
@@ -2774,8 +2833,39 @@ function bindEvents(){
     // PDF + Email handlers
     document.getElementById('download-company-pdf')?.addEventListener('click',()=>downloadReportPDF('company'));
     document.getElementById('download-threat-pdf')?.addEventListener('click',()=>downloadReportPDF('threat'));
-    document.getElementById('send-company-email')?.addEventListener('click',()=>emailReportToTeam('company'));
-    document.getElementById('send-threat-email')?.addEventListener('click',()=>emailReportToTeam('threat'));
+    document.getElementById('open-share-company')?.addEventListener('click',()=>{S.shareReportType='company';S.modal='shareReport';render();});
+    document.getElementById('open-share-threat')?.addEventListener('click',()=>{S.shareReportType='threat';S.modal='shareReport';render();});
+    document.getElementById('confirm-share-report')?.addEventListener('click', async ()=>{
+        const fromName = document.getElementById('share-from-name')?.value.trim();
+        const fromEmail = document.getElementById('share-from-email')?.value.trim();
+        const toRaw = document.getElementById('share-to-emails')?.value.trim();
+        const message = document.getElementById('share-message')?.value.trim();
+        const errEl = document.getElementById('share-error');
+        const statusEl = document.getElementById('share-status');
+        if(!fromEmail||!toRaw){errEl.textContent='Please fill in your email and at least one recipient.';errEl.style.display='block';return;}
+        const toEmails = toRaw.split(',').map(e=>e.trim()).filter(e=>e.includes('@'));
+        if(!toEmails.length){errEl.textContent='Please enter at least one valid recipient email.';errEl.style.display='block';return;}
+        errEl.style.display='none';
+        const btn = document.getElementById('confirm-share-report');
+        btn.textContent='Sending...';btn.disabled=true;
+        const type = S.shareReportType||'company';
+        const result = type==='company'?S.companyResult:S.threatResult;
+        const domain = type==='company'
+            ?(S.companyUrl||'').replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'')
+            :(S.threatUrl||'').replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        const opps = result?.opportunities||[];
+        const risks = result?.threats||[];
+        const ok = await sendEmail('share_report',{
+            fromName, fromEmail, toEmails, message, domain,
+            status: result?.ai_status?.level||'',
+            statusSummary: result?.ai_status?.summary||'',
+            opportunities: opps.map(o=>({title:o.title,description:o.description,prediction:o.prediction||''})),
+            risks: risks.map(r=>({prediction:r.prediction,probability:r.probability,impact:r.impact})),
+            summary: result?.summary||''
+        });
+        if(ok){statusEl.style.display='block';btn.textContent='Sent!';setTimeout(()=>{S.modal=null;render();},2000);}
+        else{errEl.textContent='Send failed. Please try again.';errEl.style.display='block';btn.textContent='Send Report →';btn.disabled=false;}
+    });
     
     // Slide navigation
     document.getElementById('slide-prev')?.addEventListener('click',()=>{if(S.reportSlide>0){S.reportSlide--;render();}});
@@ -9789,7 +9879,7 @@ async function init(){
                     S.companyUrl=data.url||'';S.companyEmail=data.email||'';S.companyIndustry=data.industry||'';
                     S.companyDesc=data.desc||'';S.companyResult=data.result;S.companyStep=2;S.companyUnlocked=true;S.reportSlide=0;S.plans={};
                     // Update plan from lead to report_paid
-                    await db('users','PATCH',{user_type:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.company_risk`);
+                    await db('profiles','PATCH',{user_type:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.company_risk`);
                     S.screen='company';render();return;
                 }
                 if(data.type==='threat'){
@@ -9797,7 +9887,7 @@ async function init(){
                     S.threatIndustry=data.industry||'';S.threatDesc=data.desc||'';S.threatResult=data.result;
                     S.threatStep=2;S.threatUnlocked=true;
                     // Update plan from lead to report_paid
-                    await db('users','PATCH',{user_type:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.threat_${data.provider}`);
+                    await db('profiles','PATCH',{user_type:'report_paid'},`?email=eq.${encodeURIComponent(data.email)}&source=eq.threat_${data.provider}`);
                     S.screen='threat';render();return;
                 }
             }catch(e){console.error('Report restore:',e);}
