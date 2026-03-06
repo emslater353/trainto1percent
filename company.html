@@ -696,7 +696,7 @@ async function submitForm() {
 
         // AI generates opportunities — compact format that fits in 1500 tokens
         var oppListText=sample.map(function(o,i){return (i+1)+'. ['+o.prediction+'] '+o.title+': '+o.desc;}).join('\n');
-        var generatePrompt='You are a visionary AI strategist.\n\nCompany: '+ctx+'\nGoal: '+goal+'\n\nBelow are '+sample.length+' opportunity templates. Pick the 15 MOST RELEVANT to '+domain+' and REWRITE each specifically for this company.\n\nRULES:\n- Every opportunity MUST reference what '+domain+' actually does\n- Rewrite description in 2 vivid actionable sentences\n- Include a 30-day quick win (q) and 12-24 month strategic bet (b)\n- ORDER BY RELEVANCE: most relevant first\n\nTemplates:\n'+oppListText+'\n\nReturn ONLY valid JSON with NO whitespace:\n{"d":"what '+domain+' does","o":[{"p":"prediction name","t":"title","s":"2 sentences","q":"quick win","b":"strategic bet"}],"m":"2 sentence summary"}\n\n15 items in o array.';
+        var generatePrompt='You are a visionary AI strategist.\n\nCompany: '+ctx+'\n\nBelow are '+sample.length+' opportunity templates based on major predictions. Your job: pick the 15 MOST RELEVANT to '+domain+' and REWRITE each one specifically for this company.\n\nCRITICAL RULES:\n- Pick from ACROSS the entire list — do NOT just take the first 15\n- Every opportunity MUST use what '+domain+' actually does as the vehicle\n- If '+domain+' sells clothes, the opportunity is about CLOTHES. If it sells insurance, about INSURANCE\n- Rewrite the description in 2 vivid, actionable sentences specific to '+domain+'\n- Think BIG and creative: self-driving cars = wardrobe extends into in-car spaces, retail enters the car. Neural interfaces = thought-controlled products. Longevity = forever customers. Loneliness = community IS the product\n- NEVER suggest generic consulting/advising unrelated to the company product\n- For the p field, include the FULL prediction name, NOT a number\n- ORDER BY RELEVANCE: most relevant to '+domain+' FIRST\n- Also include a 30-day quick win (q) and 12-24 month strategic bet (b) for each\n\nOpportunity templates:\n'+oppListText+'\n\nReturn ONLY valid JSON:\n{\"d\":\"1 sentence what '+domain+' does\",\"o\":[{\"p\":\"full prediction name\",\"t\":\"rewritten title for '+domain+'\",\"s\":\"2 vivid sentences specific to '+domain+'\",\"q\":\"30-day quick win\",\"b\":\"12-24 month strategic bet\"}],\"m\":\"2 sentence summary\"}\n\nEXACTLY 15 in o. Best fits first.';
 
         var allOpps=[],companyDesc='',summary='';
         for(var attempt=0;attempt<3;attempt++){
@@ -708,7 +708,7 @@ async function submitForm() {
                     try{parsed=JSON.parse(c);}catch(e1){
                         for(var fx of ['}]}','}]}]}',']}]}','}]}'+ '}']){try{parsed=JSON.parse(c+fx);break;}catch(e2){}}
                     }
-                    if(parsed&&parsed.o&&parsed.o.length>=3){
+                    if(parsed&&parsed.o&&parsed.o.length>=10){
                         allOpps=parsed.o.map(function(x){return{forecast:x.p||'',title:x.t||'',whyMatters:x.s||'',quickWin:x.q||'',strategicBet:x.b||'',steps:[]};});
                         companyDesc=parsed.d||'';
                         summary=parsed.m||'';
@@ -719,14 +719,17 @@ async function submitForm() {
             }catch(e){console.error('Attempt '+(attempt+1)+':',e);}
         }
 
-        // STEP 3: Rank opportunities by relevance (same as app.html)
+        // STEP 3: Rank — exact app.html waterfall
         if(allOpps.length>=5){
-            var rankPrompt='Rank these '+allOpps.length+' AI opportunities for '+domain+' from most to least relevant.\n\nCompany: '+ctx+'\nGoal: '+goal+'\n\nOpportunities:\n'+allOpps.map(function(o,i){return(i+1)+'. '+o.title+': '+o.whyMatters;}).join('\n')+'\n\nReturn ONLY JSON: {"ranked":[1,2,3...in order best to worst],"reasoning":"why #1 is top pick"}';
+            var rankPrompt='You are an expert business strategist ranking AI opportunities for a specific company.\n\nCOMPANY: '+domain+'\nDESCRIPTION: '+(companyDesc||ctx)+'\n\nReorder these '+allOpps.length+' opportunities so the MOST impactful and actionable come first.\n\nRANKING CRITERIA:\n1. IMMEDIATE ACTIONABILITY: Could they start within 2 weeks with existing resources?\n2. CORE BUSINESS FIT: Leverages what they already do\n3. REVENUE POTENTIAL: Creates new revenue or protects existing\n4. COMPETITIVE MOAT: Hard for competitors to copy\n5. PREDICTION RELEVANCE: How directly this affects their industry\n\nCRITICAL: Do NOT return the original order. Think hard about what '+domain+' actually does.\n- A RETAILER should rank in-store/product/customer opportunities first\n- A LUXURY BRAND should rank brand/experience/exclusivity/in-car/lifestyle-extension first\n- A SaaS tool should rank AI features/workflow first\n\nOpportunities:\n'+allOpps.map(function(o,i){return(i+1)+'. ['+o.forecast+'] '+o.title+': '+o.whyMatters;}).join('\n')+'\n\n{\"ranked\":[numbers best-to-worst],\"reasoning\":\"why #1 is top pick\"}\n\nJSON only.';
             try{
-                var r2=await ai([{role:'user',content:rankPrompt}],600,'general');
+                var r2=await ai([{role:'user',content:rankPrompt}],800,'general');
+                console.log('Rank raw:',r2?r2.slice(0,200):'empty');
                 if(r2){
                     var rc=r2.replace(/```json|```/g,'').trim(),rp=null;
-                    try{rp=JSON.parse(rc);}catch(e){}
+                    try{rp=JSON.parse(rc);}catch(e1){
+                        for(var fx of ['}','}}']){try{rp=JSON.parse(rc+fx);break;}catch(e2){}}
+                    }
                     if(rp&&rp.ranked&&rp.ranked.length>=5){
                         var ranked=[];
                         rp.ranked.forEach(function(idx){var i=(typeof idx==='number'?idx:parseInt(idx))-1;if(i>=0&&i<allOpps.length)ranked.push(allOpps[i]);});

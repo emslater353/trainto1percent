@@ -612,9 +612,9 @@ async function submitForm() {
         var oppListText=sample.map(function(o,i){return (i+1)+'. ['+o.prediction+'] '+o.title+': '+o.desc;}).join('\n');
         var founderCtx='Background: '+background+'\nFocus: '+(focus||'open')+'\nStage: '+stage+'\nMarket: '+market;
 
-        var generatePrompt='You are a startup idea generator.\n\n'+founderCtx+'\n\nBelow are '+sample.length+' opportunity templates. Pick the 15 MOST RELEVANT to this founder and rewrite as startup ideas matching their background.\n\nRULES:\n- Must be AI-enabled — not just traditional business\n- Match founder background and strengths\n- Be specific, no generic ideas\n\nTemplates:\n'+oppListText+'\n\nReturn ONLY valid JSON with NO whitespace:\n{"ideas":[{"forecast":"prediction","title":"startup name","problem":"problem solved","solution":"AI-enabled solution","market":"who buys + rough size","mvp":"what to build in 30-60 days"}],"founderAdvice":"personalised 2-3 sentence brief"}\n\n15 items in ideas array.';
+        var generatePrompt='You are a visionary startup strategist.\n\nFOUNDER PROFILE:\n'+founderCtx+'\n\nBelow are '+sample.length+' opportunity templates based on major AI predictions. Pick the 15 MOST RELEVANT to this founder and rewrite as startup ideas that leverage their specific background.\n\nCRITICAL RULES:\n- Pick from ACROSS the entire list — do NOT cluster around one theme\n- DIVERSIFY: cover at least 8 different predictions — do NOT repeat the same forecast category\n- Each idea must be genuinely AI-enabled — not just a traditional business with AI bolted on\n- Use the founder\'s background as the UNFAIR ADVANTAGE, not as the product category\n- Think BIG and unexpected: a fashion background means taste + network, not just fashion apps\n- NEVER repeat the same industry keyword more than twice across all 15 ideas\n- Be specific — no generic \"AI platform\" or \"marketplace\" ideas without a sharp angle\n- For each idea include: what to build in 30-60 days as MVP\n\nOpportunity templates:\n'+oppListText+'\n\nReturn ONLY valid JSON:\n{\"ideas\":[{\"forecast\":\"full prediction name\",\"title\":\"startup name or concept\",\"problem\":\"specific problem in 1-2 sentences\",\"solution\":\"AI-enabled solution — what makes it only possible now\",\"market\":\"who buys this + rough size\",\"mvp\":\"what to build in 30-60 days to test\"}],\"founderAdvice\":\"personalised 2-3 sentence brief — what patterns you see, what to prioritise given their specific background\"}\n\nEXACTLY 15 in ideas. Diverse forecasts.';
 
-        var ideas=[],founderAdvice='';
+        var ideas=[],founderAdvice='',founderCompanyDesc='';
         for(var attempt=0;attempt<3;attempt++){
             try{
                 var r1=await ai([{role:'user',content:generatePrompt}],3000,'general');
@@ -632,6 +632,24 @@ async function submitForm() {
                     }
                 }
             }catch(e){console.error('Attempt '+(attempt+1)+':',e);}
+        }
+
+        // Rank ideas by founder fit (same waterfall as app.html)
+        if(ideas.length>=5){
+            var founderRankPrompt='Rank these '+ideas.length+' startup ideas for this founder from best to worst fit.\n\nFOUNDER: '+founderCtx+'\n\nRANKING CRITERIA:\n1. UNFAIR ADVANTAGE: Does this leverage their specific background in a non-obvious way?\n2. TIMING: Is this only possible/viable NOW because of AI?\n3. MARKET SIZE: Does it match their stated market ambition ('+market+')?\n4. MVP SPEED: Could they test this in 30-60 days?\n5. DIFFERENTIATION: Hard for someone without their background to replicate?\n\nIdeas:\n'+ideas.map(function(o,i){return(i+1)+'. ['+o.forecast+'] '+o.title+': '+o.problem;}).join('\n')+'\n\n{\"ranked\":[numbers best-to-worst],\"reasoning\":\"why #1 is top pick for this specific founder\"}\n\nJSON only.';
+            try{
+                var r2=await ai([{role:'user',content:founderRankPrompt}],600,'general');
+                if(r2){
+                    var rc=r2.replace(/```json|```/g,'').trim(),rp=null;
+                    try{rp=JSON.parse(rc);}catch(e1){}
+                    if(rp&&rp.ranked&&rp.ranked.length>=5){
+                        var ranked=[];
+                        rp.ranked.forEach(function(idx){var i=(typeof idx==='number'?idx:parseInt(idx))-1;if(i>=0&&i<ideas.length)ranked.push(ideas[i]);});
+                        ideas.forEach(function(o){if(!ranked.includes(o))ranked.push(o);});
+                        if(ranked.length>=5){ideas=ranked;console.log('Founder ranked. Top: '+ranked[0].title);}
+                    }
+                }
+            }catch(e){console.error('Founder rank:',e);}
         }
 
         const report = { ideas: ideas.slice(0, MAX_IDEAS), founderAdvice };
