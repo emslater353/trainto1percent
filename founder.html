@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Proof Club — Founder Mode</title>
+    <meta name="description" content="Turn AI forecasts into startup ideas. 15 AI-enabled startup opportunities derived from the forecast database — with problem, solution, market, MVP plan and launch steps.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:       #050508;
+            --bg2:      #0d0d12;
+            --bg3:      #1a1a24;
+            --text:     #e8e8ec;
+            --muted:    #6e7087;
+            --faint:    #3d3d4a;
+            --accent:   #00f0ff;
+            --accent-g: rgba(0,240,255,0.12);
+            --founder:  #a78bfa;   /* purple — distinct from company cyan */
+            --founder-g:rgba(167,139,250,0.12);
+            --success:  #00ff88;
+            --warning:  #ffaa00;
+            --danger:   #ff3366;
+            --font:     'Space Mono', monospace;
+            --serif:    'Instrument Serif', serif;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:var(--font); background:var(--bg); color:var(--text);
+            font-size:13px; line-height:1.6; min-height:100vh;
+            background-image:
+                radial-gradient(ellipse at 15% 0%, rgba(167,139,250,0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 85% 100%, rgba(0,240,255,0.03) 0%, transparent 50%);
+        }
+
+        /* ── LAYOUT ── */
+        .screen-center { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:30px 20px; }
+        .container-sm  { width:100%; max-width:460px; }
+        .container-md  { width:100%; max-width:680px; }
+
+        /* ── LOGO ── */
+        .logo { font-size:12px; font-weight:700; letter-spacing:4px; text-transform:uppercase; margin-bottom:24px; text-align:center; }
+        .logo span { color:var(--founder); text-shadow:0 0 12px var(--founder-g); }
+        .logo-sub { font-size:9px; color:var(--muted); letter-spacing:3px; display:block; margin-top:4px; }
+
+        /* ── CARDS ── */
+        .card {
+            background:var(--bg2); border:1px solid var(--bg3);
+            padding:22px 24px; margin-bottom:12px; position:relative;
+        }
+        .card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(167,139,250,0.25),transparent); }
+        .card.founder-left { border-left:3px solid var(--founder); }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display:inline-flex; align-items:center; justify-content:center;
+            padding:13px 24px; font-family:var(--font); font-size:10px;
+            font-weight:700; letter-spacing:2px; text-transform:uppercase;
+            border:none; cursor:pointer; transition:all 0.3s;
+            text-decoration:none; position:relative; overflow:hidden;
+        }
+        .btn::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent); transition:left 0.4s; }
+        .btn:hover::before { left:100%; }
+        .btn-founder  { background:var(--founder); color:var(--bg); box-shadow:0 0 20px var(--founder-g); }
+        .btn-founder:hover { background:var(--text); color:var(--bg); }
+        .btn-primary  { background:var(--accent); color:var(--bg); box-shadow:0 0 20px var(--accent-g); }
+        .btn-primary:hover { background:var(--text); color:var(--bg); }
+        .btn-secondary{ background:transparent; border:1px solid var(--bg3); color:var(--muted); }
+        .btn-secondary:hover { border-color:var(--founder); color:var(--founder); }
+        .btn-full { width:100%; }
+        .btn-sm   { padding:9px 14px; font-size:9px; }
+        .btn:disabled { opacity:0.3; cursor:not-allowed; }
+
+        /* ── FORMS ── */
+        .form-group    { margin-bottom:15px; }
+        .form-label    { display:block; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+        .form-input, .form-select, .form-textarea {
+            width:100%; padding:11px 12px; background:var(--bg); border:1px solid var(--bg3);
+            color:var(--text); font-family:var(--font); font-size:12px; transition:all 0.2s; outline:none;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color:var(--founder); box-shadow:0 0 0 2px var(--founder-g); }
+        .form-textarea { resize:vertical; min-height:72px; }
+        .form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236e7087'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; }
+
+        /* ── LOADING ── */
+        .loading-step { display:flex; align-items:center; gap:10px; padding:7px 0; opacity:0.3; transition:opacity 0.4s; font-size:12px; }
+        .loading-step.done   { opacity:1; }
+        .loading-step.active { opacity:1; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* ── DASHBOARD ── */
+        .dash { max-width:680px; margin:0 auto; padding:30px 20px 60px; }
+        .dash-header { margin-bottom:24px; padding-bottom:18px; border-bottom:1px solid var(--bg3); }
+        .dash-title { font-size:20px; font-weight:700; letter-spacing:1px; margin-bottom:4px; }
+        .dash-sub { color:var(--muted); font-size:11px; }
+
+        /* ── TABS ── */
+        .tabs { display:flex; border-bottom:1px solid var(--bg3); margin-bottom:20px; }
+        .tab { padding:10px 16px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; background:none; border-top:none; border-left:none; border-right:none; font-family:var(--font); }
+        .tab:hover { color:var(--text); }
+        .tab.active { color:var(--founder); border-bottom-color:var(--founder); }
+
+        /* ── STATS ── */
+        .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+        .stat-box { background:var(--bg2); border:1px solid var(--bg3); padding:14px; text-align:center; }
+        .stat-val { font-size:22px; font-weight:700; color:var(--founder); }
+        .stat-lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:3px; }
+
+        /* ── IDEA CARD ── */
+        .idea-card {
+            background:var(--bg2); border:1px solid var(--bg3); border-left:3px solid var(--founder);
+            padding:18px 20px; margin-bottom:10px; transition:all 0.2s; cursor:pointer;
+        }
+        .idea-card:hover { border-color:rgba(167,139,250,0.4); box-shadow:0 2px 16px rgba(167,139,250,0.06); }
+        .idea-number  { font-size:9px; color:var(--faint); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:4px; }
+        .idea-forecast{ font-size:9px; color:var(--founder); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; }
+        .idea-title   { font-size:15px; font-weight:700; margin-bottom:6px; }
+        .idea-problem { font-size:12px; color:var(--muted); line-height:1.7; }
+        .idea-detail  { margin-top:14px; padding-top:14px; border-top:1px solid var(--bg3); display:none; }
+        .idea-card.open .idea-detail { display:block; }
+
+        /* ── IDEA SECTIONS ── */
+        .idea-section { margin-bottom:14px; }
+        .idea-section-label { font-size:9px; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; font-weight:700; }
+        .idea-section p { font-size:12px; color:var(--muted); line-height:1.7; }
+        .label-solution { color:var(--founder); }
+        .label-market   { color:var(--success); }
+        .label-mvp      { color:var(--warning); }
+        .label-launch   { color:var(--accent); }
+
+        /* ── LAUNCH STEPS ── */
+        .launch-step { display:flex; gap:10px; padding:8px 0; border-bottom:1px solid var(--bg3); }
+        .launch-step:last-child { border-bottom:none; }
+        .launch-num  { color:var(--founder); font-weight:700; min-width:18px; font-size:12px; }
+        .launch-body { font-size:12px; }
+        .launch-body strong { display:block; margin-bottom:2px; }
+        .launch-body span   { color:var(--muted); line-height:1.6; }
+        .launch-time { font-size:9px; color:var(--faint); margin-top:3px; }
+
+        /* ── MODAL ── */
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+        .modal { background:var(--bg2); border:1px solid var(--bg3); padding:26px; max-width:460px; width:100%; max-height:90vh; overflow-y:auto; }
+        .modal-title { font-size:17px; font-weight:700; margin-bottom:4px; }
+        .modal-sub { color:var(--muted); font-size:11px; margin-bottom:18px; }
+
+        /* ── UPGRADE ── */
+        .upgrade-banner {
+            background:linear-gradient(135deg, rgba(167,139,250,0.06), rgba(0,240,255,0.04));
+            border:1px solid rgba(167,139,250,0.2); padding:16px 20px; margin-bottom:16px;
+            display:flex; align-items:center; justify-content:space-between; gap:12px;
+        }
+        .upgrade-text { font-size:11px; line-height:1.6; }
+        .upgrade-text strong { color:var(--founder); }
+
+        /* ── MISC ── */
+        .flex-between { display:flex; justify-content:space-between; align-items:center; }
+        .text-founder { color:var(--founder); }
+        .text-muted   { color:var(--muted); }
+        .text-success { color:var(--success); }
+        .text-sm  { font-size:11px; }
+        .text-xs  { font-size:10px; }
+
+        @media(max-width:600px) {
+            .stats-row { grid-template-columns:repeat(2,1fr); }
+            .dash { padding:20px 14px 50px; }
+        }
+    </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://snbchuvvnbwvghmbxehv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuYmNodXZ2bmJ3dmdobWJ4ZWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MDg5NzMsImV4cCI6MjA4NTQ4NDk3M30.cKPieraN3FRT_5ilAQL0X2b9kIpklzE49xGzVJwYxZo';
+const OPENAI_API   = '/.netlify/functions/openai';
+const BEEHIIV_API  = '/.netlify/functions/subscribe-beehiiv';
+const STRATEGY_URL = 'https://calendly.com/erica-m-slater/aiproofclub';
+const MAX_IDEAS    = 15;
+
+// ── STATE ───────────────────────────────────────────────────────────────────
+let S = {
+    screen: 'landing',   // landing | diagnostic | loading | dashboard
+    form: { name:'', email:'', focus:'', stage:'', market:'', background:'' },
+    report: null,
+    loadingStep: 0,
+    activeTab: 'ideas',  // ideas | forecasts | next
+    expandedIdea: null,
+    savedIdeas: [],
+    modal: null,
+};
+
+// ── SUPABASE ────────────────────────────────────────────────────────────────
+async function db(table, method, data=null, query='') {
+    const url = `${SUPABASE_URL}/rest/v1/${table}${query}`;
+    const opt = { method, headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}`, 'Content-Type':'application/json', 'Prefer':method==='POST'?'return=representation':'' } };
+    if (data) opt.body = JSON.stringify(data);
+    try { const r = await fetch(url, opt); return method==='DELETE'?null:r.json(); }
+    catch(e) { console.error('DB:', e); return null; }
+}
+
+// ── AI ──────────────────────────────────────────────────────────────────────
+async function ai(messages, maxTokens=3000) {
+    try {
+        const r = await fetch(OPENAI_API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ messages, type:'general', max_tokens:maxTokens }) });
+        const d = await r.json(); return d.content || '';
+    } catch(e) { console.error('AI:', e); return ''; }
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function render() { document.getElementById('app').innerHTML = html(); bind(); }
+
+function html() {
+    if (S.screen==='landing')    return landingHTML();
+    if (S.screen==='diagnostic') return diagnosticHTML();
+    if (S.screen==='loading')    return loadingHTML();
+    if (S.screen==='dashboard')  return dashHTML() + (S.modal ? modalHTML() : '');
+    return landingHTML();
+}
+
+// ── LANDING ──────────────────────────────────────────────────────────────────
+function landingHTML() {
+    return `
+    <div class="screen-center">
+    <div class="container-sm">
+        <div class="logo">AI PROOF <span>CLUB</span><span class="logo-sub">Founder Mode</span></div>
+
+        <div class="card founder-left" style="margin-bottom:12px">
+            <div style="font-size:9px;color:var(--founder);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">💡 Founder Mode — Free Preview</div>
+            <div style="font-family:var(--serif);font-size:20px;margin-bottom:10px;font-style:italic">Turn AI forecasts into startup ideas.</div>
+            <p class="text-muted text-sm" style="line-height:1.7;margin-bottom:18px">We scan our AI forecast database and generate 15 startup ideas matched to your background, interests and market focus — each with a problem, solution, market opportunity, MVP plan and launch steps.</p>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+                ${['15 startup ideas from forecasts','Problem + AI-enabled solution','Market opportunity sizing','Quick MVP plan','Step-by-step launch guide','Matched to your background'].map(f=>`
+                <div style="font-size:10px;color:var(--muted);display:flex;gap:6px;align-items:center">
+                    <span style="color:var(--founder)">✓</span>${f}
+                </div>`).join('')}
+            </div>
+
+            <button class="btn btn-founder btn-full" id="btn-start">Generate My Startup Ideas →</button>
+            <p class="text-muted text-xs" style="text-align:center;margin-top:8px">Free · No account needed · Takes 30 seconds</p>
+        </div>
+
+        <div class="upgrade-banner">
+            <div class="upgrade-text">
+                <strong>Building a company, not a startup?</strong><br>
+                Get 15 AI opportunities mapped to your existing business.
+            </div>
+            <a href="/company.html" class="btn btn-secondary btn-sm" style="white-space:nowrap">Company →</a>
+        </div>
+
+        <div style="text-align:center;margin-top:14px">
+            <a href="/app.html" style="color:var(--faint);font-size:10px;text-decoration:none">← Individual mode</a>
+            &nbsp;·&nbsp;
+            <a href="/intelligence.html" style="color:var(--faint);font-size:10px;text-decoration:none">Intelligence Platform</a>
+        </div>
+    </div>
+    </div>`;
+}
+
+// ── DIAGNOSTIC ───────────────────────────────────────────────────────────────
+function diagnosticHTML() {
+    const f = S.form;
+    return `
+    <div class="screen-center">
+    <div class="container-sm">
+        <div class="logo">AI PROOF <span>CLUB</span><span class="logo-sub">Founder Mode</span></div>
+
+        <div class="card">
+            <div style="font-size:9px;color:var(--founder);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Founder Profile</div>
+            <div style="font-size:17px;font-weight:700;margin-bottom:4px">Tell us about you</div>
+            <p class="text-muted text-sm" style="margin-bottom:18px">We'll match AI forecasts to startup ideas that fit your skills, interests and ambitions.</p>
+
+            <div class="form-group">
+                <label class="form-label">Your Name</label>
+                <input class="form-input" id="f-name" type="text" placeholder="Jane Smith" value="${f.name}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input class="form-input" id="f-email" type="email" placeholder="you@email.com" value="${f.email}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">What's your professional background?</label>
+                <textarea class="form-textarea" id="f-background" placeholder="e.g. 8 years in enterprise sales, led teams of 20, strong in B2B relationships">${f.background}</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">What area do you want to build in?</label>
+                <textarea class="form-textarea" id="f-focus" placeholder="e.g. healthcare, education, climate, B2B SaaS, consumer apps — or leave open if you're exploring">${f.focus}</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Where are you in the founder journey?</label>
+                <select class="form-select" id="f-stage">
+                    <option value="" ${!f.stage?'selected':''}>Select</option>
+                    ${['Just exploring ideas','Have an idea, validating it','Building my first product','Previously founded a company','Serial founder'].map(s=>`<option value="${s}" ${f.stage===s?'selected':''}>${s}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">What market size are you targeting?</label>
+                <select class="form-select" id="f-market">
+                    <option value="" ${!f.market?'selected':''}>Select</option>
+                    ${['Small / niche (lifestyle business)','Mid-size ($10M–$100M opportunity)','Large ($100M+ VC-backable)','Not sure yet'].map(s=>`<option value="${s}" ${f.market===s?'selected':''}>${s}</option>`).join('')}
+                </select>
+            </div>
+
+            <div id="form-err" style="display:none;color:var(--danger);font-size:11px;margin-bottom:12px"></div>
+            <button class="btn btn-founder btn-full" id="btn-submit">Generate My Ideas →</button>
+        </div>
+
+        <p class="text-xs text-muted" style="text-align:center;margin-top:10px">
+            <a href="#" id="btn-back" style="color:var(--faint);text-decoration:none">← Back</a>
+        </p>
+    </div>
+    </div>`;
+}
+
+// ── LOADING ───────────────────────────────────────────────────────────────────
+const STEPS = [
+    'Reading your founder profile...',
+    'Scanning AI forecast database...',
+    'Matching forecasts to your background...',
+    'Generating startup ideas...',
+    'Writing problems and solutions...',
+    'Sizing market opportunities...',
+    'Building MVP plans...',
+    'Writing launch steps...',
+    'Finalising your ideas...'
+];
+
+function loadingHTML() {
+    return `
+    <div class="screen-center">
+    <div class="container-sm">
+        <div class="logo">AI PROOF <span>CLUB</span></div>
+        <div class="card" style="text-align:center;padding:32px 24px">
+            <div style="font-size:26px;margin-bottom:10px">💡</div>
+            <div style="font-size:16px;font-weight:700;margin-bottom:4px">Finding your startup ideas</div>
+            <p class="text-muted text-sm" style="margin-bottom:20px">Cross-referencing AI forecasts with your background</p>
+            <div style="text-align:left">
+                ${STEPS.map((s,i)=>`
+                <div class="loading-step ${i<S.loadingStep?'done':i===S.loadingStep?'active':''}">
+                    <span style="color:${i<S.loadingStep?'var(--success)':i===S.loadingStep?'var(--founder)':'var(--faint)'}">
+                        ${i<S.loadingStep?'✓':i===S.loadingStep?'◉':'○'}
+                    </span>
+                    <span style="color:${i<S.loadingStep?'var(--success)':i===S.loadingStep?'var(--text)':'var(--faint)'}">${s}</span>
+                </div>`).join('')}
+            </div>
+        </div>
+    </div>
+    </div>`;
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function dashHTML() {
+    const r = S.report;
+    const ideas = r?.ideas || [];
+
+    return `
+    <div class="dash">
+        <!-- Header -->
+        <div class="dash-header">
+            <div class="flex-between">
+                <div>
+                    <div class="dash-title">Your Startup Ideas</div>
+                    <div class="dash-sub">${ideas.length} AI-enabled ideas · matched to your profile</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="btn-new">New Search</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-box"><div class="stat-val">${ideas.length}</div><div class="stat-lbl">Ideas</div></div>
+            <div class="stat-box"><div class="stat-val" style="color:var(--success)">${ideas.filter(i=>i.mvp).length}</div><div class="stat-lbl">With MVP Plans</div></div>
+            <div class="stat-box"><div class="stat-val" style="color:var(--warning)">${S.savedIdeas.length}</div><div class="stat-lbl">Saved</div></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab ${S.activeTab==='ideas'?'active':''}" data-tab="ideas">All Ideas</button>
+            <button class="tab ${S.activeTab==='saved'?'active':''}" data-tab="saved">Saved (${S.savedIdeas.length})</button>
+            <button class="tab ${S.activeTab==='next'?'active':''}" data-tab="next">Next Steps</button>
+        </div>
+
+        <!-- TAB: ALL IDEAS -->
+        ${S.activeTab==='ideas' ? `
+        ${ideas.map((idea,i)=>`
+        <div class="idea-card ${S.expandedIdea===i?'open':''}" data-idea="${i}">
+            <div class="idea-number">
+                Idea ${i+1} of ${ideas.length}
+                ${S.savedIdeas.includes(i)?'&nbsp;·&nbsp;<span style="color:var(--founder)">★ Saved</span>':''}
+            </div>
+            ${idea.forecast?`<div class="idea-forecast">🔮 ${idea.forecast}</div>`:''}
+            <div class="flex-between">
+                <div style="flex:1">
+                    <div class="idea-title">${idea.title}</div>
+                    <div class="idea-problem">${idea.problem||''}</div>
+                </div>
+                <span style="color:var(--faint);font-size:18px;margin-left:12px">${S.expandedIdea===i?'−':'+'}</span>
+            </div>
+
+            <div class="idea-detail">
+
+                ${idea.solution?`
+                <div class="idea-section">
+                    <div class="idea-section-label label-solution">◈ AI-Enabled Solution</div>
+                    <p>${idea.solution}</p>
+                </div>`:''}
+
+                ${idea.market?`
+                <div class="idea-section">
+                    <div class="idea-section-label label-market">◎ Market Opportunity</div>
+                    <p>${idea.market}</p>
+                </div>`:''}
+
+                ${idea.mvp?`
+                <div class="idea-section">
+                    <div class="idea-section-label label-mvp">⚡ Quick MVP Plan</div>
+                    <p>${idea.mvp}</p>
+                </div>`:''}
+
+                ${idea.steps&&idea.steps.length?`
+                <div class="idea-section">
+                    <div class="idea-section-label label-launch">▸ Steps to Launch</div>
+                    ${idea.steps.map((s,si)=>`
+                    <div class="launch-step">
+                        <span class="launch-num">${si+1}.</span>
+                        <div class="launch-body">
+                            <strong>${s.title||s}</strong>
+                            ${s.desc?`<span>${s.desc}</span>`:''}
+                            ${s.timeline?`<div class="launch-time">⏱ ${s.timeline}</div>`:''}
+                        </div>
+                    </div>`).join('')}
+                </div>`:''}
+
+                <div style="display:flex;gap:8px;margin-top:14px">
+                    <button class="btn btn-founder btn-sm" data-save="${i}">
+                        ${S.savedIdeas.includes(i)?'★ Saved':'☆ Save Idea'}
+                    </button>
+                </div>
+            </div>
+        </div>`).join('')}
+
+        <div class="upgrade-banner" style="margin-top:16px">
+            <div class="upgrade-text">
+                <strong>Want the full forecast database?</strong><br>
+                The Intelligence Platform surfaces every relevant forecast — not just 15 ideas.
+            </div>
+            <a href="/intelligence.html" class="btn btn-secondary btn-sm" style="white-space:nowrap">Upgrade →</a>
+        </div>
+        ` : ''}
+
+        <!-- TAB: SAVED -->
+        ${S.activeTab==='saved' ? `
+        ${S.savedIdeas.length===0 ? `
+        <div style="text-align:center;padding:50px 20px;color:var(--muted)">
+            <div style="font-size:28px;margin-bottom:10px">☆</div>
+            <div style="font-size:14px;color:var(--text);margin-bottom:6px">No saved ideas yet</div>
+            <p class="text-sm">Expand an idea and click "Save Idea" to bookmark it here.</p>
+        </div>` : ideas.filter((_,i)=>S.savedIdeas.includes(i)).map((idea,_,arr)=>{
+            const origIdx = ideas.indexOf(idea);
+            return `
+            <div class="idea-card founder-left">
+                ${idea.forecast?`<div class="idea-forecast">🔮 ${idea.forecast}</div>`:''}
+                <div class="idea-title">${idea.title}</div>
+                <div class="idea-problem text-muted text-sm">${idea.problem||''}</div>
+                ${idea.mvp?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bg3)"><div style="font-size:9px;color:var(--warning);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">⚡ MVP</div><p class="text-xs text-muted">${idea.mvp}</p></div>`:''}
+                <div style="margin-top:12px">
+                    <button class="btn btn-secondary btn-sm" data-unsave="${origIdx}">Remove</button>
+                </div>
+            </div>`;
+        }).join('')}
+        ` : ''}
+
+        <!-- TAB: NEXT STEPS -->
+        ${S.activeTab==='next' ? `
+        ${r?.founderAdvice?`
+        <div class="card founder-left">
+            <div style="font-size:10px;color:var(--founder);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px">Your Founder Brief</div>
+            <p class="text-sm" style="line-height:1.8">${r.founderAdvice}</p>
+        </div>`:''}
+
+        <div class="card">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px">Your Top 3 to Explore First</div>
+            ${(r?.ideas||[]).slice(0,3).map((idea,i)=>`
+            <div style="padding:10px 0;${i<2?'border-bottom:1px solid var(--bg3)':''}">
+                <div style="font-size:11px;font-weight:700;margin-bottom:3px">${i+1}. ${idea.title}</div>
+                <p class="text-xs text-muted">${idea.mvp||idea.problem||''}</p>
+            </div>`).join('')}
+        </div>
+
+        <div class="card" style="text-align:center;border-color:var(--founder)">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px">Want to pressure-test your idea?</div>
+            <p class="text-muted text-xs" style="margin-bottom:14px">Book a session to validate your best idea against real market signals.</p>
+            <a href="${STRATEGY_URL}" target="_blank" class="btn btn-founder btn-full">Book a Strategy Call →</a>
+        </div>
+
+        <div class="upgrade-banner">
+            <div class="upgrade-text">
+                <strong>Need more forecasts to explore?</strong><br>
+                The Intelligence Platform gives you the full database.
+            </div>
+            <a href="/intelligence.html" class="btn btn-secondary btn-sm" style="white-space:nowrap">Upgrade →</a>
+        </div>
+        ` : ''}
+    </div>`;
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function modalHTML() { return ''; }
+
+// ── BIND ─────────────────────────────────────────────────────────────────────
+function bind() {
+    document.getElementById('btn-start')?.addEventListener('click', ()=>{ S.screen='diagnostic'; render(); });
+    document.getElementById('btn-back')?.addEventListener('click', e=>{ e.preventDefault(); S.screen='landing'; render(); });
+    document.getElementById('btn-submit')?.addEventListener('click', submitForm);
+    document.getElementById('btn-new')?.addEventListener('click', ()=>{ S.screen='diagnostic'; S.report=null; render(); });
+
+    document.querySelectorAll('[data-tab]').forEach(el=>{
+        el.addEventListener('click', ()=>{ S.activeTab=el.dataset.tab; render(); });
+    });
+
+    document.querySelectorAll('[data-idea]').forEach(el=>{
+        el.addEventListener('click', e=>{
+            if (e.target.closest('[data-save]') || e.target.closest('[data-unsave]')) return;
+            const i = parseInt(el.dataset.idea);
+            S.expandedIdea = S.expandedIdea===i ? null : i;
+            render();
+        });
+    });
+
+    document.querySelectorAll('[data-save]').forEach(el=>{
+        el.addEventListener('click', e=>{
+            e.stopPropagation();
+            const i = parseInt(el.dataset.save);
+            if (!S.savedIdeas.includes(i)) S.savedIdeas.push(i);
+            else S.savedIdeas = S.savedIdeas.filter(x=>x!==i);
+            render();
+        });
+    });
+
+    document.querySelectorAll('[data-unsave]').forEach(el=>{
+        el.addEventListener('click', e=>{
+            e.stopPropagation();
+            const i = parseInt(el.dataset.unsave);
+            S.savedIdeas = S.savedIdeas.filter(x=>x!==i);
+            render();
+        });
+    });
+}
+
+// ── SUBMIT FORM ───────────────────────────────────────────────────────────────
+async function submitForm() {
+    const name       = document.getElementById('f-name')?.value.trim();
+    const email      = document.getElementById('f-email')?.value.trim();
+    const background = document.getElementById('f-background')?.value.trim();
+    const focus      = document.getElementById('f-focus')?.value.trim();
+    const stage      = document.getElementById('f-stage')?.value;
+    const market     = document.getElementById('f-market')?.value;
+    const errEl      = document.getElementById('form-err');
+
+    if (!email || !background || !stage || !market) {
+        errEl.textContent = 'Please fill in all fields.';
+        errEl.style.display = 'block';
+        return;
+    }
+    errEl.style.display = 'none';
+    S.form = { name, email, background, focus, stage, market };
+    S.screen = 'loading';
+    S.loadingStep = 0;
+    render();
+
+    // Capture lead
+    try {
+        await db('profiles','POST',{ email, source:'founder_mode', user_type:'lead', created_at:new Date().toISOString() });
+        beehiiv(email, 'founder_mode');
+    } catch(e) {}
+
+    const stepTimer = setInterval(()=>{
+        if (S.loadingStep < STEPS.length-1) { S.loadingStep++; render(); }
+    }, 1100);
+
+    try {
+        // Fetch forecasts from Supabase
+        S.loadingStep = 1; render();
+        const forecasts = await db('forecasts','GET',null,'?active=eq.true&select=id,title,description,category,probability,timeframe&order=probability.desc&limit=60');
+        const forecastList = (forecasts||[]).map((f,i)=>`${i+1}. [${f.id||i}] ${f.title} (${f.probability||'?'}% by ${f.timeframe||'?'}) — ${(f.description||'').slice(0,100)}`).join('\n');
+
+        S.loadingStep = 3; render();
+
+        const prompt = `You are an AI startup strategist. Generate exactly ${MAX_IDEAS} startup ideas for a founder based on AI forecasts.
+
+FOUNDER PROFILE:
+Name: ${name||'Founder'}
+Background: ${background}
+Focus area: ${focus||'open — exploring all options'}
+Stage: ${stage}
+Target market size: ${market}
+
+AI FORECAST DATABASE:
+${forecastList}
+
+Generate EXACTLY ${MAX_IDEAS} startup ideas, ranked by fit with this founder's background and interests. Return ONLY valid JSON:
+{
+  "ideas": [
+    {
+      "forecast": "which forecast this idea derives from",
+      "title": "startup name or concept title",
+      "problem": "the specific problem this solves (2 sentences)",
+      "solution": "the AI-enabled solution — what makes it only possible now (2-3 sentences)",
+      "market": "market opportunity — who buys this, rough size, why now",
+      "mvp": "what the simplest version looks like — what you'd build in 30-60 days to test the idea",
+      "steps": [
+        {"title": "step title", "desc": "what to do", "timeline": "e.g. Week 1"},
+        {"title": "step title", "desc": "what to do", "timeline": "e.g. Week 2-4"},
+        {"title": "step title", "desc": "what to do", "timeline": "e.g. Month 2"},
+        {"title": "step title", "desc": "what to do", "timeline": "e.g. Month 3"},
+        {"title": "step title", "desc": "what to do", "timeline": "e.g. Month 4-6"}
+      ]
+    }
+  ],
+  "founderAdvice": "A personalised 2-3 sentence brief for this specific founder — what patterns you see across their best ideas, what to prioritise first given their background"
+}
+
+Rules:
+- EXACTLY ${MAX_IDEAS} ideas
+- Each idea must be genuinely enabled by AI — not just a traditional business with AI bolted on
+- Ideas should match the founder's background where possible (leverage their edge)
+- ${market.includes('VC') || market.includes('Large') ? 'Ideas should have clear paths to scale' : 'Ideas can be niche, lifestyle, or SMB-focused'}
+- MVP plans should be realistic for someone ${stage.toLowerCase()}
+- Be specific — no generic "build an AI platform" ideas`;
+
+        S.loadingStep = 6; render();
+        const raw = await ai([{role:'user',content:prompt}], 4000);
+
+        clearInterval(stepTimer);
+        S.loadingStep = STEPS.length; render();
+
+        let report;
+        try {
+            report = JSON.parse(raw.replace(/```json|```/g,'').trim());
+        } catch(e) {
+            report = { ideas:[], founderAdvice:'' };
+        }
+
+        if (report.ideas?.length > MAX_IDEAS) report.ideas = report.ideas.slice(0, MAX_IDEAS);
+
+        S.report = report;
+        S.screen = 'dashboard';
+        S.activeTab = 'ideas';
+        S.expandedIdea = 0;
+        render();
+
+        // Save to Supabase
+        try {
+            await db('profiles','PATCH',{ founder_result:JSON.stringify(report) },`?email=eq.${encodeURIComponent(email)}&source=eq.founder_mode`);
+        } catch(e) {}
+
+    } catch(e) {
+        clearInterval(stepTimer);
+        console.error('Error:', e);
+        S.screen = 'diagnostic';
+        render();
+        alert('Something went wrong. Please try again.');
+    }
+}
+
+// ── BEEHIIV ───────────────────────────────────────────────────────────────────
+async function beehiiv(email, source) {
+    try { await fetch(BEEHIIV_API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,user_type:'lead',utm_source:source}) }); }
+    catch(e) {}
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+(function init() {
+    try {
+        const saved = localStorage.getItem('apc_founder_session');
+        if (saved) {
+            const session = JSON.parse(saved);
+            S.form       = session.form       || S.form;
+            S.report     = session.report     || null;
+            S.savedIdeas = session.savedIdeas || [];
+            if (S.report) { S.screen='dashboard'; S.activeTab='ideas'; S.expandedIdea=0; }
+        }
+    } catch(e) { localStorage.removeItem('apc_founder_session'); }
+
+    render();
+
+    setInterval(()=>{
+        if (S.report) localStorage.setItem('apc_founder_session', JSON.stringify({ form:S.form, report:S.report, savedIdeas:S.savedIdeas }));
+    }, 5000);
+})();
+</script>
+</body>
+</html>
