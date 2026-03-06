@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <script src="forecasts-data.js"></script>
     <style>
         :root {
             --bg:      #050508;
@@ -366,6 +367,7 @@ const STEPS = [
 
 function loadingHTML() {
     const domain = (S.form.url||'your company').replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+    const allDone = S.loadingStep >= STEPS.length - 1;
     return `
     <div class="screen-center">
     <div class="container-sm">
@@ -383,6 +385,11 @@ function loadingHTML() {
                     <span style="color:${i<S.loadingStep?'var(--success)':i===S.loadingStep?'var(--text)':'var(--faint)'}">${s}</span>
                 </div>`).join('')}
             </div>
+            ${allDone ? `
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--bg3);display:flex;align-items:center;justify-content:center;gap:12px">
+                <div style="width:20px;height:20px;border:2px solid var(--bg3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite"></div>
+                <span class="text-sm text-muted">AI is building your report — may take up to 3 minutes...</span>
+            </div>` : ''}
         </div>
     </div>
     </div>`;
@@ -662,9 +669,17 @@ async function submitForm() {
 
         S.loadingStep = 1; render();
 
-        // Fetch up to 60 forecasts from Supabase to rank against
-        const forecasts = await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description,mode,difficulty,timeframe&order=sort_order.asc&limit=60');
-        const forecastList = (forecasts||[]).map((f,i)=>`${i+1}. [${f.forecast_id||f.id}] ${f.title} (${f.timeframe||'?'}) — ${(f.description||'').slice(0,100)}`).join('\n');
+        // Use FORECAST_DATABASE from forecasts-data.js (same source as app.html)
+        // Fall back to Supabase if not available
+        let forecastList = '';
+        if (typeof FORECAST_DATABASE !== 'undefined' && FORECAST_DATABASE.length) {
+            // Use the hardcoded database — same as individual mode
+            forecastList = FORECAST_DATABASE.map((f,i)=>`${i+1}. [${f.id}] ${f.title} (${f.timeframe||'?'}) — ${(f.description||f.threatReason||'').slice(0,100)}`).join('\n');
+        } else {
+            // Fallback: try Supabase
+            const forecasts = await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description,mode,difficulty,timeframe&order=sort_order.asc&limit=60');
+            forecastList = (forecasts||[]).map((f,i)=>`${i+1}. [${f.forecast_id||f.id}] ${f.title} (${f.timeframe||'?'}) — ${(f.description||'').slice(0,100)}`).join('\n');
+        }
 
         S.loadingStep = 3; render();
 
@@ -718,15 +733,26 @@ Rules:
 
         S.loadingStep = 5; render();
         const raw = await ai([{role:'user',content:prompt}], 3500);
+        console.log('AI raw response:', raw);
 
         clearInterval(stepTimer);
         S.loadingStep = STEPS.length; render();
 
         let report;
         try {
-            report = JSON.parse(raw.replace(/```json|```/g,'').trim());
+            const cleaned = raw.replace(/```json|```/g,'').trim();
+            report = JSON.parse(cleaned);
+            if (!report.opportunities || !Array.isArray(report.opportunities)) throw new Error('No opportunities array');
         } catch(e) {
-            report = { ai_status:{level:'Moderately Positioned',summary:'Analysis complete.'}, opportunities:[], risks:[], summary:'' };
+            console.error('Parse error:', e, 'Raw:', raw);
+            // Try to extract JSON from anywhere in the response
+            const match = raw.match(/\{[\s\S]*\}/);
+            if (match) {
+                try { report = JSON.parse(match[0]); } catch(e2) {}
+            }
+            if (!report) {
+                report = { ai_status:{level:'Moderately Positioned',summary:'Analysis complete — please try again if opportunities are missing.'}, opportunities:[], risks:[], summary:raw.slice(0,500) };
+            }
         }
 
         // Cap at MAX_OPPS just in case

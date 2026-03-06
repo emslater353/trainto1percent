@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <script src="forecasts-data.js"></script>
     <style>
         :root {
             --bg:       #050508;
@@ -330,6 +331,7 @@ const STEPS = [
 ];
 
 function loadingHTML() {
+    const allDone = S.loadingStep >= STEPS.length - 1;
     return `
     <div class="screen-center">
     <div class="container-sm">
@@ -347,6 +349,11 @@ function loadingHTML() {
                     <span style="color:${i<S.loadingStep?'var(--success)':i===S.loadingStep?'var(--text)':'var(--faint)'}">${s}</span>
                 </div>`).join('')}
             </div>
+            ${allDone ? `
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--bg3);display:flex;align-items:center;justify-content:center;gap:12px">
+                <div style="width:20px;height:20px;border:2px solid var(--bg3);border-top-color:var(--founder);border-radius:50%;animation:spin 0.8s linear infinite"></div>
+                <span class="text-sm text-muted">AI is generating your ideas — may take up to 3 minutes...</span>
+            </div>` : ''}
         </div>
     </div>
     </div>`;
@@ -583,10 +590,16 @@ async function submitForm() {
     }, 1100);
 
     try {
-        // Fetch forecasts from Supabase
         S.loadingStep = 1; render();
-        const forecasts = await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description,mode,difficulty,timeframe&order=sort_order.asc&limit=60');
-        const forecastList = (forecasts||[]).map((f,i)=>`${i+1}. [${f.forecast_id||f.id}] ${f.title} (${f.timeframe||'?'}) — ${(f.description||'').slice(0,100)}`).join('\n');
+
+        // Use FORECAST_DATABASE directly — same source as app.html
+        let forecastList = '';
+        if (typeof FORECAST_DATABASE !== 'undefined' && FORECAST_DATABASE.length) {
+            forecastList = FORECAST_DATABASE.map((f,i)=>`${i+1}. [${f.id}] ${f.title} (${f.timeframe||'?'}) — ${(f.description||f.threatReason||'').slice(0,100)}`).join('\n');
+        } else {
+            const forecasts = await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description,mode,difficulty,timeframe&order=sort_order.asc&limit=60');
+            forecastList = (forecasts||[]).map((f,i)=>`${i+1}. [${f.forecast_id||f.id}] ${f.title} (${f.timeframe||'?'}) — ${(f.description||'').slice(0,100)}`).join('\n');
+        }
 
         S.loadingStep = 3; render();
 
@@ -634,6 +647,7 @@ Rules:
 
         S.loadingStep = 6; render();
         const raw = await ai([{role:'user',content:prompt}], 4000);
+        console.log('Founder AI response:', raw);
 
         clearInterval(stepTimer);
         S.loadingStep = STEPS.length; render();
@@ -641,8 +655,12 @@ Rules:
         let report;
         try {
             report = JSON.parse(raw.replace(/```json|```/g,'').trim());
+            if (!report.ideas || !Array.isArray(report.ideas)) throw new Error('No ideas array');
         } catch(e) {
-            report = { ideas:[], founderAdvice:'' };
+            console.error('Parse error:', e);
+            const match = raw.match(/\{[\s\S]*\}/);
+            if (match) { try { report = JSON.parse(match[0]); } catch(e2) {} }
+            if (!report) report = { ideas:[], founderAdvice:'' };
         }
 
         if (report.ideas?.length > MAX_IDEAS) report.ideas = report.ideas.slice(0, MAX_IDEAS);
