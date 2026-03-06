@@ -322,12 +322,13 @@ const STEPS = [
     'Reading your founder profile...',
     'Scanning AI forecast database...',
     'Matching forecasts to your background...',
-    'Generating startup ideas...',
+    'Generating 15 startup ideas...',
     'Writing problems and solutions...',
     'Sizing market opportunities...',
     'Building MVP plans...',
-    'Writing launch steps...',
-    'Finalising your ideas...'
+    'Reasoning why each fits your background...',
+    'Building quest steps per idea...',
+    'Finalising your report...'
 ];
 
 function loadingHTML() {
@@ -645,18 +646,35 @@ async function submitForm() {
         // STEP 2b: Enrich — market, mvp, whyYou in a separate call so generation never truncates
         if(ideas.length>=5){
             var founderEnrichList=ideas.map(function(o,i){return (i+1)+'. ['+o.forecast+'] '+o.title+': '+o.problem;}).join('\n');
-            var enrichPrompt='Startup advisor enriching ideas for a specific founder.\n\nFOUNDER BACKGROUND: '+background+'\nSTAGE: '+stage+'\nMARKET: '+market+'\n\nFor the whyYou field: be brutally specific — reference the EXACT skills from their background (e.g. "Your experience fighting chargebacks gives you the pattern recognition to..." or "Managing 60 data labellers means you know exactly where AI annotation breaks down..."). Never be generic.\n\nFor each idea write: market opportunity, 30-60 day MVP, why it fits THIS founder specifically, and 4 quest steps to build it out (concrete weekly actions).\n\nIdeas:\n'+founderEnrichList+'\n\nReturn ONLY valid JSON:\n{"e":[{"market":"who buys + rough size","mvp":"what to build in 30-60 days","whyYou":"specific reason referencing their exact experience","steps":[{"title":"step title","desc":"concrete action","timeline":"Week 1"},{"title":"step title","desc":"concrete action","timeline":"Week 2-4"},{"title":"step title","desc":"concrete action","timeline":"Month 2"},{"title":"step title","desc":"concrete action","timeline":"Month 3-6"}]}]}\n\nEXACTLY '+ideas.length+' items in e, same order. JSON only.';
+            var enrichPrompt='Startup advisor enriching ideas for a specific founder.\n\nFOUNDER BACKGROUND: '+background+'\nSTAGE: '+stage+'\nMARKET: '+market+'\n\nFor whyYou: be brutally specific — reference EXACT skills (e.g. "Your chargeback experience gives you pattern recognition to..." or "Managing 60 labellers means you know where annotation breaks down..."). Never generic.\n\nIdeas:\n'+founderEnrichList+'\n\nReturn ONLY valid JSON:\n{"e":[{"market":"who buys + rough size","mvp":"what to build in 30-60 days","whyYou":"specific reason referencing exact experience"}]}\n\nEXACTLY '+ideas.length+' items in e, same order. JSON only.';
             try{
                 var re=await ai([{role:'user',content:enrichPrompt}],3000,'founder_report');
+                console.log('Enrich raw:',re?re.slice(0,200):'empty');
                 if(re){
                     var ec=re.replace(/```json|```/g,'').trim(),ep=null;
                     try{ep=JSON.parse(ec);}catch(e1){}
                     if(ep&&ep.e&&ep.e.length>=5){
-                        ep.e.forEach(function(enrich,i){if(ideas[i]){ideas[i].market=enrich.market||'';ideas[i].mvp=enrich.mvp||'';ideas[i].whyYou=enrich.whyYou||'';ideas[i].steps=enrich.steps||[];}});
+                        ep.e.forEach(function(enrich,i){if(ideas[i]){ideas[i].market=enrich.market||'';ideas[i].mvp=enrich.mvp||'';ideas[i].whyYou=enrich.whyYou||'';}});
                         console.log('Enriched '+ep.e.length+' ideas');
                     }
                 }
             }catch(e){console.error('Enrich:',e);}
+
+            // STEP 2c: Quest steps — separate call so it never truncates
+            var questList=ideas.map(function(o,i){return (i+1)+'. '+o.title+': '+o.problem;}).join('\n');
+            var questPrompt='Generate 4 concrete quest steps for each of these '+ideas.length+' startup ideas. Steps should be weekly actions a solo founder can take.\n\nFOUNDER: '+background+'\n\nIdeas:\n'+questList+'\n\nReturn ONLY valid JSON:\n{"q":[{"steps":[{"title":"action title","desc":"what exactly to do","timeline":"Week 1"},{"title":"action title","desc":"what exactly to do","timeline":"Week 2-4"},{"title":"action title","desc":"what exactly to do","timeline":"Month 2"},{"title":"action title","desc":"what exactly to do","timeline":"Month 3-6"}]}]}\n\nEXACTLY '+ideas.length+' items in q, same order. JSON only.';
+            try{
+                var rq=await ai([{role:'user',content:questPrompt}],4000,'founder_report');
+                console.log('Quest raw:',rq?rq.slice(0,200):'empty');
+                if(rq){
+                    var qc=rq.replace(/```json|```/g,'').trim(),qp=null;
+                    try{qp=JSON.parse(qc);}catch(e1){}
+                    if(qp&&qp.q&&qp.q.length>=5){
+                        qp.q.forEach(function(quest,i){if(ideas[i]&&quest.steps){ideas[i].steps=quest.steps;}});
+                        console.log('Added quests to '+qp.q.length+' ideas');
+                    }
+                }
+            }catch(e){console.error('Quests:',e);}
         }
 
         // Rank ideas by founder fit (same waterfall as app.html)
