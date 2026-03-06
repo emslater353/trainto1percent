@@ -585,96 +585,54 @@ async function submitForm() {
         beehiiv(email, 'founder_mode');
     } catch(e) {}
 
-    const stepTimer = setInterval(()=>{
-        if (S.loadingStep < STEPS.length-1) { S.loadingStep++; render(); }
-    }, 1100);
+    setTimeout(()=>{S.loadingStep=1;render();},800);
+    setTimeout(()=>{S.loadingStep=2;render();},2000);
+    setTimeout(()=>{S.loadingStep=3;render();},3500);
+    setTimeout(()=>{S.loadingStep=4;render();},5000);
+    setTimeout(()=>{S.loadingStep=5;render();},7000);
 
     try {
-        S.loadingStep = 1; render();
+        // Fetch forecasts + opps from Supabase (same working pattern as app.html)
+        var forecasts    = await db('forecasts','GET',null,'?active=eq.true&select=id,title,category,probability,timeframe');
+        var forecastOpps = await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description');
 
-        // Build opportunity list from FORECAST_DATABASE
-        let oppList = [];
-        FORECAST_DATABASE.forEach(f => {
-            (f.opportunities || []).forEach(o => {
-                oppList.push({ prediction: f.title, title: o.title, desc: o.description || '' });
-            });
+        if(!forecasts||!forecastOpps){forecasts=[];forecastOpps=[];}
+        console.log('Supabase: forecasts='+(forecasts.length)+', opps='+(forecastOpps.length));
+
+        // Build pairs and shuffle
+        var oppList=[];
+        forecastOpps.forEach(function(fo){
+            var f=forecasts.find(function(fc){return fc.id===fo.forecast_id;});
+            if(f)oppList.push({prediction:f.title,title:fo.title,desc:fo.description});
         });
-        for (let i=oppList.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1));[oppList[i],oppList[j]]=[oppList[j],oppList[i]]; }
-        const sample = oppList.slice(0, 40);
-        const forecastList = sample.map((o,i)=>`${i+1}. [${o.prediction}] ${o.title}: ${o.desc}`).join('\n');
-        console.log('Sampled', sample.length, 'opps from FORECAST_DATABASE');
+        for(var si=oppList.length-1;si>0;si--){var sj=Math.floor(Math.random()*(si+1));var tmp=oppList[si];oppList[si]=oppList[sj];oppList[sj]=tmp;}
+        var sample=oppList.slice(0,50);
+        console.log('Sampled '+sample.length+' from '+oppList.length);
 
-        S.loadingStep = 3; render();
+        var oppListText=sample.map(function(o,i){return (i+1)+'. ['+o.prediction+'] '+o.title+': '+o.desc;}).join('\n');
+        var founderCtx='Background: '+background+'\nFocus: '+(focus||'open')+'\nStage: '+stage+'\nMarket: '+market;
 
-        const prompt = `You are an AI startup strategist. Generate exactly ${MAX_IDEAS} startup ideas for a founder based on AI forecasts.
+        var generatePrompt='You are a startup idea generator matching AI forecasts to a founder.\n\n'+founderCtx+'\n\nBelow are '+sample.length+' opportunity templates. Pick the 15 MOST RELEVANT to this founder and turn each into a startup idea that leverages their background.\n\nRULES:\n- Each idea must be enabled by AI — not just a traditional business\n- Match ideas to the founder\'s background and strengths\n- Be specific — no generic \"AI platform\" ideas\n\nTemplates:\n'+oppListText+'\n\nReturn ONLY valid JSON with NO whitespace:\n{"ideas":[{"forecast":"prediction name","title":"startup name","problem":"problem it solves","solution":"AI-enabled solution","market":"who buys this and rough size","mvp":"what to build in 30-60 days","steps":[{"title":"step","desc":"detail","timeline":"Week 1"},{"title":"step","desc":"detail","timeline":"Week 2-4"},{"title":"step","desc":"detail","timeline":"Month 2"},{"title":"step","desc":"detail","timeline":"Month 3-6"}]}],"founderAdvice":"personalised 2-3 sentence brief for this founder"}\n\n15 items in ideas array.';
 
-FOUNDER PROFILE:
-Name: ${name||'Founder'}
-Background: ${background}
-Focus area: ${focus||'open — exploring all options'}
-Stage: ${stage}
-Target market size: ${market}
-
-AI FORECAST DATABASE:
-${forecastList}
-
-Generate EXACTLY ${MAX_IDEAS} startup ideas, ranked by fit with this founder's background and interests. Return ONLY valid JSON:
-{
-  "ideas": [
-    {
-      "forecast": "which forecast this idea derives from",
-      "title": "startup name or concept title",
-      "problem": "the specific problem this solves (2 sentences)",
-      "solution": "the AI-enabled solution — what makes it only possible now (2-3 sentences)",
-      "market": "market opportunity — who buys this, rough size, why now",
-      "mvp": "what the simplest version looks like — what you'd build in 30-60 days to test the idea",
-      "steps": [
-        {"title": "step title", "desc": "what to do", "timeline": "e.g. Week 1"},
-        {"title": "step title", "desc": "what to do", "timeline": "e.g. Week 2-4"},
-        {"title": "step title", "desc": "what to do", "timeline": "e.g. Month 2"},
-        {"title": "step title", "desc": "what to do", "timeline": "e.g. Month 3"},
-        {"title": "step title", "desc": "what to do", "timeline": "e.g. Month 4-6"}
-      ]
-    }
-  ],
-  "founderAdvice": "A personalised 2-3 sentence brief for this specific founder — what patterns you see across their best ideas, what to prioritise first given their background"
-}
-
-Rules:
-- EXACTLY ${MAX_IDEAS} ideas
-- Each idea must be genuinely enabled by AI — not just a traditional business with AI bolted on
-- Ideas should match the founder's background where possible (leverage their edge)
-- ${market.includes('VC') || market.includes('Large') ? 'Ideas should have clear paths to scale' : 'Ideas can be niche, lifestyle, or SMB-focused'}
-- MVP plans should be realistic for someone ${stage.toLowerCase()}
-- Be specific — no generic "build an AI platform" ideas`;
-
-        S.loadingStep = 6; render();
-
-        let ideas = [], founderAdvice = '';
-        for (let attempt=0; attempt<3; attempt++) {
-            try {
-                const raw = await ai([{role:'user',content:prompt}]);
-                console.log('Founder attempt', attempt+1, ':', raw?.slice(0,200));
-                if (raw) {
-                    let cleaned = raw.replace(/```json|```/g,'').trim();
-                    let parsed = null;
-                    try { parsed = JSON.parse(cleaned); } catch(e1) {
-                        for (const suffix of ['}]}','}]}]}']) {
-                            try { parsed = JSON.parse(cleaned+suffix); break; } catch(e2) {}
-                        }
+        var ideas=[],founderAdvice='';
+        for(var attempt=0;attempt<3;attempt++){
+            try{
+                var r1=await ai([{role:'user',content:generatePrompt}],3000,'general');
+                console.log('Founder attempt '+(attempt+1)+':',r1?r1.slice(0,200):'empty');
+                if(r1){
+                    var c=r1.replace(/```json|```/g,'').trim(),parsed=null;
+                    try{parsed=JSON.parse(c);}catch(e1){
+                        for(var fx of ['}]}','}]}]}',']}]}']){try{parsed=JSON.parse(c+fx);break;}catch(e2){}}
                     }
-                    if (parsed?.ideas?.length >= 3) {
-                        ideas = parsed.ideas;
-                        founderAdvice = parsed.founderAdvice || '';
-                        console.log('Success attempt', attempt+1, 'ideas:', ideas.length);
+                    if(parsed&&parsed.ideas&&parsed.ideas.length>=3){
+                        ideas=parsed.ideas;
+                        founderAdvice=parsed.founderAdvice||'';
+                        console.log('Success: '+ideas.length+' ideas');
                         break;
                     }
                 }
-            } catch(e) { console.error('Attempt', attempt+1, e); }
+            }catch(e){console.error('Attempt '+(attempt+1)+':',e);}
         }
-
-        clearInterval(stepTimer);
-        S.loadingStep = STEPS.length; render();
 
         const report = { ideas: ideas.slice(0, MAX_IDEAS), founderAdvice };
 

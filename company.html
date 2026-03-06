@@ -660,89 +660,84 @@ async function submitForm() {
         beehiiv(email, 'company_report');
     } catch(e) {}
 
-    const stepTimer = setInterval(()=>{
-        if (S.loadingStep < STEPS.length-1) { S.loadingStep++; render(); }
-    }, 1100);
+    // Step timer for loading UI
+    setTimeout(()=>{S.loadingStep=1;render();},800);
+    setTimeout(()=>{S.loadingStep=2;render();},2000);
+    setTimeout(()=>{S.loadingStep=3;render();},3500);
+    setTimeout(()=>{S.loadingStep=4;render();},5000);
+    setTimeout(()=>{S.loadingStep=5;render();},7000);
 
     try {
         const domain = url.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
+        const ctx = desc ? domain+': '+desc+'. Size: '+size+'.' : domain+' ('+size+').';
 
-        S.loadingStep = 1; render();
+        // Fetch forecasts + opps from Supabase (same as app.html working pattern)
+        var forecasts    = await db('forecasts','GET',null,'?active=eq.true&select=id,title,category,probability,timeframe,threat_reason');
+        var forecastOpps = await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description');
+        var forecastRisks= await db('forecast_risks','GET',null,'?active=eq.true&select=title,description,default_probability');
 
-        // Build opportunity list from FORECAST_DATABASE (same as app.html)
-        let oppList = [];
-        FORECAST_DATABASE.forEach(f => {
-            (f.opportunities || []).forEach(o => {
-                oppList.push({ prediction: f.title, title: o.title, desc: o.description || '' });
-            });
+        if(!forecasts||!forecastOpps){forecasts=[];forecastOpps=[];}
+        if(!forecastRisks)forecastRisks=[];
+        console.log('Supabase: forecasts='+(forecasts.length)+', opps='+(forecastOpps.length));
+
+        // Build pairs and shuffle
+        var oppList=[];
+        forecastOpps.forEach(function(fo){
+            var f=forecasts.find(function(fc){return fc.id===fo.forecast_id;});
+            if(f)oppList.push({prediction:f.title,title:fo.title,desc:fo.description});
         });
-        // Shuffle and sample 40
-        for (let i=oppList.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1));[oppList[i],oppList[j]]=[oppList[j],oppList[i]]; }
-        const sample = oppList.slice(0, 40);
-        console.log('Sampled', sample.length, 'opps from FORECAST_DATABASE');
+        for(var si=oppList.length-1;si>0;si--){var sj=Math.floor(Math.random()*(si+1));var tmp=oppList[si];oppList[si]=oppList[sj];oppList[sj]=tmp;}
+        var sample=oppList.slice(0,50);
+        console.log('Sampled '+sample.length+' from '+oppList.length);
 
-        S.loadingStep = 3; render();
+        // AI generates opportunities — compact format that fits in 1500 tokens
+        var oppListText=sample.map(function(o,i){return (i+1)+'. ['+o.prediction+'] '+o.title+': '+o.desc;}).join('\n');
+        var generatePrompt='You are a visionary AI strategist.\n\nCompany: '+ctx+'\nGoal: '+goal+'\n\nBelow are '+sample.length+' opportunity templates. Pick the 15 MOST RELEVANT to '+domain+' and REWRITE each specifically for this company.\n\nRULES:\n- Every opportunity MUST reference what '+domain+' actually does\n- Rewrite description in 2 vivid actionable sentences\n- Include a 30-day quick win (q) and 12-24 month strategic bet (b)\n- ORDER BY RELEVANCE: most relevant first\n\nTemplates:\n'+oppListText+'\n\nReturn ONLY valid JSON with NO whitespace:\n{"d":"what '+domain+' does","o":[{"p":"prediction name","t":"title","s":"2 sentences","q":"quick win","b":"strategic bet"}],"m":"2 sentence summary"}\n\n15 items in o array.';
 
-        const ctx = `${domain}: ${desc}. Size: ${size}. AI usage: ${aiUsage}. Goal: ${goal}.`;
-        const oppListText = sample.map((o,i)=>`${i+1}. [${o.prediction}] ${o.title}: ${o.desc}`).join('\n');
-
-        const prompt = `You are a visionary AI strategist.
-
-Company: ${ctx}
-
-Below are ${sample.length} opportunity templates based on major AI predictions. Pick the ${MAX_OPPS} MOST RELEVANT to ${domain} and REWRITE each one specifically for this company.
-
-CRITICAL RULES:
-- Every opportunity MUST reference what ${domain} actually does
-- Rewrite descriptions in 2 vivid actionable sentences specific to ${domain}
-- For "forecast" field use the full prediction name text
-- ORDER BY RELEVANCE: most relevant first
-- Also generate whyMatters, quickWin, strategicBet, and 4 steps for each
-
-Opportunity templates:
-${oppListText}
-
-Return ONLY valid JSON:
-{"industry":"inferred industry","ai_status":{"level":"Well Positioned|Moderately Positioned|High Risk","summary":"2-3 sentence assessment"},"opportunities":[{"forecast":"prediction name","title":"rewritten title","whyMatters":"why this matters for ${domain}","quickWin":"30-day action","strategicBet":"12-24 month opportunity","steps":[{"title":"step","desc":"detail","timeline":"Week 1"},{"title":"step","desc":"detail","timeline":"Week 2-3"},{"title":"step","desc":"detail","timeline":"Month 1"},{"title":"step","desc":"detail","timeline":"Month 2-3"}]}],"risks":[{"prediction":"risk","probability":75,"impact":"impact on ${domain}"}],"summary":"bottom line"}
-
-Exactly ${MAX_OPPS} opportunities. JSON only.`;
-
-        S.loadingStep = 5; render();
-
-        let allOpps = [], aiStatus = {}, risks = [], summary = '', industry = '';
-
-        // Retry up to 3 times like app.html
-        for (let attempt=0; attempt<3; attempt++) {
-            try {
-                const raw = await ai([{role:'user',content:prompt}]);
-                console.log('AI attempt', attempt+1, 'raw:', raw?.slice(0,200));
-                if (raw) {
-                    let cleaned = raw.replace(/```json|```/g,'').trim();
-                    let parsed = null;
-                    try { parsed = JSON.parse(cleaned); } catch(e1) {
-                        // Try fixing truncated JSON
-                        for (const suffix of ['}]}','}]}]}',']}']) {
-                            try { parsed = JSON.parse(cleaned+suffix); break; } catch(e2) {}
-                        }
+        var allOpps=[],companyDesc='',summary='';
+        for(var attempt=0;attempt<3;attempt++){
+            try{
+                var r1=await ai([{role:'user',content:generatePrompt}],3000,'general');
+                console.log('AI attempt '+(attempt+1)+':',r1?r1.slice(0,200):'empty');
+                if(r1){
+                    var c=r1.replace(/```json|```/g,'').trim(),parsed=null;
+                    try{parsed=JSON.parse(c);}catch(e1){
+                        for(var fx of ['}]}','}]}]}',']}]}','}]}'+ '}']){try{parsed=JSON.parse(c+fx);break;}catch(e2){}}
                     }
-                    if (parsed?.opportunities?.length >= 3) {
-                        allOpps   = parsed.opportunities;
-                        aiStatus  = parsed.ai_status || {};
-                        risks     = parsed.risks || [];
-                        summary   = parsed.summary || '';
-                        industry  = parsed.industry || '';
-                        console.log('Success on attempt', attempt+1, '— opps:', allOpps.length);
+                    if(parsed&&parsed.o&&parsed.o.length>=3){
+                        allOpps=parsed.o.map(function(x){return{forecast:x.p||'',title:x.t||'',whyMatters:x.s||'',quickWin:x.q||'',strategicBet:x.b||'',steps:[]};});
+                        companyDesc=parsed.d||'';
+                        summary=parsed.m||'';
+                        console.log('Success: '+allOpps.length+' opps');
                         break;
                     }
                 }
-            } catch(e) { console.error('Attempt', attempt+1, 'error:', e); }
+            }catch(e){console.error('Attempt '+(attempt+1)+':',e);}
         }
 
-        clearInterval(stepTimer);
-        S.loadingStep = STEPS.length; render();
+        // Build risks
+        var risks=forecastRisks.map(function(r){return{prediction:r.title,probability:r.default_probability,impact:r.description};});
+        if(!risks.length)risks=[
+            {prediction:'OpenAI builds competing product',probability:78,impact:'OpenAI could replicate what '+domain+' offers with massive distribution advantage.'},
+            {prediction:'AI competitors flood market',probability:75,impact:'AI-native competitors can replicate offerings at a fraction of the cost.'},
+            {prediction:'Customer expectations outpace adoption',probability:82,impact:'Customers will expect AI features as standard within 12 months.'}
+        ];
 
-        const report = { industry, ai_status:aiStatus, opportunities:allOpps.slice(0,MAX_OPPS), risks, summary };
-        S.report = report;
+        // AI-Proof status
+        var aiStatus={level:'Moderately Positioned',summary:'Your company has real opportunities but needs to act on key AI shifts.'};
+        try{
+            var statusPrompt='Rate AI-proof status in JSON only.\nCompany: '+ctx+'\nTop opps: '+allOpps.slice(0,5).map(function(o){return o.title;}).join(', ')+'\n\n{"level":"High Risk or Moderately Positioned or Well Positioned","summary":"2-3 sentence personalised briefing mentioning '+domain+' specifically"}';
+            var sr=await ai([{role:'user',content:statusPrompt}],600,'general');
+            if(sr){var sc=sr.replace(/```json|```/g,'').trim();try{var sp=JSON.parse(sc);if(sp.level&&sp.summary)aiStatus=sp;}catch(e){console.error('Status parse:',e);}}
+        }catch(e){console.error('Status:',e);}
+
+        S.report = {
+            ai_status: aiStatus,
+            opportunities: allOpps.slice(0, MAX_OPPS),
+            risks: risks.slice(0,7),
+            summary: summary || domain+' has real opportunities to leverage these AI shifts — the window to act is now.',
+            company_description: companyDesc
+        };
         S.screen = 'dashboard';
         S.activeTab = 'opportunities';
         S.expandedOpp = 0; // Open first opp by default
