@@ -444,31 +444,35 @@ function dashHTML() {
         ${opps.map((o,i)=>`
         <div class="opp-card ${S.expandedOpp===i?'open':''}" data-opp="${i}">
             <div class="opp-number">Opportunity ${i+1} of ${opps.length}${S.completedOpps.includes(i)?' · <span style="color:var(--success)">✓ Completed</span>':''}</div>
-            ${o.forecast?`<div class="opp-forecast">🔮 ${o.forecast}</div>`:''}
+            ${o.forecast?`<div class="opp-forecast">🔮 Based on: ${o.forecast}</div>`:''}
+
             <div class="flex-between">
                 <div style="flex:1">
                     <div class="opp-title">${o.title}</div>
-                    <div class="opp-why">${o.whyMatters||o.description||''}</div>
                 </div>
                 <span style="color:var(--faint);font-size:18px;margin-left:12px">${S.expandedOpp===i?'−':'+'}</span>
             </div>
 
-            <div class="opp-detail">
-                ${o.quickWin?`
-                <div class="opp-section">
-                    <div class="opp-section-label label-quick">⚡ Quick Win — 30 Days</div>
-                    <p>${o.quickWin}</p>
-                </div>`:''}
+            <!-- Why it matters — always visible -->
+            ${o.whyMatters?`<p style="font-size:12px;color:var(--muted);line-height:1.7;margin-top:6px">${o.whyMatters}</p>`:''}
 
+            <!-- Quick Win always visible — this is the hook -->
+            ${o.quickWin?`
+            <div style="margin-top:10px;padding:10px 12px;background:rgba(0,255,136,0.06);border-left:2px solid var(--success)">
+                <div style="font-size:9px;color:var(--success);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">⚡ Quick Win — 30 Days</div>
+                <p style="font-size:12px;color:var(--text);line-height:1.6">${o.quickWin}</p>
+            </div>`:''}
+
+            <div class="opp-detail">
                 ${o.strategicBet?`
-                <div class="opp-section">
+                <div class="opp-section" style="margin-top:12px">
                     <div class="opp-section-label label-strategy">◎ Strategic Bet — 12–24 Months</div>
                     <p>${o.strategicBet}</p>
                 </div>`:''}
 
                 ${o.steps&&o.steps.length?`
                 <div class="opp-section">
-                    <div class="opp-section-label label-steps">▸ Quest Steps</div>
+                    <div class="opp-section-label label-steps">▸ Steps to Get Started</div>
                     ${o.steps.map((s,si)=>`
                     <div class="quest-step">
                         <span class="quest-num">${si+1}.</span>
@@ -713,6 +717,24 @@ async function submitForm() {
                     }
                 }
             }catch(e){console.error('Attempt '+(attempt+1)+':',e);}
+        }
+
+        // STEP 3: Rank opportunities by relevance (same as app.html)
+        if(allOpps.length>=5){
+            var rankPrompt='Rank these '+allOpps.length+' AI opportunities for '+domain+' from most to least relevant.\n\nCompany: '+ctx+'\nGoal: '+goal+'\n\nOpportunities:\n'+allOpps.map(function(o,i){return(i+1)+'. '+o.title+': '+o.whyMatters;}).join('\n')+'\n\nReturn ONLY JSON: {"ranked":[1,2,3...in order best to worst],"reasoning":"why #1 is top pick"}';
+            try{
+                var r2=await ai([{role:'user',content:rankPrompt}],600,'general');
+                if(r2){
+                    var rc=r2.replace(/```json|```/g,'').trim(),rp=null;
+                    try{rp=JSON.parse(rc);}catch(e){}
+                    if(rp&&rp.ranked&&rp.ranked.length>=5){
+                        var ranked=[];
+                        rp.ranked.forEach(function(idx){var i=(typeof idx==='number'?idx:parseInt(idx))-1;if(i>=0&&i<allOpps.length)ranked.push(allOpps[i]);});
+                        allOpps.forEach(function(o){if(!ranked.includes(o))ranked.push(o);});
+                        if(ranked.length>=5){allOpps=ranked;console.log('Ranked. Top: '+ranked[0].title);}
+                    }
+                }
+            }catch(e){console.error('Rank:',e);}
         }
 
         // Build risks
