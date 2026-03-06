@@ -2,8 +2,8 @@
 // https://docs.netlify.com/functions/scheduled-functions/
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gkesirspzpbreqsvrcuh.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrZXNpcnNwenBicmVxc3ZyY3VoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNzI2MDEsImV4cCI6MjA2Mzk0ODYwMX0.dlayW_tHhpFzIDBwmhHFr1R2Ks0GDjGCbmz6j-6s46g';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://snbchuvvnbwvghmbxehv.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuYmNodXZ2bmJ3dmdobWJ4ZWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MDg5NzMsImV4cCI6MjA4NTQ4NDk3M30.cKPieraN3FRT_5ilAQL0X2b9kIpklzE49xGzVJwYxZo';
 
 const FROM_EMAIL = 'AI Proof Club <noreply@aiproof.club>';
 
