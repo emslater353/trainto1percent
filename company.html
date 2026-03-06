@@ -229,7 +229,7 @@ async function ai(messages, maxTokens=2500) {
     try {
         const r = await fetch(OPENAI_API, {
             method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ messages, type: 'general' })
+            body: JSON.stringify({ messages, type: 'company_report' })
         });
         const d = await r.json();
         if (d.error) throw new Error(d.error);
@@ -669,93 +669,79 @@ async function submitForm() {
 
         S.loadingStep = 1; render();
 
-        // Use FORECAST_DATABASE from forecasts-data.js (same source as app.html)
-        // Limit to 30 most relevant to avoid OpenAI timeout
-        let forecastList = '';
-        if (typeof FORECAST_DATABASE !== 'undefined' && FORECAST_DATABASE.length) {
-            forecastList = FORECAST_DATABASE.slice(0, 30).map((f,i)=>`${i+1}. [${f.id}] ${f.title} — ${(f.description||f.threatReason||'').slice(0,80)}`).join('\n');
-        } else {
-            const forecasts = await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description&order=sort_order.asc&limit=30');
-            forecastList = (forecasts||[]).map((f,i)=>`${i+1}. [${f.forecast_id||f.id}] ${f.title} — ${(f.description||'').slice(0,80)}`).join('\n');
-        }
+        // Build opportunity list from FORECAST_DATABASE (same as app.html)
+        let oppList = [];
+        FORECAST_DATABASE.forEach(f => {
+            (f.opportunities || []).forEach(o => {
+                oppList.push({ prediction: f.title, title: o.title, desc: o.description || '' });
+            });
+        });
+        // Shuffle and sample 40
+        for (let i=oppList.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1));[oppList[i],oppList[j]]=[oppList[j],oppList[i]]; }
+        const sample = oppList.slice(0, 40);
+        console.log('Sampled', sample.length, 'opps from FORECAST_DATABASE');
 
         S.loadingStep = 3; render();
 
-        const prompt = `You are an AI strategy consultant. Generate a company AI opportunity report with exactly ${MAX_OPPS} opportunities.
+        const ctx = `${domain}: ${desc}. Size: ${size}. AI usage: ${aiUsage}. Goal: ${goal}.`;
+        const oppListText = sample.map((o,i)=>`${i+1}. [${o.prediction}] ${o.title}: ${o.desc}`).join('\n');
 
-COMPANY:
-Website: ${domain}
-Description: ${desc}
-Size: ${size}
-Current AI usage: ${aiUsage}
-Primary goal: ${goal}
+        const prompt = `You are a visionary AI strategist.
 
-AI FORECAST DATABASE:
-${forecastList}
+Company: ${ctx}
 
-Generate EXACTLY ${MAX_OPPS} opportunities ranked best-to-worst fit for this specific company. Return ONLY valid JSON:
-{
-  "industry": "inferred industry",
-  "ai_status": {
-    "level": "Well Positioned|Moderately Positioned|High Risk",
-    "summary": "2-3 sentence personalised assessment referencing what they actually do"
-  },
-  "opportunities": [
-    {
-      "forecast": "which forecast this derives from",
-      "title": "opportunity title",
-      "whyMatters": "why this AI trend matters specifically for ${domain} (2-3 sentences, be specific)",
-      "quickWin": "concrete action they can take in 30 days with current resources",
-      "strategicBet": "larger 12-24 month opportunity if they invest in this",
-      "steps": [
-        {"title": "step title", "desc": "what to do and how", "timeline": "e.g. Week 1"},
-        {"title": "step title", "desc": "what to do and how", "timeline": "e.g. Week 2-3"},
-        {"title": "step title", "desc": "what to do and how", "timeline": "e.g. Month 1"},
-        {"title": "step title", "desc": "what to do and how", "timeline": "e.g. Month 2-3"}
-      ]
-    }
-  ],
-  "risks": [
-    {"prediction": "risk name", "probability": 75, "impact": "specific impact on ${domain}"}
-  ],
-  "summary": "bottom line paragraph — personalised to this company"
-}
+Below are ${sample.length} opportunity templates based on major AI predictions. Pick the ${MAX_OPPS} MOST RELEVANT to ${domain} and REWRITE each one specifically for this company.
 
-Rules:
-- EXACTLY ${MAX_OPPS} opportunities, no more, no less
-- Rank by relevance to THIS company's actual business model and stated goal
-- Every opportunity needs all 4 fields: whyMatters, quickWin, strategicBet, steps
-- Steps should be practical and specific to their size (${size}) and resources
-- Language must be outcome-focused, not generic
-- Include 5-7 risks`;
+CRITICAL RULES:
+- Every opportunity MUST reference what ${domain} actually does
+- Rewrite descriptions in 2 vivid actionable sentences specific to ${domain}
+- For "forecast" field use the full prediction name text
+- ORDER BY RELEVANCE: most relevant first
+- Also generate whyMatters, quickWin, strategicBet, and 4 steps for each
+
+Opportunity templates:
+${oppListText}
+
+Return ONLY valid JSON:
+{"industry":"inferred industry","ai_status":{"level":"Well Positioned|Moderately Positioned|High Risk","summary":"2-3 sentence assessment"},"opportunities":[{"forecast":"prediction name","title":"rewritten title","whyMatters":"why this matters for ${domain}","quickWin":"30-day action","strategicBet":"12-24 month opportunity","steps":[{"title":"step","desc":"detail","timeline":"Week 1"},{"title":"step","desc":"detail","timeline":"Week 2-3"},{"title":"step","desc":"detail","timeline":"Month 1"},{"title":"step","desc":"detail","timeline":"Month 2-3"}]}],"risks":[{"prediction":"risk","probability":75,"impact":"impact on ${domain}"}],"summary":"bottom line"}
+
+Exactly ${MAX_OPPS} opportunities. JSON only.`;
 
         S.loadingStep = 5; render();
-        const raw = await ai([{role:'user',content:prompt}], 3500);
-        console.log('AI raw response:', raw);
+
+        let allOpps = [], aiStatus = {}, risks = [], summary = '', industry = '';
+
+        // Retry up to 3 times like app.html
+        for (let attempt=0; attempt<3; attempt++) {
+            try {
+                const raw = await ai([{role:'user',content:prompt}]);
+                console.log('AI attempt', attempt+1, 'raw:', raw?.slice(0,200));
+                if (raw) {
+                    let cleaned = raw.replace(/```json|```/g,'').trim();
+                    let parsed = null;
+                    try { parsed = JSON.parse(cleaned); } catch(e1) {
+                        // Try fixing truncated JSON
+                        for (const suffix of ['}]}','}]}]}',']}']) {
+                            try { parsed = JSON.parse(cleaned+suffix); break; } catch(e2) {}
+                        }
+                    }
+                    if (parsed?.opportunities?.length >= 3) {
+                        allOpps   = parsed.opportunities;
+                        aiStatus  = parsed.ai_status || {};
+                        risks     = parsed.risks || [];
+                        summary   = parsed.summary || '';
+                        industry  = parsed.industry || '';
+                        console.log('Success on attempt', attempt+1, '— opps:', allOpps.length);
+                        break;
+                    }
+                }
+            } catch(e) { console.error('Attempt', attempt+1, 'error:', e); }
+        }
 
         clearInterval(stepTimer);
         S.loadingStep = STEPS.length; render();
 
-        let report;
-        try {
-            const cleaned = raw.replace(/```json|```/g,'').trim();
-            report = JSON.parse(cleaned);
-            if (!report.opportunities || !Array.isArray(report.opportunities)) throw new Error('No opportunities array');
-        } catch(e) {
-            console.error('Parse error:', e, 'Raw:', raw);
-            // Try to extract JSON from anywhere in the response
-            const match = raw.match(/\{[\s\S]*\}/);
-            if (match) {
-                try { report = JSON.parse(match[0]); } catch(e2) {}
-            }
-            if (!report) {
-                report = { ai_status:{level:'Moderately Positioned',summary:'Analysis complete — please try again if opportunities are missing.'}, opportunities:[], risks:[], summary:raw.slice(0,500) };
-            }
-        }
-
-        // Cap at MAX_OPPS just in case
-        if (report.opportunities?.length > MAX_OPPS) report.opportunities = report.opportunities.slice(0, MAX_OPPS);
-
+        const report = { industry, ai_status:aiStatus, opportunities:allOpps.slice(0,MAX_OPPS), risks, summary };
         S.report = report;
         S.screen = 'dashboard';
         S.activeTab = 'opportunities';
