@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <script src="forecasts-data.js"></script>
     <style>
         :root {
             --bg:        #050508;
@@ -373,9 +374,10 @@ async function ai(messages, maxTokens=2000, type='general') {
     try {
         const r = await fetch(OPENAI_API, {
             method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ messages, type, max_tokens: maxTokens })
+            body: JSON.stringify({ messages, type: 'general' })
         });
         const d = await r.json();
+        if (d.error) throw new Error(d.error);
         return d.content || '';
     } catch(e) { console.error('AI error:', e); return ''; }
 }
@@ -727,35 +729,34 @@ function oppTabHTML(r, opps) {
 
 // ── FORECASTS TAB ─────────────────────────────────────────────────────────────
 function forecastTabHTML(forecasts) {
-    const cats = ['all', ...new Set(forecasts.map(f=>f.category).filter(Boolean))];
+    const modes = ['all', ...new Set(forecasts.map(f=>f.mode).filter(Boolean))];
     const filtered = forecasts.filter(f=>{
-        const catOk = S.filterCat==='all' || f.category===S.filterCat;
+        const modeOk = S.filterCat==='all' || f.mode===S.filterCat;
         const searchOk = !S.filterSearch || (f.title+f.description).toLowerCase().includes(S.filterSearch.toLowerCase());
-        return catOk && searchOk;
+        return modeOk && searchOk;
     });
 
     return `
     <div class="page-header">
         <div class="page-title">Full Forecast Database</div>
-        <div class="page-subtitle">${forecasts.length} AI forecasts · Full intelligence access</div>
+        <div class="page-subtitle">${forecasts.length} AI opportunities · Full intelligence access</div>
     </div>
 
     <div class="filter-bar">
         <input class="filter-search" id="filter-search" placeholder="Search forecasts..." value="${S.filterSearch}">
-        ${cats.slice(0,6).map(c=>`<div class="filter-chip ${S.filterCat===c?'active':''}" data-cat="${c}">${c==='all'?'All':c}</div>`).join('')}
+        ${modes.slice(0,6).map(m=>`<div class="filter-chip ${S.filterCat===m?'active':''}" data-cat="${m}">${m==='all'?'All':m}</div>`).join('')}
     </div>
 
     <div style="font-size:10px;color:var(--faint);margin-bottom:12px">${filtered.length} forecast${filtered.length!==1?'s':''} shown</div>
 
     ${filtered.length===0?`<div class="empty"><div class="empty-icon">🔮</div><div class="empty-title">No forecasts match</div><p class="text-muted text-sm">Try adjusting your filters</p></div>`:''}
 
-    ${filtered.map((f,fi)=>`
+    ${filtered.map((f)=>`
     <div class="forecast-card ${S.expandedForecast===f.id?'expanded':''}" data-toggle-forecast="${f.id}">
         <div class="forecast-meta">
-            ${f.category?`<span class="forecast-tag tag-cat">${f.category}</span>`:''}
-            ${f.probability?`<span class="forecast-tag tag-prob">${f.probability}% likely</span>`:''}
+            ${f.mode?`<span class="forecast-tag tag-cat">${f.mode}</span>`:''}
+            ${f.difficulty?`<span class="forecast-tag tag-impact">${f.difficulty}</span>`:''}
             ${f.timeframe?`<span class="forecast-tag tag-time">${f.timeframe}</span>`:''}
-            ${f.impact_level?`<span class="forecast-tag tag-impact">${f.impact_level} impact</span>`:''}
         </div>
         <div class="forecast-title">${f.title}</div>
         <div class="forecast-desc">${(f.description||'').slice(0,160)}${(f.description||'').length>160?'...':''}</div>
@@ -763,7 +764,6 @@ function forecastTabHTML(forecasts) {
         ${S.expandedForecast===f.id?`
         <div class="forecast-expand">
             ${f.description&&f.description.length>160?`<p class="text-muted text-sm" style="margin-bottom:14px">${f.description}</p>`:''}
-            ${f.threat_reason?`<div style="font-size:10px;color:var(--warning);margin-bottom:8px">⚠ Threat: ${f.threat_reason}</div>`:''}
             <div style="display:flex;gap:8px;margin-top:10px">
                 <button class="btn btn-primary btn-sm" data-gen-opp="${f.id}">◈ Generate Opportunity for My Company</button>
             </div>
@@ -910,13 +910,13 @@ async function submitDiagnostic() {
     try {
         // 1. Fetch ALL forecasts from Supabase
         S.loadingStep = 1; render();
-        const forecasts = await db('forecasts','GET',null,'?active=eq.true&select=id,title,description,category,probability,timeframe,impact_level,threat_reason&order=probability.desc');
+        const forecasts = await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description,mode,difficulty,timeframe&order=sort_order.asc');
         S.forecasts = forecasts || [];
 
         // 2. Build AI context
         S.loadingStep = 2; render();
         const domain = url.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
-        const forecastList = S.forecasts.map((f,i)=>`${i+1}. [${f.id}] ${f.title} (${f.probability||'?'}% by ${f.timeframe||'?'}) — ${(f.description||'').slice(0,120)}`).join('\n');
+        const forecastList = S.forecasts.map((f,i)=>`${i+1}. [${f.forecast_id||f.id}] ${f.title} (${f.timeframe||'?'}) — ${(f.description||'').slice(0,120)}`).join('\n');
 
         // 3. Generate full intelligence report
         S.loadingStep = 3; render();
