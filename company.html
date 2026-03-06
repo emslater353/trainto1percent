@@ -317,8 +317,19 @@ function diagnosticHTML() {
                 <input class="form-input" id="f-url" type="text" placeholder="yourcompany.com" value="${f.url}">
             </div>
             <div class="form-group">
+                <label class="form-label">Industry</label>
+                <select class="form-select" id="f-industry">
+                    <option value="" ${!f.industry?'selected':''}>Select your industry</option>
+                    ${['Luxury Fashion & Retail','Fashion & Apparel','Beauty & Personal Care','Food & Beverage','Hospitality & Travel','Consumer Goods & Retail','Media & Entertainment','Creator Economy / Content','Gaming','Financial Services & Fintech','Healthcare & Wellness','Education & EdTech','Real Estate & PropTech','Legal & Professional Services','Marketing & Advertising','SaaS & Software','AI / ML Tools','E-commerce','Manufacturing & Supply Chain','Energy & Climate Tech','Other'].map(s=>`<option value="${s}" ${f.industry===s?'selected':''} >${s}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
                 <label class="form-label">What does your company do?</label>
                 <textarea class="form-textarea" id="f-desc" placeholder="e.g. We run a chain of 12 yoga studios across the southeast US">${f.desc}</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">What AI tools do you already have? (so we don't suggest them)</label>
+                <textarea class="form-textarea" id="f-existing" placeholder="e.g. AI product recommendations, customer service chatbot, AI writing tools — or leave blank if none" style="min-height:60px">${f.existing||''}</textarea>
             </div>
             <div class="form-group">
                 <label class="form-label">Company Size</label>
@@ -653,7 +664,7 @@ async function submitForm() {
         return;
     }
     errEl.style.display = 'none';
-    S.form = { name, email, url, desc, size, aiUsage, goal };
+    S.form = { name, email, url, industry, desc, existing, size, aiUsage, goal };
     S.screen = 'loading';
     S.loadingStep = 0;
     render();
@@ -673,7 +684,8 @@ async function submitForm() {
 
     try {
         const domain = url.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
-        const ctx = desc ? domain+': '+desc+'. Size: '+size+'.' : domain+' ('+size+').';
+        const ctx = domain+' | Industry: '+industry+' | Size: '+size+' | What they do: '+desc;
+        const existingAI = existing ? 'IMPORTANT — already has these AI tools, DO NOT suggest them: '+existing : '';
 
         // Fetch forecasts + opps from Supabase (same as app.html working pattern)
         var forecasts    = await db('forecasts','GET',null,'?active=eq.true&select=id,title,category,probability,timeframe,threat_reason');
@@ -694,29 +706,50 @@ async function submitForm() {
         var sample=oppList.slice(0,50);
         console.log('Sampled '+sample.length+' from '+oppList.length);
 
-        // AI generates opportunities — compact format that fits in 1500 tokens
+        // STEP 2: Generate — compact format exactly like app.html (guarantees 15)
         var oppListText=sample.map(function(o,i){return (i+1)+'. ['+o.prediction+'] '+o.title+': '+o.desc;}).join('\n');
-        var generatePrompt='You are a visionary AI strategist.\n\nCompany: '+ctx+'\n\nBelow are '+sample.length+' opportunity templates based on major predictions. Your job: pick the 15 MOST RELEVANT to '+domain+' and REWRITE each one specifically for this company.\n\nCRITICAL RULES:\n- Pick from ACROSS the entire list — do NOT just take the first 15\n- Every opportunity MUST use what '+domain+' actually does as the vehicle\n- If '+domain+' sells clothes, the opportunity is about CLOTHES. If it sells insurance, about INSURANCE\n- Rewrite the description in 2 vivid, actionable sentences specific to '+domain+'\n- Think BIG and creative: self-driving cars = wardrobe extends into in-car spaces, retail enters the car. Neural interfaces = thought-controlled products. Longevity = forever customers. Loneliness = community IS the product\n- NEVER suggest generic consulting/advising unrelated to the company product\n- For the p field, include the FULL prediction name, NOT a number\n- ORDER BY RELEVANCE: most relevant to '+domain+' FIRST\n- Also include a 30-day quick win (q) and 12-24 month strategic bet (b) for each\n\nOpportunity templates:\n'+oppListText+'\n\nReturn ONLY valid JSON:\n{\"d\":\"1 sentence what '+domain+' does\",\"o\":[{\"p\":\"full prediction name\",\"t\":\"rewritten title for '+domain+'\",\"s\":\"2 vivid sentences specific to '+domain+'\",\"q\":\"30-day quick win\",\"b\":\"12-24 month strategic bet\"}],\"m\":\"2 sentence summary\"}\n\nEXACTLY 15 in o. Best fits first.';
+        var generatePrompt='You are a visionary AI strategist.\n\nCompany: '+ctx+'\n'+(existingAI?existingAI+'\n':'')+'\nBelow are '+sample.length+' opportunity templates. Pick the 15 MOST RELEVANT to '+domain+' and REWRITE each specifically for this company.\n\nCRITICAL RULES:\n- Pick from ACROSS the entire list — do NOT take the first 15\n- Every opportunity MUST use what '+domain+' actually does as the vehicle\n- Rewrite description in 2 vivid actionable sentences specific to '+domain+'\n- Think BIG: self-driving cars = wardrobe extends into in-car spaces. Neural interfaces = thought-controlled products. Longevity = forever customers. Loneliness = community IS the product\n- NEVER suggest things they already have (see above)\n- NEVER suggest generic consulting unrelated to their product\n- p field = FULL prediction name text\n- ORDER BY RELEVANCE: most relevant FIRST\n\nOpportunity templates:\n'+oppListText+'\n\nReturn ONLY valid JSON:\n{\"d\":\"1 sentence what '+domain+' does\",\"o\":[{\"p\":\"full prediction name\",\"t\":\"rewritten title for '+domain+'\",\"s\":\"2 vivid sentences specific to '+domain+'\"}],\"m\":\"2 sentence summary\"}\n\nEXACTLY 15 in o array. JSON only.';
 
         var allOpps=[],companyDesc='',summary='';
         for(var attempt=0;attempt<3;attempt++){
             try{
                 var r1=await ai([{role:'user',content:generatePrompt}],3000,'general');
-                console.log('AI attempt '+(attempt+1)+':',r1?r1.slice(0,200):'empty');
+                console.log('Generate attempt '+(attempt+1)+':',r1?r1.slice(0,200):'empty');
                 if(r1){
                     var c=r1.replace(/```json|```/g,'').trim(),parsed=null;
                     try{parsed=JSON.parse(c);}catch(e1){
-                        for(var fx of ['}]}','}]}]}',']}]}','}]}'+ '}']){try{parsed=JSON.parse(c+fx);break;}catch(e2){}}
+                        for(var fx of ['}]}','}]}]}',']}]}','}]}']){try{parsed=JSON.parse(c+fx);break;}catch(e2){}}
                     }
                     if(parsed&&parsed.o&&parsed.o.length>=10){
-                        allOpps=parsed.o.map(function(x){return{forecast:x.p||'',title:x.t||'',whyMatters:x.s||'',quickWin:x.q||'',strategicBet:x.b||'',steps:[]};});
+                        allOpps=parsed.o.map(function(x){return{forecast:x.p||'',title:x.t||'',whyMatters:x.s||'',quickWin:'',strategicBet:'',steps:[]};});
                         companyDesc=parsed.d||'';
                         summary=parsed.m||'';
-                        console.log('Got '+allOpps.length+' opps on attempt '+(attempt+1));
-                        if(allOpps.length>=15) break; // keep retrying if < 15
+                        console.log('Got '+allOpps.length+' opps');
+                        if(allOpps.length>=15) break;
                     }
                 }
-            }catch(e){console.error('Attempt '+(attempt+1)+':',e);}
+            }catch(e){console.error('Generate attempt '+(attempt+1)+':',e);}
+        }
+
+        // STEP 2b: Enrich — second AI call adds quick wins + strategic bets per opp
+        // This is separate so generation never gets truncated
+        if(allOpps.length>=5){
+            var enrichList=allOpps.map(function(o,i){return (i+1)+'. ['+o.forecast+'] '+o.title+': '+o.whyMatters;}).join('\n');
+            var enrichPrompt='You are an AI strategy consultant. For each of these '+allOpps.length+' opportunities for '+domain+', write a quick win and strategic bet.\n\nCompany: '+ctx+'\n\nOpportunities:\n'+enrichList+'\n\nReturn ONLY valid JSON:\n{\"e\":[{\"q\":\"30-day quick win specific to '+domain+'\",\"b\":\"12-24 month strategic bet\"}]}\n\nEXACTLY '+allOpps.length+' items in e, in the same order. JSON only.';
+            try{
+                var re=await ai([{role:'user',content:enrichPrompt}],3000,'company_report');
+                console.log('Enrich raw:',re?re.slice(0,200):'empty');
+                if(re){
+                    var ec=re.replace(/```json|```/g,'').trim(),ep=null;
+                    try{ep=JSON.parse(ec);}catch(e1){}
+                    if(ep&&ep.e&&ep.e.length>=5){
+                        ep.e.forEach(function(enrich,i){
+                            if(allOpps[i]){allOpps[i].quickWin=enrich.q||'';allOpps[i].strategicBet=enrich.b||'';}
+                        });
+                        console.log('Enriched '+ep.e.length+' opps with quick wins');
+                    }
+                }
+            }catch(e){console.error('Enrich:',e);}
         }
 
         // STEP 3: Rank — exact app.html waterfall

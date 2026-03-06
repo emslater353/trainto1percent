@@ -416,6 +416,12 @@ function dashHTML() {
                     <p>${idea.solution}</p>
                 </div>`:''}
 
+                ${idea.whyYou?`
+                <div class="idea-section" style="background:rgba(167,139,250,0.07);border-left:2px solid var(--founder);padding:10px 12px">
+                    <div class="idea-section-label" style="color:var(--founder)">◈ Why This Fits Your Background</div>
+                    <p>${idea.whyYou}</p>
+                </div>`:''}
+
                 ${idea.market?`
                 <div class="idea-section">
                     <div class="idea-section-label label-market">◎ Market Opportunity</div>
@@ -612,26 +618,45 @@ async function submitForm() {
         var oppListText=sample.map(function(o,i){return (i+1)+'. ['+o.prediction+'] '+o.title+': '+o.desc;}).join('\n');
         var founderCtx='Background: '+background+'\nFocus: '+(focus||'open')+'\nStage: '+stage+'\nMarket: '+market;
 
-        var generatePrompt='You are a visionary startup strategist.\n\nFOUNDER PROFILE:\n'+founderCtx+'\n\nBelow are '+sample.length+' opportunity templates based on major AI predictions. Pick the 15 MOST RELEVANT to this founder and rewrite as startup ideas that leverage their specific background.\n\nCRITICAL RULES:\n- Pick from ACROSS the entire list — do NOT cluster around one theme\n- DIVERSIFY: cover at least 8 different predictions — do NOT repeat the same forecast category\n- Each idea must be genuinely AI-enabled — not just a traditional business with AI bolted on\n- Use the founder\'s background as the UNFAIR ADVANTAGE, not as the product category\n- Think BIG and unexpected: a fashion background means taste + network, not just fashion apps\n- NEVER repeat the same industry keyword more than twice across all 15 ideas\n- Be specific — no generic \"AI platform\" or \"marketplace\" ideas without a sharp angle\n- For each idea include: what to build in 30-60 days as MVP\n\nOpportunity templates:\n'+oppListText+'\n\nReturn ONLY valid JSON:\n{\"ideas\":[{\"forecast\":\"full prediction name\",\"title\":\"startup name or concept\",\"problem\":\"specific problem in 1-2 sentences\",\"solution\":\"AI-enabled solution — what makes it only possible now\",\"market\":\"who buys this + rough size\",\"mvp\":\"what to build in 30-60 days to test\"}],\"founderAdvice\":\"personalised 2-3 sentence brief — what patterns you see, what to prioritise given their specific background\"}\n\nEXACTLY 15 in ideas. Diverse forecasts.';
+        // STEP 2: Generate compact — small response guarantees 15
+        var founderCtx2='Background: '+background+'\nFocus: '+(focus||'open')+'\nStage: '+stage+'\nMarket: '+market;
+        var generatePrompt='You are a visionary startup strategist.\n\nFOUNDER PROFILE:\n'+founderCtx2+'\n\nBelow are '+sample.length+' opportunity templates. Pick the 15 MOST RELEVANT to this founder.\n\nCRITICAL RULES:\n- Pick from ACROSS the entire list\n- DIVERSIFY: cover at least 8 different predictions\n- NEVER repeat same industry keyword more than twice\n- Genuinely AI-enabled ideas only\n- Background = UNFAIR ADVANTAGE not product category\n- Think BIG: fashion background = taste+network not just fashion apps\n- Specific ideas only — no generic AI platform ideas\n\nOpportunity templates:\n'+oppListText+'\n\nReturn ONLY valid JSON:\n{"ideas":[{"forecast":"full prediction name","title":"startup name","problem":"problem in 1 sentence","solution":"AI-enabled solution"}],"founderAdvice":"2-3 sentence brief"}\n\nEXACTLY 15 in ideas. JSON only.';
 
-        var ideas=[],founderAdvice='',founderCompanyDesc='';
+        var ideas=[],founderAdvice='';
         for(var attempt=0;attempt<3;attempt++){
             try{
                 var r1=await ai([{role:'user',content:generatePrompt}],3000,'general');
-                console.log('Founder attempt '+(attempt+1)+':',r1?r1.slice(0,200):'empty');
+                console.log('Founder generate attempt '+(attempt+1)+':',r1?r1.slice(0,200):'empty');
                 if(r1){
                     var c=r1.replace(/```json|```/g,'').trim(),parsed=null;
                     try{parsed=JSON.parse(c);}catch(e1){
-                        for(var fx of ['}]}','}]}]}',']}]}']){try{parsed=JSON.parse(c+fx);break;}catch(e2){}}
+                        for(var fx of [']}','}]}',']}}'  ]){try{parsed=JSON.parse(c+fx);break;}catch(e2){}}
                     }
                     if(parsed&&parsed.ideas&&parsed.ideas.length>=10){
-                        ideas=parsed.ideas;
+                        ideas=parsed.ideas.map(function(x){return{forecast:x.forecast||'',title:x.title||'',problem:x.problem||'',solution:x.solution||'',market:'',mvp:'',whyYou:''};});
                         founderAdvice=parsed.founderAdvice||'';
-                        console.log('Got '+ideas.length+' ideas on attempt '+(attempt+1));
-                        if(ideas.length>=15) break; // keep retrying if < 15
+                        console.log('Got '+ideas.length+' ideas');
+                        if(ideas.length>=15) break;
                     }
                 }
-            }catch(e){console.error('Attempt '+(attempt+1)+':',e);}
+            }catch(e){console.error('Generate attempt '+(attempt+1)+':',e);}
+        }
+
+        // STEP 2b: Enrich — market, mvp, whyYou in a separate call so generation never truncates
+        if(ideas.length>=5){
+            var founderEnrichList=ideas.map(function(o,i){return (i+1)+'. ['+o.forecast+'] '+o.title+': '+o.problem;}).join('\n');
+            var enrichPrompt='Startup advisor enriching ideas for a specific founder.\n\nFOUNDER BACKGROUND: '+background+'\nSTAGE: '+stage+'\nMARKET: '+market+'\n\nFor each idea write: market opportunity, 30-60 day MVP, and why it fits THIS founder specifically.\n\nIdeas:\n'+founderEnrichList+'\n\nReturn ONLY valid JSON:\n{"e":[{"market":"who buys + rough size","mvp":"what to build in 30-60 days","whyYou":"why this fits this founder exactly — reference their actual background"}]}\n\nEXACTLY '+ideas.length+' items in e, same order. JSON only.';
+            try{
+                var re=await ai([{role:'user',content:enrichPrompt}],3000,'founder_report');
+                if(re){
+                    var ec=re.replace(/```json|```/g,'').trim(),ep=null;
+                    try{ep=JSON.parse(ec);}catch(e1){}
+                    if(ep&&ep.e&&ep.e.length>=5){
+                        ep.e.forEach(function(enrich,i){if(ideas[i]){ideas[i].market=enrich.market||'';ideas[i].mvp=enrich.mvp||'';ideas[i].whyYou=enrich.whyYou||'';}});
+                        console.log('Enriched '+ep.e.length+' ideas');
+                    }
+                }
+            }catch(e){console.error('Enrich:',e);}
         }
 
         // Rank ideas by founder fit (same waterfall as app.html)
