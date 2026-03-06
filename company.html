@@ -775,12 +775,29 @@ async function submitForm() {
             }catch(e){console.error('Rank:',e);}
         }
 
-        // Build risks
-        var risks=forecastRisks.map(function(r){return{prediction:r.title,probability:r.default_probability,impact:r.description};});
+        // Build risks — AI generates company-specific risks
+        var risks=[];
+        try{
+            var riskPrompt='You are an AI risk analyst. Generate 6 specific AI-driven threats for this company.\n\nCompany: '+ctx+'\nWhat they do: '+(companyDesc||desc)+'\nIndustry: '+industry+'\n\nThink about:\n- Which AI companies could build what they do faster/cheaper?\n- What customer behaviour shifts will hurt them specifically?\n- What parts of their business model AI will commoditise?\n- What new entrants their industry enables?\n- What regulation or backlash could hit their specific model?\n\nBe SPECIFIC to '+domain+' — not generic threats. Reference what they actually do.\n\nReturn ONLY valid JSON:\n{"risks":[{"prediction":"specific threat name","probability":number 50-95,"impact":"2 sentences on how this specifically affects '+domain+'"}]}\n\n6 risks. JSON only.';
+            var rr=await ai([{role:'user',content:riskPrompt}],1200,'company_report');
+            if(rr){
+                var rc2=rr.replace(/```json|```/g,'').trim(),rp2=null;
+                try{rp2=JSON.parse(rc2);}catch(e1){}
+                if(rp2&&rp2.risks&&rp2.risks.length>=3){
+                    risks=rp2.risks;
+                    console.log('Got '+risks.length+' AI risks');
+                }
+            }
+        }catch(e){console.error('Risks:',e);}
+
+        // Fallback to Supabase risks if AI fails
+        if(!risks.length){
+            risks=forecastRisks.map(function(r){return{prediction:r.title,probability:r.default_probability,impact:r.description};});
+        }
         if(!risks.length)risks=[
-            {prediction:'OpenAI builds competing product',probability:78,impact:'OpenAI could replicate what '+domain+' offers with massive distribution advantage.'},
-            {prediction:'AI competitors flood market',probability:75,impact:'AI-native competitors can replicate offerings at a fraction of the cost.'},
-            {prediction:'Customer expectations outpace adoption',probability:82,impact:'Customers will expect AI features as standard within 12 months.'}
+            {prediction:'AI replicates core offering',probability:78,impact:domain+' could face direct AI-native competition that delivers the same value at a fraction of the cost.'},
+            {prediction:'Customer expectations shift faster than adoption',probability:82,impact:'Customers will expect AI-powered experiences from '+domain+' within 12 months — falling behind means churn.'},
+            {prediction:'New entrants unbundle the value chain',probability:71,impact:'AI enables startups to attack the most profitable parts of what '+domain+' does without the overhead.'}
         ];
 
         // AI-Proof status

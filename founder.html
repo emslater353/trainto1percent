@@ -436,7 +436,7 @@ function dashHTML() {
 
                 ${idea.steps&&idea.steps.length?`
                 <div class="idea-section">
-                    <div class="idea-section-label label-launch">▸ Steps to Launch</div>
+                    <div class="idea-section-label label-launch">◈ Quest — How to Build This</div>
                     ${idea.steps.map((s,si)=>`
                     <div class="launch-step">
                         <span class="launch-num">${si+1}.</span>
@@ -645,14 +645,14 @@ async function submitForm() {
         // STEP 2b: Enrich — market, mvp, whyYou in a separate call so generation never truncates
         if(ideas.length>=5){
             var founderEnrichList=ideas.map(function(o,i){return (i+1)+'. ['+o.forecast+'] '+o.title+': '+o.problem;}).join('\n');
-            var enrichPrompt='Startup advisor enriching ideas for a specific founder.\n\nFOUNDER BACKGROUND: '+background+'\nSTAGE: '+stage+'\nMARKET: '+market+'\n\nFor the whyYou field: be brutally specific — reference the EXACT skills from their background (e.g. "Your experience fighting chargebacks gives you the pattern recognition to..." or "Managing 60 data labellers means you know exactly where AI annotation breaks down..."). Never be generic.\n\nFor each idea write: market opportunity, 30-60 day MVP, and why it fits THIS founder specifically.\n\nIdeas:\n'+founderEnrichList+'\n\nReturn ONLY valid JSON:\n{"e":[{"market":"who buys + rough size","mvp":"what to build in 30-60 days","whyYou":"specific reason referencing their exact experience"}]}\n\nEXACTLY '+ideas.length+' items in e, same order. JSON only.';
+            var enrichPrompt='Startup advisor enriching ideas for a specific founder.\n\nFOUNDER BACKGROUND: '+background+'\nSTAGE: '+stage+'\nMARKET: '+market+'\n\nFor the whyYou field: be brutally specific — reference the EXACT skills from their background (e.g. "Your experience fighting chargebacks gives you the pattern recognition to..." or "Managing 60 data labellers means you know exactly where AI annotation breaks down..."). Never be generic.\n\nFor each idea write: market opportunity, 30-60 day MVP, why it fits THIS founder specifically, and 4 quest steps to build it out (concrete weekly actions).\n\nIdeas:\n'+founderEnrichList+'\n\nReturn ONLY valid JSON:\n{"e":[{"market":"who buys + rough size","mvp":"what to build in 30-60 days","whyYou":"specific reason referencing their exact experience","steps":[{"title":"step title","desc":"concrete action","timeline":"Week 1"},{"title":"step title","desc":"concrete action","timeline":"Week 2-4"},{"title":"step title","desc":"concrete action","timeline":"Month 2"},{"title":"step title","desc":"concrete action","timeline":"Month 3-6"}]}]}\n\nEXACTLY '+ideas.length+' items in e, same order. JSON only.';
             try{
                 var re=await ai([{role:'user',content:enrichPrompt}],3000,'founder_report');
                 if(re){
                     var ec=re.replace(/```json|```/g,'').trim(),ep=null;
                     try{ep=JSON.parse(ec);}catch(e1){}
                     if(ep&&ep.e&&ep.e.length>=5){
-                        ep.e.forEach(function(enrich,i){if(ideas[i]){ideas[i].market=enrich.market||'';ideas[i].mvp=enrich.mvp||'';ideas[i].whyYou=enrich.whyYou||'';}});
+                        ep.e.forEach(function(enrich,i){if(ideas[i]){ideas[i].market=enrich.market||'';ideas[i].mvp=enrich.mvp||'';ideas[i].whyYou=enrich.whyYou||'';ideas[i].steps=enrich.steps||[];}});
                         console.log('Enriched '+ep.e.length+' ideas');
                     }
                 }
