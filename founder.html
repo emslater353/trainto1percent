@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-    <script src="forecasts-data.js"></script>
+    <script src="/shared/forecasts-data.js"></script>
     <style>
         :root {
             --bg:       #050508;
@@ -592,13 +592,13 @@ async function submitForm() {
     try {
         S.loadingStep = 1; render();
 
-        // Use FORECAST_DATABASE directly — same source as app.html
+        // Use FORECAST_DATABASE directly — limit to 30 to avoid timeout
         let forecastList = '';
         if (typeof FORECAST_DATABASE !== 'undefined' && FORECAST_DATABASE.length) {
-            forecastList = FORECAST_DATABASE.map((f,i)=>`${i+1}. [${f.id}] ${f.title} (${f.timeframe||'?'}) — ${(f.description||f.threatReason||'').slice(0,100)}`).join('\n');
+            forecastList = FORECAST_DATABASE.slice(0,30).map((f,i)=>`${i+1}. [${f.id}] ${f.title} — ${(f.description||f.threatReason||'').slice(0,80)}`).join('\n');
         } else {
-            const forecasts = await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description,mode,difficulty,timeframe&order=sort_order.asc&limit=60');
-            forecastList = (forecasts||[]).map((f,i)=>`${i+1}. [${f.forecast_id||f.id}] ${f.title} (${f.timeframe||'?'}) — ${(f.description||'').slice(0,100)}`).join('\n');
+            const forecasts = await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description&order=sort_order.asc&limit=30');
+            forecastList = (forecasts||[]).map((f,i)=>`${i+1}. [${f.forecast_id||f.id}] ${f.title} — ${(f.description||'').slice(0,80)}`).join('\n');
         }
 
         S.loadingStep = 3; render();
