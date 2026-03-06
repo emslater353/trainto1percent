@@ -1,6 +1,21 @@
 [build]
   publish = "."
 
+[functions]
+  directory = "netlify/functions"
+
+[[plugins]]
+  package = "@netlify/plugin-functions-install-core"
+
+# Scheduled: trial reminder — runs daily at 10am EST (15:00 UTC)
+[functions."trial-reminder"]
+  schedule = "0 15 * * *"
+
+# Scheduled: weekly emails — runs every Monday at 6am EST (11:00 UTC)
+[functions."weekly-emails"]
+  schedule = "0 11 * * 1"
+
+
 [[redirects]]
   from = "/company"
   to = "/app.html"
