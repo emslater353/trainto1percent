@@ -624,11 +624,11 @@ async function submitForm() {
                     try{parsed=JSON.parse(c);}catch(e1){
                         for(var fx of ['}]}','}]}]}',']}]}']){try{parsed=JSON.parse(c+fx);break;}catch(e2){}}
                     }
-                    if(parsed&&parsed.ideas&&parsed.ideas.length>=3){
+                    if(parsed&&parsed.ideas&&parsed.ideas.length>=10){
                         ideas=parsed.ideas;
                         founderAdvice=parsed.founderAdvice||'';
-                        console.log('Success: '+ideas.length+' ideas');
-                        break;
+                        console.log('Got '+ideas.length+' ideas on attempt '+(attempt+1));
+                        if(ideas.length>=15) break; // keep retrying if < 15
                     }
                 }
             }catch(e){console.error('Attempt '+(attempt+1)+':',e);}
@@ -636,9 +636,9 @@ async function submitForm() {
 
         // Rank ideas by founder fit (same waterfall as app.html)
         if(ideas.length>=5){
-            var founderRankPrompt='Rank these '+ideas.length+' startup ideas for this founder from best to worst fit.\n\nFOUNDER: '+founderCtx+'\n\nRANKING CRITERIA:\n1. UNFAIR ADVANTAGE: Does this leverage their specific background in a non-obvious way?\n2. TIMING: Is this only possible/viable NOW because of AI?\n3. MARKET SIZE: Does it match their stated market ambition ('+market+')?\n4. MVP SPEED: Could they test this in 30-60 days?\n5. DIFFERENTIATION: Hard for someone without their background to replicate?\n\nIdeas:\n'+ideas.map(function(o,i){return(i+1)+'. ['+o.forecast+'] '+o.title+': '+o.problem;}).join('\n')+'\n\n{\"ranked\":[numbers best-to-worst],\"reasoning\":\"why #1 is top pick for this specific founder\"}\n\nJSON only.';
+            var founderRankPrompt='You are a startup advisor ranking ideas for a specific founder.\n\nFOUNDER BACKGROUND: '+background+'\nFOCUS AREA: '+(focus||'open')+'\nSTAGE: '+stage+'\nMARKET TARGET: '+market+'\n\nRANK these '+ideas.length+' ideas from best to worst fit for THIS SPECIFIC PERSON.\n\nCRITERIA:\n1. UNFAIR ADVANTAGE — does this leverage their exact background ('+background.slice(0,80)+') in a non-obvious way?\n2. AI TIMING — only viable NOW because of AI?\n3. MARKET FIT — matches their stated ambition: '+market+'?\n4. MVP SPEED — testable in 30-60 days?\n5. DIFFERENTIATION — hard to copy without their specific background?\n\nDo NOT default to obvious industry fits. The best idea for a fashion person might be in healthcare or finance if their skills transfer.\n\nIdeas:\n'+ideas.map(function(o,i){return(i+1)+'. ['+o.forecast+'] '+o.title+': '+o.problem;}).join('\n')+'\n\n{\"ranked\":[numbers best-to-worst],\"reasoning\":\"1 sentence why #1 is the best fit for this specific founder\"}\n\nJSON only.';
             try{
-                var r2=await ai([{role:'user',content:founderRankPrompt}],600,'general');
+                var r2=await ai([{role:'user',content:founderRankPrompt}],600,'founder_report');
                 if(r2){
                     var rc=r2.replace(/```json|```/g,'').trim(),rp=null;
                     try{rp=JSON.parse(rc);}catch(e1){}

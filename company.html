@@ -712,8 +712,8 @@ async function submitForm() {
                         allOpps=parsed.o.map(function(x){return{forecast:x.p||'',title:x.t||'',whyMatters:x.s||'',quickWin:x.q||'',strategicBet:x.b||'',steps:[]};});
                         companyDesc=parsed.d||'';
                         summary=parsed.m||'';
-                        console.log('Success: '+allOpps.length+' opps');
-                        break;
+                        console.log('Got '+allOpps.length+' opps on attempt '+(attempt+1));
+                        if(allOpps.length>=15) break; // keep retrying if < 15
                     }
                 }
             }catch(e){console.error('Attempt '+(attempt+1)+':',e);}
@@ -723,7 +723,7 @@ async function submitForm() {
         if(allOpps.length>=5){
             var rankPrompt='You are an expert business strategist ranking AI opportunities for a specific company.\n\nCOMPANY: '+domain+'\nDESCRIPTION: '+(companyDesc||ctx)+'\n\nReorder these '+allOpps.length+' opportunities so the MOST impactful and actionable come first.\n\nRANKING CRITERIA:\n1. IMMEDIATE ACTIONABILITY: Could they start within 2 weeks with existing resources?\n2. CORE BUSINESS FIT: Leverages what they already do\n3. REVENUE POTENTIAL: Creates new revenue or protects existing\n4. COMPETITIVE MOAT: Hard for competitors to copy\n5. PREDICTION RELEVANCE: How directly this affects their industry\n\nCRITICAL: Do NOT return the original order. Think hard about what '+domain+' actually does.\n- A RETAILER should rank in-store/product/customer opportunities first\n- A LUXURY BRAND should rank brand/experience/exclusivity/in-car/lifestyle-extension first\n- A SaaS tool should rank AI features/workflow first\n\nOpportunities:\n'+allOpps.map(function(o,i){return(i+1)+'. ['+o.forecast+'] '+o.title+': '+o.whyMatters;}).join('\n')+'\n\n{\"ranked\":[numbers best-to-worst],\"reasoning\":\"why #1 is top pick\"}\n\nJSON only.';
             try{
-                var r2=await ai([{role:'user',content:rankPrompt}],800,'general');
+                var r2=await ai([{role:'user',content:rankPrompt}],800,'company_report');
                 console.log('Rank raw:',r2?r2.slice(0,200):'empty');
                 if(r2){
                     var rc=r2.replace(/```json|```/g,'').trim(),rp=null;
@@ -752,7 +752,7 @@ async function submitForm() {
         var aiStatus={level:'Moderately Positioned',summary:'Your company has real opportunities but needs to act on key AI shifts.'};
         try{
             var statusPrompt='Rate AI-proof status in JSON only.\nCompany: '+ctx+'\nTop opps: '+allOpps.slice(0,5).map(function(o){return o.title;}).join(', ')+'\n\n{"level":"High Risk or Moderately Positioned or Well Positioned","summary":"2-3 sentence personalised briefing mentioning '+domain+' specifically"}';
-            var sr=await ai([{role:'user',content:statusPrompt}],600,'general');
+            var sr=await ai([{role:'user',content:statusPrompt}],600,'company_report');
             if(sr){var sc=sr.replace(/```json|```/g,'').trim();try{var sp=JSON.parse(sc);if(sp.level&&sp.summary)aiStatus=sp;}catch(e){console.error('Status parse:',e);}}
         }catch(e){console.error('Status:',e);}
 
