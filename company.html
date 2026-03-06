@@ -649,16 +649,18 @@ function bind() {
 
 // ── SUBMIT FORM ───────────────────────────────────────────────────────────────
 async function submitForm() {
-    const name    = document.getElementById('f-name')?.value.trim();
-    const email   = document.getElementById('f-email')?.value.trim();
-    const url     = document.getElementById('f-url')?.value.trim();
-    const desc    = document.getElementById('f-desc')?.value.trim();
-    const size    = document.getElementById('f-size')?.value;
-    const aiUsage = document.getElementById('f-ai')?.value;
-    const goal    = document.getElementById('f-goal')?.value;
-    const errEl   = document.getElementById('form-err');
+    const name     = document.getElementById('f-name')?.value.trim();
+    const email    = document.getElementById('f-email')?.value.trim();
+    const url      = document.getElementById('f-url')?.value.trim();
+    const industry = document.getElementById('f-industry')?.value || '';
+    const desc     = document.getElementById('f-desc')?.value.trim();
+    const existing = document.getElementById('f-existing')?.value.trim() || '';
+    const size     = document.getElementById('f-size')?.value;
+    const aiUsage  = document.getElementById('f-ai')?.value;
+    const goal     = document.getElementById('f-goal')?.value;
+    const errEl    = document.getElementById('form-err');
 
-    if (!email || !url || !desc || !size || !aiUsage || !goal) {
+    if (!email || !url || !industry || !desc || !size || !aiUsage || !goal) {
         errEl.textContent = 'Please fill in all fields.';
         errEl.style.display = 'block';
         return;
