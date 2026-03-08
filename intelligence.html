@@ -2,303 +2,297 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Proof Club — Intelligence Platform</title>
-    <meta name="description" content="Full AI forecast intelligence for companies and founders. Every prediction. Every opportunity. Mapped to your business.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AI Proof Club — Company Intelligence</title>
+    <meta name="description" content="AI-proof your company. Get a ranked opportunity report or unlock the full evolving intelligence platform.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-    <script src="/shared/forecasts-data.js"></script>
     <style>
         :root {
-            --bg:        #050508;
-            --bg2:       #0d0d12;
-            --bg3:       #1a1a24;
-            --bg4:       #23232f;
-            --text:      #e8e8ec;
-            --muted:     #6e7087;
-            --faint:     #3d3d4a;
-            --accent:    #00f0ff;
-            --accent-g:  rgba(0,240,255,0.12);
-            --gold:      #f0c040;
-            --gold-g:    rgba(240,192,64,0.12);
-            --success:   #00ff88;
-            --warning:   #ffaa00;
-            --danger:    #ff3366;
-            --google:    #4285F4;
-            --openai:    #10A37F;
-            --claude:    #D97706;
-            --font:      'Space Mono', monospace;
-            --serif:     'Instrument Serif', serif;
+            --bg-primary: #050508;
+            --bg-secondary: #0d0d12;
+            --bg-tertiary: #1a1a24;
+            --text-primary: #e8e8ec;
+            --text-secondary: #6e7087;
+            --text-muted: #3d3d4a;
+            --accent: #00f0ff;
+            --accent-glow: rgba(0,240,255,0.15);
+            --danger: #ff3366;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --gold: #ffaa00;
+            --ideas: #7b68ee;
+            --metal-shine: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+            --font-display: 'Space Mono', monospace;
+            --font-mono: 'Space Mono', monospace;
         }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        html, body { height:100%; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text);
-            font-size: 13px;
+            font-family: var(--font-mono);
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
+            font-size: 13px;
             background-image:
-                radial-gradient(ellipse at 20% 0%, rgba(0,240,255,0.04) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 100%, rgba(240,192,64,0.03) 0%, transparent 50%);
+                radial-gradient(ellipse at top, rgba(0,240,255,0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom, rgba(123,104,238,0.03) 0%, transparent 50%);
         }
-
-        /* ── LAYOUT ── */
-        .app { display:flex; height:100vh; overflow:hidden; }
-        .sidebar {
-            width: 220px; flex-shrink:0;
-            background: var(--bg2);
-            border-right: 1px solid var(--bg3);
-            display: flex; flex-direction:column;
-            padding: 0;
-            overflow-y: auto;
-        }
-        .main { flex:1; overflow-y:auto; padding: 30px; }
-
-        /* ── SIDEBAR ── */
-        .sidebar-brand {
-            padding: 24px 20px 16px;
-            border-bottom: 1px solid var(--bg3);
-        }
-        .sidebar-logo { font-size:11px; font-weight:700; letter-spacing:4px; text-transform:uppercase; }
-        .sidebar-logo span { color: var(--accent); }
-        .sidebar-tier {
-            margin-top: 6px;
-            font-size: 9px; letter-spacing:2px; text-transform:uppercase;
-            color: var(--gold);
-            background: var(--gold-g);
-            border: 1px solid rgba(240,192,64,0.2);
-            padding: 3px 8px; display:inline-block;
-        }
-        .sidebar-nav { padding: 16px 0; flex:1; }
-        .nav-section {
-            font-size:9px; letter-spacing:2px; text-transform:uppercase;
-            color: var(--faint); padding: 8px 20px 4px;
-        }
-        .nav-item {
-            display:flex; align-items:center; gap:10px;
-            padding: 10px 20px; font-size:11px; letter-spacing:1px;
-            color: var(--muted); cursor:pointer; transition: all 0.2s;
-            border-left: 2px solid transparent;
-        }
-        .nav-item:hover { color: var(--text); background: var(--bg3); }
-        .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-g); }
-        .nav-item .icon { width:16px; text-align:center; font-size:13px; }
-        .sidebar-footer {
-            padding: 16px 20px;
-            border-top: 1px solid var(--bg3);
-            font-size: 10px; color: var(--faint);
-        }
-        .sidebar-footer a { color: var(--muted); text-decoration:none; }
-        .sidebar-footer a:hover { color: var(--accent); }
-
-        /* ── SCREENS ── */
-        .screen { display:none; }
-        .screen.active { display:block; }
-        .screen-center {
-            min-height:100vh; display:flex;
-            align-items:center; justify-content:center;
-            padding: 40px 20px;
-        }
-        .container-sm { width:100%; max-width:460px; }
-        .container-md { width:100%; max-width:680px; }
-        .container-lg { width:100%; max-width:900px; }
-
-        /* ── LOGO ── */
-        .logo { font-size:12px; font-weight:700; letter-spacing:4px; text-transform:uppercase; margin-bottom:28px; text-align:center; }
-        .logo span { color:var(--accent); text-shadow: 0 0 12px var(--accent-g); }
-        .logo-tier { font-size:9px; color:var(--gold); letter-spacing:3px; display:block; margin-top:4px; }
-
-        /* ── CARDS ── */
-        .card {
-            background: var(--bg2);
-            border: 1px solid var(--bg3);
-            padding: 24px;
-            margin-bottom: 14px;
-            position:relative;
-        }
-        .card::before {
-            content:''; position:absolute; top:0; left:0; right:0; height:1px;
-            background: linear-gradient(90deg, transparent, rgba(0,240,255,0.2), transparent);
-        }
-        .card.gold::before { background: linear-gradient(90deg, transparent, rgba(240,192,64,0.3), transparent); }
-        .card.gold { border-color: rgba(240,192,64,0.2); }
 
         /* ── BUTTONS ── */
         .btn {
-            display:inline-flex; align-items:center; justify-content:center;
-            padding: 13px 24px; font-family:var(--font); font-size:10px;
-            font-weight:700; letter-spacing:2px; text-transform:uppercase;
-            border:none; cursor:pointer; transition:all 0.3s;
-            text-decoration:none; position:relative; overflow:hidden;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 14px 28px; font-family: var(--font-mono); font-size: 11px;
+            font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+            border: none; cursor: pointer; transition: all 0.3s; text-decoration: none;
+            position: relative; overflow: hidden;
         }
-        .btn::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent); transition:left 0.4s; }
-        .btn:hover::before { left:100%; }
-        .btn-primary { background:var(--accent); color:var(--bg); box-shadow: 0 0 20px var(--accent-g); }
-        .btn-primary:hover { background:var(--text); }
-        .btn-gold { background:var(--gold); color:var(--bg); box-shadow: 0 0 20px var(--gold-g); }
-        .btn-gold:hover { background:#fff; color:var(--bg); }
-        .btn-secondary { background:transparent; border:1px solid var(--bg3); color:var(--muted); }
-        .btn-secondary:hover { border-color:var(--accent); color:var(--accent); }
-        .btn-full { width:100%; }
-        .btn-sm { padding:9px 16px; font-size:9px; }
-        .btn:disabled { opacity:0.3; cursor:not-allowed; }
+        .btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s; }
+        .btn:hover::before { left: 100%; }
+        .btn-primary { background: var(--accent); color: var(--bg-primary); box-shadow: 0 0 20px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.2); }
+        .btn-primary:hover { background: var(--text-primary); }
+        .btn-primary:disabled { background: var(--bg-tertiary); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
+        .btn-gold { background: var(--gold); color: var(--bg-primary); box-shadow: 0 0 20px rgba(255,170,0,0.3); }
+        .btn-gold:hover { background: #ffc233; box-shadow: 0 0 30px rgba(255,170,0,0.4); }
+        .btn-secondary { background: transparent; border: 1px solid var(--bg-tertiary); color: var(--text-secondary); background-image: var(--metal-shine); }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        .btn-ghost { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); }
+        .btn-ghost:hover { border-color: var(--text-secondary); color: var(--text-secondary); }
+        .btn-full { width: 100%; }
+        .btn-small { padding: 10px 16px; font-size: 10px; }
+
+        /* ── LAYOUT ── */
+        .screen-center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container-sm { width: 100%; max-width: 480px; }
+        .logo { font-size: 13px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 30px; text-align: center; }
+        .logo span { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
+        .logo-sub { font-size: 9px; color: var(--text-secondary); letter-spacing: 3px; display: block; margin-top: 4px; }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--bg-secondary); border: 1px solid var(--bg-tertiary);
+            padding: 25px; margin-bottom: 15px; position: relative; background-image: var(--metal-shine);
+        }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,240,255,0.3), transparent); }
 
         /* ── FORMS ── */
-        .form-group { margin-bottom:16px; }
-        .form-label { display:block; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
-        .form-input, .form-select, .form-textarea {
-            width:100%; padding:11px 12px;
-            background:var(--bg); border:1px solid var(--bg3);
-            color:var(--text); font-family:var(--font); font-size:12px;
-            transition:all 0.2s; outline:none;
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 6px; }
+        .form-input, .form-textarea, .form-select {
+            width: 100%; padding: 12px; background: var(--bg-primary);
+            border: 1px solid var(--bg-tertiary); color: var(--text-primary);
+            font-family: var(--font-mono); font-size: 13px; transition: all 0.3s; outline: none;
         }
-        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color:var(--accent); box-shadow: 0 0 0 2px var(--accent-g); }
-        .form-textarea { resize:vertical; min-height:80px; }
-        .form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236e7087'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; }
+        .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        .form-textarea { min-height: 80px; resize: vertical; }
+        .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236e7087'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-        /* ── PAGE HEADER ── */
-        .page-header { margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid var(--bg3); }
-        .page-title { font-size:22px; font-weight:700; letter-spacing:1px; margin-bottom:4px; }
-        .page-subtitle { color:var(--muted); font-size:11px; letter-spacing:1px; }
-        .page-actions { display:flex; gap:10px; align-items:center; margin-top:14px; }
-
-        /* ── STATS ROW ── */
-        .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
-        .stat-box { background:var(--bg2); border:1px solid var(--bg3); padding:16px; text-align:center; }
-        .stat-val { font-size:24px; font-weight:700; color:var(--accent); }
-        .stat-lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
-
-        /* ── TABS ── */
-        .tabs { display:flex; gap:0; margin-bottom:20px; border-bottom:1px solid var(--bg3); }
-        .tab { padding:10px 18px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; background:none; border-top:none; border-left:none; border-right:none; font-family:var(--font); }
-        .tab:hover { color:var(--text); }
-        .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
-
-        /* ── FORECAST CARD ── */
-        .forecast-card {
-            background:var(--bg2); border:1px solid var(--bg3);
-            padding:18px 20px; margin-bottom:10px; cursor:pointer;
-            transition:all 0.2s; position:relative;
+        /* ── SIDEBAR APP LAYOUT ── */
+        .app-layout { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 220px; background: var(--bg-secondary); border-right: 1px solid var(--bg-tertiary);
+            padding: 20px 12px; position: fixed; height: 100vh; display: flex;
+            flex-direction: column; overflow-y: auto;
+            background-image: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
         }
-        .forecast-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(0,240,255,0.15),transparent); }
-        .forecast-card:hover { border-color:rgba(0,240,255,0.3); transform:translateY(-1px); box-shadow:0 4px 20px rgba(0,240,255,0.05); }
-        .forecast-card.expanded { border-color:rgba(0,240,255,0.4); }
-        .forecast-meta { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
-        .forecast-tag { font-size:9px; letter-spacing:1.5px; text-transform:uppercase; padding:2px 8px; }
-        .tag-prob { color:var(--warning); background:rgba(255,170,0,0.1); border:1px solid rgba(255,170,0,0.2); }
-        .tag-time { color:var(--muted); background:var(--bg3); }
-        .tag-cat { color:var(--accent); background:var(--accent-g); }
-        .tag-impact { color:var(--success); background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.15); }
-        .forecast-title { font-size:14px; font-weight:700; margin-bottom:6px; letter-spacing:0.5px; }
-        .forecast-desc { font-size:12px; color:var(--muted); line-height:1.7; }
-        .forecast-expand { margin-top:16px; padding-top:16px; border-top:1px solid var(--bg3); display:none; }
-        .forecast-card.expanded .forecast-expand { display:block; }
+        .sidebar::before { content: ''; position: absolute; top: 0; right: 0; width: 1px; height: 100%;
+            background: linear-gradient(180deg, var(--accent) 0%, transparent 30%, transparent 70%, var(--accent) 100%); opacity: 0.3; }
+        .sidebar-logo { font-size: 11px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px; padding: 0 8px; }
+        .sidebar-logo span { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
+        .sidebar-tier {
+            background: var(--bg-primary); border: 1px solid var(--bg-tertiary);
+            padding: 12px; margin-bottom: 15px; text-align: center; position: relative; overflow: hidden;
+        }
+        .sidebar-tier::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.5; }
+        .tier-label { font-size: 8px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+        .tier-name  { font-size: 13px; font-weight: 700; }
+        .tier-snapshot { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
+        .tier-intel    { color: var(--gold); text-shadow: 0 0 10px rgba(255,170,0,0.3); }
+        .sidebar-nav { list-style: none; flex: 1; }
+        .sidebar-nav li { margin-bottom: 3px; }
+        .sidebar-nav a {
+            display: block; padding: 9px 10px; color: var(--text-secondary); text-decoration: none;
+            font-size: 11px; border-radius: 3px; transition: all 0.2s; letter-spacing: 1px; cursor: pointer;
+        }
+        .sidebar-nav a:hover { background: var(--bg-tertiary); color: var(--accent); box-shadow: inset 0 0 20px var(--accent-glow); }
+        .sidebar-nav a.active { background: var(--bg-tertiary); color: var(--accent); border-left: 2px solid var(--accent); box-shadow: inset 0 0 20px var(--accent-glow); }
+        .sidebar-footer { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bg-tertiary); }
+        .sidebar-footer a { display: block; padding: 6px 10px; color: var(--text-muted); font-size: 10px; letter-spacing: 1px; text-decoration: none; transition: color 0.2s; }
+        .sidebar-footer a:hover { color: var(--text-secondary); }
+        .main { flex: 1; margin-left: 220px; padding: 28px 28px 80px; }
+        .page-header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+        .page-title { font-family: var(--font-display); font-size: 24px; margin-bottom: 5px; letter-spacing: 2px; }
+        .page-subtitle { color: var(--text-secondary); font-size: 12px; letter-spacing: 1px; }
 
-        /* ── OPPORTUNITY CARD ── */
+        /* ── STATS ── */
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat {
+            background: var(--bg-secondary); border: 1px solid var(--bg-tertiary);
+            padding: 18px; text-align: center; background-image: var(--metal-shine);
+            position: relative; cursor: pointer; transition: all 0.2s;
+        }
+        .stat::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 50%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.3; }
+        .stat:hover { border-color: rgba(0,240,255,0.3); }
+        .stat-value { font-size: 28px; font-weight: 700; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
+        .stat-label { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; margin-top: 3px; }
+        .stat-hint  { font-size: 9px; color: var(--text-muted); margin-top: 4px; }
+
+        /* ── TABS (exact app.html style) ── */
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab {
+            padding: 8px 16px; background: var(--bg-tertiary); border: none;
+            color: var(--text-secondary); font-family: var(--font-mono); font-size: 10px;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s;
+        }
+        .tab:hover { color: var(--accent); }
+        .tab.active { background: var(--accent); color: var(--bg-primary); box-shadow: 0 0 15px var(--accent-glow); }
+
+        /* ── OPP CARDS (quest-style) ── */
         .opp-card {
-            background:var(--bg); border:1px solid var(--bg3);
-            border-left:3px solid var(--accent);
-            padding:16px 18px; margin-bottom:10px;
-            transition:all 0.2s;
+            background: var(--bg-primary); border: 1px solid var(--bg-tertiary);
+            padding: 18px; margin-bottom: 10px; background-image: var(--metal-shine);
+            transition: all 0.3s; cursor: pointer;
         }
-        .opp-card:hover { border-color:rgba(0,240,255,0.4); box-shadow:0 2px 16px rgba(0,240,255,0.06); }
-        .opp-label { font-size:9px; color:var(--accent); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; }
-        .opp-title { font-size:14px; font-weight:700; margin-bottom:8px; }
-        .opp-section { margin-top:12px; padding-top:12px; border-top:1px solid var(--bg3); }
-        .opp-section-label { font-size:9px; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; }
-        .opp-section-label.quick { color:var(--success); }
-        .opp-section-label.strategic { color:var(--gold); }
-        .opp-section-label.steps { color:var(--accent); }
-        .opp-section p, .opp-section ul { font-size:12px; color:var(--muted); line-height:1.7; }
-        .opp-section ul { padding-left:16px; }
-        .opp-section ul li { margin-bottom:4px; }
-        .quest-step {
-            display:flex; gap:10px; padding:8px 0;
-            border-bottom:1px solid var(--bg3);
-            font-size:12px;
-        }
-        .quest-step:last-child { border-bottom:none; }
-        .quest-step-num { color:var(--accent); font-weight:700; min-width:20px; }
+        .opp-card:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+        .opp-card.open  { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        .opp-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+        .opp-source { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; padding: 2px 8px; background: rgba(123,104,238,0.2); color: var(--ideas); }
+        .opp-num    { font-size: 9px; color: var(--text-muted); letter-spacing: 1px; }
+        .opp-title  { font-size: 13px; line-height: 1.4; margin-bottom: 8px; font-weight: 700; }
+        .opp-why    { font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 10px; }
+        .opp-quick  { background: rgba(0,255,136,0.06); border-left: 2px solid var(--success); padding: 10px 14px; margin-top: 8px; }
+        .opp-quick-lbl { font-size: 9px; color: var(--success); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+        .opp-quick p   { font-size: 11px; line-height: 1.6; }
+        .opp-expand    { padding-top: 14px; margin-top: 12px; border-top: 1px solid var(--bg-tertiary); display: none; }
+        .opp-card.open .opp-expand { display: block; }
+        .opp-bet-lbl { font-size: 9px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
+        .opp-bet p   { font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
 
-        /* ── PROVIDER BADGE ── */
-        .provider-badge {
-            display:inline-flex; align-items:center; gap:6px;
-            padding:4px 10px; font-size:9px; font-weight:700;
-            letter-spacing:1px; text-transform:uppercase;
-        }
-        .provider-dot { width:6px; height:6px; border-radius:50%; }
+        /* ── FORECAST ROWS ── */
+        .fc-section  { margin-bottom: 30px; }
+        .fc-tf-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--bg-tertiary); }
+        .fc-tf-label  { font-size: 9px; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; }
+        .fc-tf-bar    { flex: 1; height: 1px; background: linear-gradient(90deg, var(--bg-tertiary), transparent); }
+        .fc-tf-count  { font-size: 9px; color: var(--text-muted); }
+        .fc-row  { padding: 16px 0; border-bottom: 1px solid var(--bg-tertiary); display: flex; align-items: flex-start; gap: 16px; }
+        .fc-row:last-child { border-bottom: none; }
+        .fc-row.relevant { border-left: 2px solid rgba(0,240,255,0.3); padding-left: 14px; }
+        .fc-meta  { flex-shrink: 0; width: 52px; text-align: right; }
+        .fc-prob  { font-size: 13px; font-weight: 700; }
+        .fc-score { font-size: 9px; color: var(--accent); margin-top: 2px; }
+        .fc-body  { flex: 1; min-width: 0; }
+        .fc-tags  { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; align-items: center; }
+        .fc-tag   { font-size: 8px; padding: 2px 7px; border: 1px solid var(--bg-tertiary); color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; }
+        .fc-tag.rel { border-color: rgba(0,240,255,0.25); color: var(--accent); background: rgba(0,240,255,0.06); }
+        .fc-title { font-size: 13px; font-weight: 700; margin-bottom: 5px; line-height: 1.5; }
+        .fc-desc  { font-size: 11px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 8px; }
 
-        /* ── LOADING ── */
-        .loading-screen { text-align:center; padding:60px 20px; }
-        .loading-steps { margin:24px auto; max-width:320px; text-align:left; }
-        .loading-step { display:flex; align-items:center; gap:10px; padding:8px 0; opacity:0.3; transition:opacity 0.4s; }
-        .loading-step.done { opacity:1; }
-        .loading-step.active { opacity:1; }
-        .loading-step-icon { font-size:13px; width:20px; }
-        .loading-step-text { font-size:12px; }
-        @keyframes spin { to { transform:rotate(360deg); } }
-        .spinner { width:18px; height:18px; border:2px solid var(--bg3); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; display:inline-block; }
-        .spinner-gold { border-top-color:var(--gold); }
+        /* ── RISK ROWS ── */
+        .risk-row { padding: 16px 0; border-bottom: 1px solid var(--bg-tertiary); display: flex; gap: 16px; align-items: flex-start; }
+        .risk-row:last-child { border-bottom: none; }
+        .risk-pct  { flex-shrink: 0; width: 52px; text-align: right; }
+        .risk-pct-num { font-size: 22px; font-weight: 700; color: var(--danger); line-height: 1; }
+        .risk-pct-lbl { font-size: 8px; color: var(--text-muted); letter-spacing: 1px; display: block; margin-top: 2px; }
+        .risk-name   { font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+        .risk-impact { font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
 
-        /* ── EMPTY STATE ── */
-        .empty { text-align:center; padding:50px 20px; color:var(--muted); }
-        .empty-icon { font-size:32px; margin-bottom:12px; }
-        .empty-title { font-size:14px; color:var(--text); margin-bottom:6px; }
+        /* ── CHAT ── */
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 340px); min-height: 320px; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px 0; }
+        .chat-msg { display: flex; gap: 10px; margin-bottom: 15px; }
+        .chat-msg.user { flex-direction: row-reverse; }
+        .chat-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+        .chat-msg.ai .chat-avatar { background: var(--accent); color: var(--bg-primary); }
+        .chat-bubble { max-width: 75%; padding: 10px 14px; background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); font-size: 12px; line-height: 1.6; }
+        .chat-msg.user .chat-bubble { background: var(--bg-tertiary); }
+        .chat-input-row { display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--bg-tertiary); }
+        .chat-input { flex: 1; padding: 10px 12px; background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); color: var(--text-primary); font-family: var(--font-mono); font-size: 12px; resize: none; outline: none; }
+        .chat-input:focus { border-color: var(--accent); }
+        .chat-send { padding: 10px 18px; background: var(--accent); border: none; color: var(--bg-primary); font-family: var(--font-mono); font-size: 10px; font-weight: 700; cursor: pointer; letter-spacing: 2px; }
+        .chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+        .chat-thinking { display: flex; gap: 5px; align-items: center; padding: 6px 2px; }
+        .chat-dot { width: 7px; height: 7px; background: var(--text-secondary); border-radius: 50%; animation: dot-pulse 1.2s infinite; }
+        .chat-dot:nth-child(2) { animation-delay: 0.2s; }
+        .chat-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes dot-pulse { 0%,80%,100%{opacity:0.3;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
 
-        /* ── FILTER BAR ── */
-        .filter-bar { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
-        .filter-chip { padding:5px 12px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; background:var(--bg3); color:var(--muted); cursor:pointer; border:1px solid transparent; transition:all 0.2s; }
-        .filter-chip:hover { color:var(--text); }
-        .filter-chip.active { color:var(--accent); border-color:var(--accent); background:var(--accent-g); }
-        .filter-search { flex:1; min-width:180px; padding:7px 12px; background:var(--bg2); border:1px solid var(--bg3); color:var(--text); font-family:var(--font); font-size:11px; }
-        .filter-search:focus { outline:none; border-color:var(--accent); }
+        /* ── QUICK ACTION PILLS ── */
+        .quick-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+        .quick-pill { padding: 6px 12px; background: var(--bg-tertiary); border: none; color: var(--text-secondary); font-family: var(--font-mono); font-size: 10px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; }
+        .quick-pill:hover { background: var(--bg-secondary); color: var(--accent); border: none; }
+
+        /* ── FILTER PILLS ── */
+        .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+        .filter-pill { padding: 6px 14px; background: var(--bg-tertiary); border: none; color: var(--text-secondary); font-family: var(--font-mono); font-size: 10px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: all 0.2s; }
+        .filter-pill:hover { color: var(--accent); }
+        .filter-pill.active { background: var(--accent); color: var(--bg-primary); box-shadow: 0 0 10px var(--accent-glow); }
 
         /* ── PAYWALL ── */
-        .paywall-banner {
-            background:linear-gradient(135deg, rgba(240,192,64,0.08), rgba(0,240,255,0.05));
-            border:1px solid rgba(240,192,64,0.25);
-            padding:20px 24px; margin-bottom:20px;
-            display:flex; align-items:center; justify-content:space-between; gap:16px;
-        }
-        .paywall-text { font-size:12px; line-height:1.6; }
-        .paywall-text strong { color:var(--gold); }
+        .paywall-section { position: relative; }
+        .paywall-blur-wrap { position: relative; }
+        .paywall-blur-wrap::after { content: ''; position: absolute; inset: 0;
+            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+            background: linear-gradient(180deg, transparent 0%, rgba(5,5,8,0.6) 40%, rgba(5,5,8,0.97) 100%);
+            pointer-events: none; }
+        .paywall-gate { background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); padding: 30px 28px; text-align: center; margin-top: 12px; position: relative; background-image: var(--metal-shine); }
+        .paywall-gate::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,170,0,0.4), transparent); }
+        .paywall-gate-icon  { font-size: 28px; margin-bottom: 10px; }
+        .paywall-gate-title { font-family: var(--font-display); font-size: 18px; margin-bottom: 8px; }
+        .paywall-gate-sub   { font-size: 12px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 22px; max-width: 400px; margin-left: auto; margin-right: auto; }
+        .paywall-actions    { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+        /* ── STATUS BADGE ── */
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
+        .s-good { background: rgba(0,255,136,0.1); color: var(--success); border: 1px solid rgba(0,255,136,0.25); }
+        .s-mid  { background: rgba(255,170,0,0.1);  color: var(--gold);    border: 1px solid rgba(255,170,0,0.25); }
+        .s-risk { background: rgba(255,51,102,0.1);  color: var(--danger);  border: 1px solid rgba(255,51,102,0.25); }
+
+        /* ── LOADING ── */
+        .load-step { display: flex; align-items: center; gap: 12px; padding: 8px 0; font-size: 12px; opacity: 0.25; transition: opacity 0.4s; }
+        .load-step.done   { opacity: 1; color: var(--success); }
+        .load-step.active { opacity: 1; color: var(--text-primary); }
+        .spinner { width: 20px; height: 20px; border: 2px solid var(--bg-tertiary); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* ── MODAL ── */
-        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px; }
-        .modal { background:var(--bg2); border:1px solid var(--bg3); padding:28px; max-width:460px; width:100%; max-height:90vh; overflow-y:auto; }
-        .modal-title { font-size:18px; font-weight:700; margin-bottom:6px; }
-        .modal-sub { color:var(--muted); font-size:11px; margin-bottom:20px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.88); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal { background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); padding: 28px; max-width: 460px; width: 100%; position: relative; background-image: var(--metal-shine); }
+        .modal::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,170,0,0.5), transparent); }
+        .modal-title { font-family: var(--font-display); font-size: 20px; margin-bottom: 10px; }
+
+        /* ── MOBILE NAV ── */
+        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--bg-secondary); border-top: 1px solid var(--bg-tertiary);
+            padding: 8px 0; padding-bottom: max(8px, env(safe-area-inset-bottom)); z-index: 1000; }
+        .mobile-nav-inner { display: flex; justify-content: space-around; }
+        .mobile-nav-item { display: flex; flex-direction: column; align-items: center; padding: 4px 8px;
+            font-size: 8px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+        .mobile-nav-item span { font-size: 18px; margin-bottom: 2px; }
+        .mobile-nav-item.active { color: var(--accent); }
 
         /* ── MISC ── */
-        .text-accent { color:var(--accent); }
-        .text-gold { color:var(--gold); }
-        .text-muted { color:var(--muted); }
-        .text-success { color:var(--success); }
-        .text-sm { font-size:11px; }
-        .text-xs { font-size:10px; }
-        .mb-0 { margin-bottom:0; }
-        .mb-10 { margin-bottom:10px; }
-        .mb-20 { margin-bottom:20px; }
-        .flex { display:flex; }
-        .flex-between { display:flex; justify-content:space-between; align-items:center; }
-        .gap-8 { gap:8px; }
-        .gap-12 { gap:12px; }
-        hr.divider { border:none; border-top:1px solid var(--bg3); margin:20px 0; }
+        .verdict { background: var(--bg-primary); border-left: 3px solid var(--accent); padding: 16px 18px; margin: 18px 0; position: relative; overflow: hidden; }
+        .verdict::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, var(--accent-glow) 0%, transparent 50%); pointer-events: none; }
+        .verdict-title { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+        .verdict-text { font-size: 13px; line-height: 1.6; }
+        .text-link { color: var(--accent); text-decoration: none; cursor: pointer; }
+        .text-link:hover { text-decoration: underline; }
 
-        /* ── MOBILE ── */
-        @media(max-width:768px) {
-            .app { flex-direction:column; }
-            .sidebar { width:100%; height:auto; flex-direction:row; overflow-x:auto; border-right:none; border-bottom:1px solid var(--bg3); }
-            .sidebar-brand { padding:12px 16px; border-bottom:none; border-right:1px solid var(--bg3); white-space:nowrap; }
-            .sidebar-nav { display:flex; flex-direction:row; padding:0; }
-            .nav-section { display:none; }
-            .nav-item { padding:14px 14px; white-space:nowrap; flex-direction:column; gap:3px; font-size:9px; border-left:none; border-bottom:2px solid transparent; }
-            .nav-item.active { border-left-color:transparent; border-bottom-color:var(--accent); }
-            .sidebar-footer { display:none; }
-            .main { padding:16px; }
-            .stats-row { grid-template-columns:repeat(2,1fr); }
+        @media (max-width: 900px) { .stats { grid-template-columns: repeat(2, 1fr); } .form-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 700px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 15px; padding-bottom: 80px; }
+            .mobile-nav { display: block; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .tabs { gap: 4px; }
+            .tab { padding: 8px 10px; font-size: 9px; flex: 1; text-align: center; min-width: 60px; }
+            .form-input, .form-textarea, .form-select { font-size: 16px !important; }
+            .chat-container { height: calc(100vh - 420px); min-height: 240px; }
         }
     </style>
 </head>
@@ -306,798 +300,944 @@
 <div id="app"></div>
 
 <script>
-// ── CONFIG ──────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://snbchuvvnbwvghmbxehv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuYmNodXZ2bmJ3dmdobWJ4ZWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MDg5NzMsImV4cCI6MjA4NTQ4NDk3M30.cKPieraN3FRT_5ilAQL0X2b9kIpklzE49xGzVJwYxZo';
-const OPENAI_API   = '/.netlify/functions/openai';
-const EMAIL_API    = '/.netlify/functions/send-email';
-const BEEHIIV_API  = '/.netlify/functions/subscribe-beehiiv';
-const STRIPE_INTEL = 'https://buy.stripe.com/bJe7sLdoXd5h0xm7iG9ws04';
-const STRATEGY_URL = 'https://calendly.com/erica-m-slater/aiproofclub';
+const AI_URL       = '/.netlify/functions/openai';
+const CALENDLY     = 'https://calendly.com/aiproofclub'; // ← update to your real Calendly link
 
-const PROVIDERS = {
-    google: { name:'Google', color:'#4285F4', icon:'G' },
-    openai: { name:'OpenAI', color:'#10A37F', icon:'⬡' },
-    claude: { name:'Anthropic', color:'#D97706', icon:'◈' }
-};
-
-// ── STATE ───────────────────────────────────────────────────────────────────
-let S = {
-    screen: 'landing',      // landing | diagnostic | loading | dashboard | forecasts | opportunities | settings
-    provider: null,         // google | openai | claude | null (direct)
-    user: null,
-    paid: false,
-
-    // Diagnostic form
-    form: { url:'', desc:'', size:'', aiUsage:'', goal:'', email:'', name:'' },
-
-    // Results
-    report: null,           // { company, industry, ai_status, opportunities[], forecasts[] }
-    forecasts: [],          // all from Supabase
-    loadingStep: 0,
-    loadingDone: false,
-
-    // Dashboard
-    activeTab: 'opportunities',  // opportunities | forecasts | settings
-    expandedForecast: null,
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const S = {
+    screen: 'landing',       // landing | form | loading | report
+    tab: 'briefing',         // briefing | forecasts | opportunities | risks | chat
+    tier: null,              // 'snapshot' | 'intelligence'
+    loadStep: 0,
+    company: {},
+    report: null,
+    forecasts: [],
+    scoredForecasts: [],
+    usedForecastIds: new Set(),
+    forecastOppMap: {},
+    oppFilter: 'all',
     expandedOpp: null,
-    filterCat: 'all',
-    filterSearch: '',
-
-    // Quest tracking
-    completedQuests: [],
-    modal: null,
+    generatingMore: false,
+    generatingForecast: null,
+    moreError: null,
+    chatMessages: [],
+    chatThinking: false,
+    editOpen: false,
+    upgradeModal: false,
 };
 
-// ── SUPABASE ────────────────────────────────────────────────────────────────
-async function db(table, method, data=null, query='') {
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+async function db(table, method, data, query='') {
     const url = `${SUPABASE_URL}/rest/v1/${table}${query}`;
-    const opt = {
-        method,
-        headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': method==='POST' ? 'return=representation' : ''
-        }
-    };
-    if (data) opt.body = JSON.stringify(data);
-    try {
-        const r = await fetch(url, opt);
-        if (!r.ok) throw new Error(await r.text());
-        return method==='DELETE' ? null : r.json();
-    } catch(e) { console.error('DB error:', e); return null; }
+    const h = {'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`};
+    if (method !== 'GET') h['Prefer'] = 'return=minimal';
+    const r = await fetch(url, { method, headers: h, body: data ? JSON.stringify(data) : null });
+    if (method === 'GET') { if (!r.ok) { console.error('DB', r.status); return []; } return r.json(); }
+    return r;
 }
 
-// ── AI ──────────────────────────────────────────────────────────────────────
-async function ai(messages, maxTokens=2000, type='general') {
+async function ai(messages, maxTokens=2500, type='company_report') {
     try {
-        const r = await fetch(OPENAI_API, {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ messages, type: 'general' })
-        });
+        const r = await fetch(AI_URL, { method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({messages, maxTokens, type}) });
         const d = await r.json();
-        if (d.error) throw new Error(d.error);
         return d.content || '';
     } catch(e) { console.error('AI error:', e); return ''; }
 }
 
-// ── RENDER ───────────────────────────────────────────────────────────────────
-function render() {
-    document.getElementById('app').innerHTML = buildHTML();
-    attachEvents();
+function parseJSON(raw, fallback=null) {
+    if (!raw) return fallback;
+    const c = raw.replace(/```json|```/g, '').trim();
+    try { return JSON.parse(c); } catch(e) {
+        for (const s of ['}]}',']}','}}']) { try { return JSON.parse(c + s); } catch(e2){} }
+        return fallback;
+    }
 }
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render() { document.getElementById('app').innerHTML = buildHTML(); bind(); }
 
 function buildHTML() {
-    if (S.screen === 'landing')    return landingHTML();
-    if (S.screen === 'diagnostic') return diagnosticHTML();
-    if (S.screen === 'loading')    return loadingHTML();
-    if (S.modal)                   return dashHTML() + modalHTML();
-    return dashHTML();
+    if (S.screen === 'landing') return landingHTML();
+    if (S.screen === 'form')    return formHTML();
+    if (S.screen === 'loading') return loadingHTML();
+    if (S.screen === 'report')  return reportShellHTML();
+    return landingHTML();
 }
 
-// ── LANDING ──────────────────────────────────────────────────────────────────
+// ── LANDING ───────────────────────────────────────────────────────────────────
 function landingHTML() {
-    const provider = S.provider ? PROVIDERS[S.provider] : null;
     return `
     <div class="screen-center">
     <div class="container-sm">
-        <div class="logo">
-            AI PROOF <span>CLUB</span>
-            <span class="logo-tier">Intelligence Platform</span>
-        </div>
-
-        ${provider ? `
-        <div style="text-align:center;margin-bottom:20px">
-            <div class="provider-badge" style="background:${provider.color}18;border:1px solid ${provider.color}44;color:${provider.color};margin:0 auto;display:inline-flex">
-                <div class="provider-dot" style="background:${provider.color}"></div>
-                ${provider.name} Intelligence Mode
+        <div class="logo">AI PROOF <span>CLUB</span><span class="logo-sub">Company Intelligence</span></div>
+        <p style="text-align:center;font-size:12px;color:var(--text-secondary);margin-bottom:28px;line-height:1.8">
+            We track every major AI forecast. You get exactly what each one means for your company —<br>
+            ranked by impact, with clear actions and timelines.
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+            <!-- Snapshot -->
+            <div class="card" style="border-color:rgba(0,240,255,0.2);cursor:pointer;margin-bottom:0" id="card-snapshot">
+                <div style="font-size:9px;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px">◈ Snapshot</div>
+                <div style="font-size:26px;font-weight:700;margin-bottom:2px">$29.99</div>
+                <div style="font-size:10px;color:var(--text-secondary);margin-bottom:16px">One-time report</div>
+                <ul style="list-style:none;font-size:10px;color:var(--text-secondary);line-height:2.2;margin-bottom:18px">
+                    <li>✓ 15 ranked opportunities</li>
+                    <li>✓ Quick wins &amp; strategic bets</li>
+                    <li>✓ Risk analysis</li>
+                    <li>✓ AI consultant access</li>
+                    <li style="color:var(--text-muted)">— Evolving opportunity feed</li>
+                    <li style="color:var(--text-muted)">— Full forecast database</li>
+                </ul>
+                <button class="btn btn-primary btn-full" id="btn-snapshot" style="font-size:10px;padding:12px">Get Snapshot →</button>
             </div>
-            <p class="text-muted text-sm" style="margin-top:8px">Map every AI forecast from ${provider.name} against your business</p>
-        </div>
-        ` : ''}
-
-        <div class="card gold" style="margin-bottom:12px">
-            <div style="font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">◈ Intelligence Platform — $99.99</div>
-            <div style="font-family:var(--serif);font-size:20px;margin-bottom:10px;font-style:italic">Every AI forecast. Every opportunity. Mapped to your company.</div>
-            <p class="text-muted text-sm" style="line-height:1.7;margin-bottom:16px">Access the full database of AI predictions and get a complete opportunity map for your business — not just 15, but every relevant forecast ranked and translated into action.</p>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px">
-                ${['Full forecast database','Company opportunity map','Quick wins + strategic bets','Quest steps per opportunity','Founder startup ideas mode','Priority support'].map(f=>`
-                <div style="font-size:10px;color:var(--muted);display:flex;gap:6px;align-items:center">
-                    <span style="color:var(--gold)">✓</span>${f}
-                </div>`).join('')}
+            <!-- Intelligence -->
+            <div class="card" style="border-color:rgba(255,170,0,0.3);background:linear-gradient(135deg,var(--bg-secondary),rgba(255,170,0,0.02));cursor:pointer;margin-bottom:0" id="card-intel">
+                <div style="font-size:9px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px">◎ Intelligence</div>
+                <div style="font-size:26px;font-weight:700;margin-bottom:2px;color:var(--gold)">$99.99</div>
+                <div style="font-size:10px;color:var(--text-secondary);margin-bottom:16px">Evolving platform</div>
+                <ul style="list-style:none;font-size:10px;color:var(--text-secondary);line-height:2.2;margin-bottom:18px">
+                    <li>✓ 15 opportunities to start</li>
+                    <li>✓ Quick wins &amp; strategic bets</li>
+                    <li>✓ Risk analysis</li>
+                    <li>✓ AI consultant access</li>
+                    <li style="color:var(--text-primary)">✓ <strong>Evolving opportunity feed</strong></li>
+                    <li style="color:var(--text-primary)">✓ <strong>Full forecast database</strong></li>
+                </ul>
+                <button class="btn btn-gold btn-full" id="btn-intel" style="font-size:10px;padding:12px">Get Intelligence →</button>
             </div>
-            <button class="btn btn-gold btn-full" id="btn-start">Get Access to the Intelligence Platform →</button>
         </div>
-
-        <div style="text-align:center;margin-top:16px">
-            <span class="text-muted text-xs">One-time report · No subscription · Instant access</span>
-            <br><span class="text-muted text-xs" style="margin-top:4px;display:block">
-                Want ongoing access? <a href="${STRATEGY_URL}" target="_blank" style="color:var(--accent);text-decoration:none">Book a strategy call →</a>
-            </span>
-        </div>
-
-        <div style="text-align:center;margin-top:20px">
-            <a href="/app.html" style="color:var(--faint);font-size:10px;text-decoration:none">← Individual mode (personal skills)</a>
+        <p style="text-align:center;font-size:10px;color:var(--text-muted)">
+            <a href="/app.html" style="color:var(--text-muted);text-decoration:none">Individual mode</a>
             &nbsp;·&nbsp;
-            <a href="/company.html" style="color:var(--faint);font-size:10px;text-decoration:none">Company mode ($29.99)</a>
-        </div>
-    </div>
-    </div>`;
-}
-
-// ── DIAGNOSTIC FORM ──────────────────────────────────────────────────────────
-function diagnosticHTML() {
-    const f = S.form;
-    return `
-    <div class="screen-center">
-    <div class="container-sm">
-        <div class="logo">AI PROOF <span>CLUB</span><span class="logo-tier">Intelligence Platform</span></div>
-
-        <div class="card">
-            <div style="font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Step 1 of 1</div>
-            <div style="font-size:18px;font-weight:700;margin-bottom:4px">Tell us about your company</div>
-            <p class="text-muted text-sm" style="margin-bottom:20px">We'll map the full AI forecast database against your specific business model.</p>
-
-            <div class="form-group">
-                <label class="form-label">Your Name</label>
-                <input class="form-input" id="f-name" type="text" placeholder="Jane Smith" value="${f.name}">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input class="form-input" id="f-email" type="email" placeholder="you@company.com" value="${f.email}">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Company Website</label>
-                <input class="form-input" id="f-url" type="text" placeholder="yourcompany.com" value="${f.url}">
-            </div>
-            <div class="form-group">
-                <label class="form-label">What does your company do?</label>
-                <textarea class="form-textarea" id="f-desc" placeholder="e.g. We build B2B SaaS for logistics teams to manage last-mile delivery">${f.desc}</textarea>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Company Size</label>
-                <select class="form-select" id="f-size">
-                    <option value="" ${!f.size?'selected':''}>Select size</option>
-                    ${['Solo / Founder','2–10','10–50','50–200','200+'].map(s=>`<option value="${s}" ${f.size===s?'selected':''}>${s}</option>`).join('')}
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Current AI Usage</label>
-                <select class="form-select" id="f-ai">
-                    <option value="" ${!f.aiUsage?'selected':''}>Select usage level</option>
-                    ${['None — not using AI yet','Experimenting — trying tools','Integrated — AI in workflows','Advanced — AI-native processes'].map(s=>`<option value="${s}" ${f.aiUsage===s?'selected':''}>${s}</option>`).join('')}
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Primary Goal</label>
-                <select class="form-select" id="f-goal">
-                    <option value="" ${!f.goal?'selected':''}>Select goal</option>
-                    ${['Reduce operating costs','Increase revenue','Improve team productivity','Build new AI-powered products','Stay ahead of AI competitors'].map(s=>`<option value="${s}" ${f.goal===s?'selected':''}>${s}</option>`).join('')}
-                </select>
-            </div>
-
-            <div id="form-error" style="display:none;color:var(--danger);font-size:11px;margin-bottom:12px"></div>
-            <button class="btn btn-gold btn-full" id="btn-submit">Generate My Intelligence Report →</button>
-        </div>
-
-        <p class="text-muted text-xs" style="text-align:center;margin-top:12px">
-            <a href="#" id="btn-back-landing" style="color:var(--faint);text-decoration:none">← Back</a>
+            <a href="/founder.html" style="color:var(--text-muted);text-decoration:none">Founder mode</a>
+            &nbsp;·&nbsp;
+            <a href="/company.html" style="color:var(--text-muted);text-decoration:none">Company report</a>
         </p>
     </div>
     </div>`;
 }
 
-// ── LOADING ──────────────────────────────────────────────────────────────────
-const LOADING_STEPS = [
-    'Reading your company profile...',
-    'Fetching full AI forecast database...',
-    'Inferring industry and business model...',
-    'Ranking forecasts by relevance...',
-    'Generating opportunities and quick wins...',
-    'Building strategic bets...',
-    'Assembling quest steps...',
-    'Finalising your intelligence report...'
-];
-
-function loadingHTML() {
-    const domain = S.form.url.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'') || 'your company';
+// ── FORM ──────────────────────────────────────────────────────────────────────
+function formHTML() {
+    const c = S.company;
+    const isIntel = S.tier === 'intelligence';
+    const industries = ['Luxury Fashion & Retail','Fashion & Apparel','Beauty & Personal Care','Food & Beverage','Hospitality & Travel','Consumer Goods & Retail','Media & Entertainment','Creator Economy / Content','Gaming','Financial Services & Fintech','Healthcare & Wellness','Education & EdTech','Real Estate & PropTech','Legal & Professional Services','Marketing & Advertising','SaaS & Software','AI / ML Tools','E-commerce','Manufacturing & Supply Chain','Energy & Climate Tech','Other'];
+    const sizes = ['Solo / Founder','2–10','10–50','50–200','200+'];
+    const goals = ['Grow revenue','Cut costs','Build AI products','Stay ahead of competitors','Future-proof the business'];
     return `
     <div class="screen-center">
     <div class="container-sm">
-        <div class="logo">AI PROOF <span>CLUB</span><span class="logo-tier">Intelligence Platform</span></div>
-        <div class="card gold text-center">
-            <div style="font-size:24px;margin-bottom:12px">${S.loadingDone?'◈':'⬡'}</div>
-            <div style="font-size:16px;font-weight:700;margin-bottom:4px">Analysing ${domain}</div>
-            <p class="text-muted text-sm" style="margin-bottom:20px">Cross-referencing every AI forecast against your business model</p>
-            <div class="loading-steps">
-                ${LOADING_STEPS.map((s,i)=>`
-                <div class="loading-step ${i<S.loadingStep?'done':i===S.loadingStep?'active':''}">
-                    <span class="loading-step-icon">${i<S.loadingStep?'✓':i===S.loadingStep?'◉':'○'}</span>
-                    <span class="loading-step-text" style="color:${i<S.loadingStep?'var(--success)':i===S.loadingStep?'var(--gold)':'var(--faint)'}">${s}</span>
-                </div>`).join('')}
+        <div class="logo">AI PROOF <span>CLUB</span><span class="logo-sub">Company Intelligence</span></div>
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                <div>
+                    <div style="font-size:9px;color:${isIntel?'var(--gold)':'var(--accent)'};letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">${isIntel?'◎ Intelligence — $99.99':'◈ Snapshot — $29.99'}</div>
+                    <div style="font-family:var(--font-display);font-size:20px">Tell us about your company</div>
+                </div>
+                <button class="btn btn-ghost btn-small" id="btn-back-form">← Back</button>
             </div>
-            ${S.loadingDone ? `
-            <div style="margin-top:16px;display:flex;align-items:center;justify-content:center;gap:10px">
-                <div class="spinner spinner-gold"></div>
-                <span class="text-sm" style="color:var(--gold)">Finalising report...</span>
-            </div>` : ''}
+            <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:20px">We analyze every AI forecast and show you exactly what each one means for your company — ranked by impact, with clear actions and how long you have.</p>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input class="form-input" id="f-email" type="email" placeholder="you@company.com" value="${c.email||''}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Company name or website</label>
+                <input class="form-input" id="f-url" type="text" placeholder="yourcompany.com" value="${c.url||''}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Industry</label>
+                <select class="form-select" id="f-industry">
+                    <option value="">Select your industry</option>
+                    ${industries.map(s=>`<option value="${s}" ${c.industry===s?'selected':''}>${s}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">What does your company do?</label>
+                <textarea class="form-textarea" id="f-desc" placeholder="e.g. We operate 40 luxury stores globally. Known for craftsmanship and heritage. Revenue from in-store and online.">${c.desc||''}</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">AI tools you already use (we won't suggest these)</label>
+                <textarea class="form-textarea" id="f-existing" style="min-height:60px" placeholder="e.g. AI product recommendations, chatbot — or leave blank">${c.existing||''}</textarea>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Company size</label>
+                    <select class="form-select" id="f-size">
+                        <option value="">Select</option>
+                        ${sizes.map(s=>`<option value="${s}" ${c.size===s?'selected':''}>${s}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Primary goal</label>
+                    <select class="form-select" id="f-goal">
+                        <option value="">Select</option>
+                        ${goals.map(s=>`<option value="${s}" ${c.goal===s?'selected':''}>${s}</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+            <div id="form-err" style="display:none;color:var(--danger);font-size:11px;margin-bottom:12px">Please fill in all required fields.</div>
+            <button class="btn ${isIntel?'btn-gold':'btn-primary'} btn-full" id="btn-submit">
+                Generate My ${isIntel?'Intelligence':'Snapshot'} Report →
+            </button>
         </div>
     </div>
     </div>`;
 }
 
-// ── DASHBOARD ─────────────────────────────────────────────────────────────────
-function dashHTML() {
-    const r = S.report;
-    if (!r) return '<div class="screen-center"><div class="container-sm"><p class="text-muted text-sm">No report loaded. <a href="#" onclick="S.screen=\'landing\';render()" style="color:var(--accent)">Start over</a></p></div></div>';
+// ── LOADING ───────────────────────────────────────────────────────────────────
+const LOAD_STEPS = [
+    'Reading your company profile...',
+    'Loading AI forecast database...',
+    'Scoring forecasts for your business...',
+    'Generating your opportunity set...',
+    'Writing quick wins and strategic bets...',
+    'Ranking by impact...',
+    'Analyzing risks to your model...',
+    'Finalizing your report...',
+];
 
-    const domain = S.form.url.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
-    const opps = r.opportunities || [];
-    const forecasts = S.forecasts || [];
-
-    const sideNav = [
-        {id:'opportunities', icon:'◈', label:'Opportunities'},
-        {id:'forecasts',     icon:'🔮', label:'All Forecasts'},
-        {id:'settings',      icon:'⚙', label:'Settings'},
-    ];
-
+function loadingHTML() {
+    const domain = (S.company.url||'your company').replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
     return `
-    <div class="app">
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <div class="sidebar-logo">AI PROOF <span>CLUB</span></div>
-                <div class="sidebar-tier">Intelligence</div>
-            </div>
-            <nav class="sidebar-nav">
-                <div class="nav-section">Platform</div>
-                ${sideNav.map(n=>`
-                <div class="nav-item ${S.activeTab===n.id?'active':''}" data-tab="${n.id}">
-                    <span class="icon">${n.icon}</span>${n.label}
+    <div class="screen-center">
+    <div class="container-sm">
+        <div class="logo">AI PROOF <span>CLUB</span></div>
+        <div class="card" style="text-align:center;padding:36px 28px">
+            <div style="font-size:32px;margin-bottom:12px">◈</div>
+            <div style="font-family:var(--font-display);font-size:18px;margin-bottom:6px">Analyzing ${domain}</div>
+            <p style="font-size:11px;color:var(--text-secondary);margin-bottom:24px">Building your custom intelligence report — may take up to 3 minutes</p>
+            <div style="text-align:left;max-width:320px;margin:0 auto">
+                ${LOAD_STEPS.map((step,i)=>`
+                <div class="load-step ${i<S.loadStep?'done':i===S.loadStep?'active':''}">
+                    <span style="width:16px;text-align:center;flex-shrink:0">
+                        ${i<S.loadStep?'✓':i===S.loadStep?`<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block"></span>`:'○'}
+                    </span>
+                    <span>${step}</span>
                 </div>`).join('')}
-                <div class="nav-section" style="margin-top:12px">Reports</div>
-                <div class="nav-item" onclick="window.location.href='/founder.html'">
-                    <span class="icon">💡</span>Founder Mode
-                </div>
-                <div class="nav-item" onclick="window.location.href='/company.html'">
-                    <span class="icon">◎</span>Company Mode
-                </div>
-            </nav>
+            </div>
+        </div>
+    </div>
+    </div>`;
+}
+
+// ── REPORT SHELL (sidebar + mobile nav + content) ─────────────────────────────
+function reportShellHTML() {
+    const tabs = [
+        {id:'briefing',      icon:'◉', label:'Briefing'},
+        {id:'forecasts',     icon:'◈', label:'Forecasts'},
+        {id:'opportunities', icon:'⚡', label:'Opportunities'},
+        {id:'risks',         icon:'⚠', label:'Risks'},
+        {id:'chat',          icon:'✦', label:'Consultant'},
+    ];
+    const isIntel = S.tier === 'intelligence';
+    const tierName  = isIntel ? '◎ Intelligence' : '◈ Snapshot';
+    const tierClass = isIntel ? 'tier-intel' : 'tier-snapshot';
+    const opps = S.report?.opportunities||[];
+    return `
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">AI PROOF <span>CLUB</span></div>
+            <div class="sidebar-tier">
+                <div class="tier-label">Current Plan</div>
+                <div class="tier-name ${tierClass}">${tierName}</div>
+            </div>
+            <ul class="sidebar-nav">
+                ${tabs.map(t=>`<li><a data-tab="${t.id}" class="${S.tab===t.id?'active':''}">${t.icon} ${t.label}${t.id==='opportunities'?' ('+opps.length+(S.tier==='intelligence'?'+':'')+')':''}</a></li>`).join('')}
+            </ul>
             <div class="sidebar-footer">
-                <div style="margin-bottom:6px;color:var(--faint);font-size:9px">${domain}</div>
-                <a href="${STRATEGY_URL}" target="_blank">Book strategy call →</a>
+                <a href="/company.html">← Company Report</a>
+                <a href="/app.html">Individual Mode</a>
+                <a href="/founder.html">Founder Mode</a>
             </div>
         </aside>
-
         <main class="main">
-            ${S.activeTab==='opportunities' ? oppTabHTML(r, opps) : ''}
-            ${S.activeTab==='forecasts'     ? forecastTabHTML(forecasts) : ''}
-            ${S.activeTab==='settings'      ? settingsTabHTML() : ''}
+            ${reportContentHTML()}
+            ${S.editOpen    ? editOverlayHTML()   : ''}
+            ${S.upgradeModal? upgradeModalHTML()  : ''}
         </main>
+        <nav class="mobile-nav">
+            <div class="mobile-nav-inner">
+                ${tabs.map(t=>`<div class="mobile-nav-item ${S.tab===t.id?'active':''}" data-tab="${t.id}"><span>${t.icon}</span>${t.label}</div>`).join('')}
+            </div>
+        </nav>
     </div>`;
 }
 
-// ── OPPORTUNITIES TAB ─────────────────────────────────────────────────────────
-function oppTabHTML(r, opps) {
-    const domain = S.form.url.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
-    const status = r.ai_status || {};
-    const statusColor = status.level==='High Risk'?'var(--danger)':status.level==='Well Positioned'?'var(--success)':'var(--warning)';
+// ── REPORT CONTENT ────────────────────────────────────────────────────────────
+function reportContentHTML() {
+    const r = S.report;
+    const c = S.company;
+    const domain = (c.url||'').replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'')||'Your Company';
+    const now = new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    const opps = r.opportunities||[];
+    const sc = r.ai_status?.level==='Well Positioned'?'s-good':r.ai_status?.level==='High Risk'?'s-risk':'s-mid';
 
     return `
-    <div class="page-header">
-        <div class="flex-between">
+        <div class="page-header">
             <div>
-                <div class="page-title">Intelligence Report</div>
-                <div class="page-subtitle">${domain} · ${opps.length} opportunities identified</div>
+                <div style="font-size:9px;color:var(--text-secondary);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">AI PROOF CLUB · Company Intelligence</div>
+                <div class="page-title">${domain}</div>
+                <div class="page-subtitle">${c.industry||''} · ${now} · ${opps.length} opportunities identified</div>
+                <div style="margin-top:8px"><span class="status-badge ${sc}">◉ ${r.ai_status?.level||'Analyzing'}</span></div>
             </div>
-            ${S.provider?`<div class="provider-badge" style="background:${PROVIDERS[S.provider].color}18;border:1px solid ${PROVIDERS[S.provider].color}44;color:${PROVIDERS[S.provider].color}">
-                <div class="provider-dot" style="background:${PROVIDERS[S.provider].color}"></div>
-                ${PROVIDERS[S.provider].name}
-            </div>`:''}
-        </div>
-    </div>
-
-    <!-- AI Status -->
-    <div class="card" style="border-left:4px solid ${statusColor};margin-bottom:20px">
-        <div style="font-size:9px;color:${statusColor};text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">AI-Proof Status</div>
-        <div style="font-size:20px;font-weight:700;margin-bottom:8px">${status.level||'Moderately Positioned'}</div>
-        <p class="text-muted text-sm">${status.summary||''}</p>
-        ${r.industry?`<div style="font-size:10px;color:var(--faint);margin-top:10px;padding-top:10px;border-top:1px solid var(--bg3)">Inferred industry: <span style="color:var(--muted)">${r.industry}</span></div>`:''}
-    </div>
-
-    <!-- Stats -->
-    <div class="stats-row">
-        <div class="stat-box"><div class="stat-val">${opps.length}</div><div class="stat-lbl">Opportunities</div></div>
-        <div class="stat-box"><div class="stat-val" style="color:var(--success)">${opps.filter(o=>o.quickWin).length}</div><div class="stat-lbl">Quick Wins</div></div>
-        <div class="stat-box"><div class="stat-val" style="color:var(--gold)">${opps.filter(o=>o.strategicBet).length}</div><div class="stat-lbl">Strategic Bets</div></div>
-        <div class="stat-box"><div class="stat-val" style="color:var(--warning)">${(r.risks||[]).length}</div><div class="stat-lbl">Risks</div></div>
-    </div>
-
-    <!-- Opportunities -->
-    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px">
-        All Opportunities (${opps.length})
-    </div>
-
-    ${opps.length===0?`<div class="empty"><div class="empty-icon">◈</div><div class="empty-title">Generating opportunities...</div></div>`:''}
-
-    ${opps.map((o,i)=>`
-    <div class="opp-card ${S.expandedOpp===i?'expanded':''}">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer" data-toggle-opp="${i}">
-            <div style="flex:1">
-                ${o.forecast?`<div class="opp-label">🔮 ${o.forecast}</div>`:''}
-                <div class="opp-title">${o.title}</div>
-                <p class="text-muted text-sm">${o.whyMatters||o.description||''}</p>
-            </div>
-            <span style="color:var(--faint);font-size:18px;margin-left:12px;margin-top:2px">${S.expandedOpp===i?'−':'+'}</span>
-        </div>
-
-        ${S.expandedOpp===i ? `
-        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--bg3)">
-
-            ${o.whyMatters?`
-            <div class="opp-section">
-                <div class="opp-section-label text-accent">◈ Why This Matters</div>
-                <p>${o.whyMatters}</p>
-            </div>`:''}
-
-            ${o.quickWin?`
-            <div class="opp-section">
-                <div class="opp-section-label quick">⚡ Quick Win (30 Days)</div>
-                <p>${o.quickWin}</p>
-            </div>`:''}
-
-            ${o.strategicBet?`
-            <div class="opp-section">
-                <div class="opp-section-label strategic">◎ Strategic Bet (12–24 Months)</div>
-                <p>${o.strategicBet}</p>
-            </div>`:''}
-
-            ${o.steps&&o.steps.length?`
-            <div class="opp-section">
-                <div class="opp-section-label steps">▸ Quest Steps</div>
-                ${o.steps.map((s,si)=>`
-                <div class="quest-step">
-                    <span class="quest-step-num">${si+1}.</span>
-                    <div>
-                        <div style="font-weight:700;font-size:12px;margin-bottom:2px">${s.title||s}</div>
-                        ${s.desc?`<div class="text-muted text-xs">${s.desc}</div>`:''}
-                        ${s.timeline?`<div style="font-size:9px;color:var(--faint);margin-top:2px">⏱ ${s.timeline}</div>`:''}
-                    </div>
-                </div>`).join('')}
-            </div>`:''}
-
-            <div style="margin-top:14px;display:flex;gap:8px">
-                <button class="btn btn-primary btn-sm" data-complete-opp="${i}">
-                    ${S.completedQuests.includes(i)?'✓ Completed':'Mark Complete'}
-                </button>
-                <button class="btn btn-secondary btn-sm" data-share-opp="${i}">Share</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-ghost btn-small" id="btn-edit">Edit Profile</button>
+                <button class="btn btn-secondary btn-small" id="btn-new">New Report</button>
             </div>
         </div>
-        ` : ''}
-    </div>`).join('')}
 
-    <!-- Risks section -->
-    ${(r.risks||[]).length?`
-    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin:24px 0 12px">
-        Risks to Watch (${r.risks.length})
-    </div>
-    <div class="card" style="border-left:3px solid var(--warning)">
-        ${r.risks.map((risk,ri)=>`
-        <div style="padding:10px 0;${ri<r.risks.length-1?'border-bottom:1px solid var(--bg3)':''}">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-                <span style="font-weight:700;font-size:12px">${risk.prediction||risk.title}</span>
-                ${risk.probability?`<span style="font-size:10px;font-weight:700;color:var(--warning);background:rgba(255,170,0,0.1);padding:2px 8px">${risk.probability}%</span>`:''}
+        <div class="tabs">
+            ${[
+                {id:'briefing',      label:'Briefing'},
+                {id:'forecasts',     label:`Forecasts (${S.forecasts.length})`},
+                {id:'opportunities', label:`Opportunities (${opps.length}${S.tier==='intelligence'?'+':''})`},
+                {id:'risks',         label:'Risk Analysis'},
+                {id:'chat',          label:'◈ Consultant'},
+            ].map(t=>`<div class="tab ${S.tab===t.id?'active':''}" data-tab="${t.id}">${t.label}</div>`).join('')}
+        </div>
+
+        ${S.tab==='briefing'      ? briefingTabHTML(r, domain) : ''}
+        ${S.tab==='forecasts'     ? forecastsTabHTML() : ''}
+        ${S.tab==='opportunities' ? oppsTabHTML(r) : ''}
+        ${S.tab==='risks'         ? risksTabHTML(r, domain) : ''}
+        ${S.tab==='chat'          ? chatTabHTML(domain) : ''}`;
+}
+
+// ── BRIEFING TAB ──────────────────────────────────────────────────────────────
+function briefingTabHTML(r, domain) {
+    const opps  = r.opportunities||[];
+    const risks = r.risks||[];
+    const st    = r.ai_status||{};
+    const qw    = opps.filter(o=>o.quickWin).length;
+    const sb    = opps.filter(o=>o.strategicBet).length;
+    return `
+        <div class="stats">
+            <div class="stat" id="stat-opps">
+                <div class="stat-value">${opps.length}</div>
+                <div class="stat-label">Opportunities</div>
+                <div class="stat-hint">View all →</div>
             </div>
-            <p class="text-muted text-xs">${risk.impact||risk.description||''}</p>
+            <div class="stat" id="stat-qw">
+                <div class="stat-value" style="color:var(--success)">${qw}</div>
+                <div class="stat-label">Quick Wins</div>
+                <div class="stat-hint">30-day actions →</div>
+            </div>
+            <div class="stat" id="stat-sb">
+                <div class="stat-value" style="color:var(--gold)">${sb}</div>
+                <div class="stat-label">Strategic Bets</div>
+                <div class="stat-hint">12–24 months →</div>
+            </div>
+            <div class="stat" id="stat-risks">
+                <div class="stat-value" style="color:var(--danger)">${risks.length}</div>
+                <div class="stat-label">Risks Tracked</div>
+                <div class="stat-hint">View threats →</div>
+            </div>
+        </div>
+
+        ${st.summary ? `
+        <div class="verdict">
+            <div class="verdict-title">AI-Proof Assessment · ${st.level||''}</div>
+            <div class="verdict-text">${st.summary}</div>
+        </div>` : ''}
+
+        <div class="card">
+            <div style="font-size:10px;color:var(--text-secondary);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Company Summary</div>
+            <p style="font-size:13px;line-height:1.9">${r.summary||'Your custom intelligence briefing is ready.'}</p>
+        </div>
+
+        <div style="margin-bottom:8px;font-size:10px;color:var(--text-secondary);letter-spacing:2px;text-transform:uppercase">Top Opportunities — Ranked by Impact</div>
+        ${opps.slice(0,5).map((o,i)=>`
+        <div class="opp-card" style="cursor:default">
+            <div class="opp-header">
+                <span class="opp-source">↳ ${o.forecast||''}</span>
+                <span class="opp-num">#${i+1} of ${opps.length}</span>
+            </div>
+            <div class="opp-title">${o.title}</div>
+            <div class="opp-why">${o.whyMatters||''}</div>
+            ${o.quickWin?`<div class="opp-quick"><div class="opp-quick-lbl">⚡ Quick Win — 30 Days</div><p>${o.quickWin}</p></div>`:''}
         </div>`).join('')}
-    </div>` : ''}
 
-    <!-- Summary -->
-    ${r.summary?`
-    <div class="card" style="margin-top:16px">
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px">The Bottom Line</div>
-        <p class="text-sm" style="line-height:1.8">${r.summary}</p>
-    </div>`:''}
-
-    <!-- CTA -->
-    <div class="card gold" style="text-align:center;margin-top:16px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px">Want help implementing this?</div>
-        <p class="text-muted text-xs" style="margin-bottom:14px">Book a strategy session to turn these opportunities into a real AI roadmap.</p>
-        <a href="${STRATEGY_URL}" target="_blank" class="btn btn-gold btn-full">Book a Strategy Call →</a>
-    </div>`;
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+            <button class="btn btn-secondary btn-small" id="btn-all-opps">View All ${opps.length} Opportunities →</button>
+            <button class="btn btn-secondary btn-small" id="btn-go-chat">Ask AI Consultant →</button>
+            <a href="${CALENDLY}" target="_blank" class="btn btn-primary btn-small">Talk to a Human →</a>
+        </div>`;
 }
 
 // ── FORECASTS TAB ─────────────────────────────────────────────────────────────
-function forecastTabHTML(forecasts) {
-    const modes = ['all', ...new Set(forecasts.map(f=>f.mode).filter(Boolean))];
-    const filtered = forecasts.filter(f=>{
-        const modeOk = S.filterCat==='all' || f.mode===S.filterCat;
-        const searchOk = !S.filterSearch || (f.title+f.description).toLowerCase().includes(S.filterSearch.toLowerCase());
-        return modeOk && searchOk;
+function forecastsTabHTML() {
+    const forecasts  = S.forecasts||[];
+    const isSnapshot = S.tier === 'snapshot';
+    const PREVIEW    = 8;
+
+    const groups = {};
+    forecasts.forEach(f => { const tf=f.timeframe||'Ongoing'; if(!groups[tf])groups[tf]=[]; groups[tf].push(f); });
+    const tfOrder = ['2025','2026','2027','2028','2029','2030','2030+','Ongoing','Unknown'];
+    const sortedTf = Object.keys(groups).sort((a,b) => {
+        const ai=tfOrder.indexOf(a), bi=tfOrder.indexOf(b);
+        return (ai===-1?99:ai)-(bi===-1?99:bi);
     });
 
+    const scoreMap = {};
+    S.scoredForecasts.forEach(sf => { if(sf.forecast) scoreMap[sf.forecast.id] = sf.score; });
+
+    // flatten to get global index
+    let gIdx = 0;
+    const flat = [];
+    sortedTf.forEach(tf => groups[tf].forEach(f => flat.push({ f, tf, gIdx: gIdx++ })));
+
     return `
-    <div class="page-header">
-        <div class="page-title">Full Forecast Database</div>
-        <div class="page-subtitle">${forecasts.length} AI opportunities · Full intelligence access</div>
-    </div>
+        <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:20px">
+            We track <strong>${forecasts.length}</strong> AI predictions across every industry. Forecasts marked
+            <span style="color:var(--accent)">✦ Relevant</span> scored 7+ for your company.
+            ${isSnapshot?'Upgrade to Intelligence to generate opportunities from any forecast.':'Click any to generate tailored opportunities on-demand.'}
+        </p>
 
-    <div class="filter-bar">
-        <input class="filter-search" id="filter-search" placeholder="Search forecasts..." value="${S.filterSearch}">
-        ${modes.slice(0,6).map(m=>`<div class="filter-chip ${S.filterCat===m?'active':''}" data-cat="${m}">${m==='all'?'All':m}</div>`).join('')}
-    </div>
-
-    <div style="font-size:10px;color:var(--faint);margin-bottom:12px">${filtered.length} forecast${filtered.length!==1?'s':''} shown</div>
-
-    ${filtered.length===0?`<div class="empty"><div class="empty-icon">🔮</div><div class="empty-title">No forecasts match</div><p class="text-muted text-sm">Try adjusting your filters</p></div>`:''}
-
-    ${filtered.map((f)=>`
-    <div class="forecast-card ${S.expandedForecast===f.id?'expanded':''}" data-toggle-forecast="${f.id}">
-        <div class="forecast-meta">
-            ${f.mode?`<span class="forecast-tag tag-cat">${f.mode}</span>`:''}
-            ${f.difficulty?`<span class="forecast-tag tag-impact">${f.difficulty}</span>`:''}
-            ${f.timeframe?`<span class="forecast-tag tag-time">${f.timeframe}</span>`:''}
-        </div>
-        <div class="forecast-title">${f.title}</div>
-        <div class="forecast-desc">${(f.description||'').slice(0,160)}${(f.description||'').length>160?'...':''}</div>
-
-        ${S.expandedForecast===f.id?`
-        <div class="forecast-expand">
-            ${f.description&&f.description.length>160?`<p class="text-muted text-sm" style="margin-bottom:14px">${f.description}</p>`:''}
-            <div style="display:flex;gap:8px;margin-top:10px">
-                <button class="btn btn-primary btn-sm" data-gen-opp="${f.id}">◈ Generate Opportunity for My Company</button>
+        ${sortedTf.map(tf => `
+        <div class="fc-section">
+            <div class="fc-tf-header">
+                <span class="fc-tf-label">${tf}</span>
+                <div class="fc-tf-bar"></div>
+                <span class="fc-tf-count">${groups[tf].length} forecasts</span>
             </div>
-        </div>`:''}
-    </div>`).join('')}`;
+            ${groups[tf].map(f => {
+                const score   = scoreMap[f.id]||0;
+                const isRel   = score >= 7;
+                const isUsed  = S.usedForecastIds.has(f.id);
+                const isGen   = S.generatingForecast === f.id;
+                const prob    = f.probability ? Math.round(f.probability*100) : null;
+                const gi      = flat.find(x=>x.f===f)?.gIdx ?? 999;
+                const locked  = isSnapshot && gi >= PREVIEW;
+                return `
+                <div class="fc-row ${isRel?'relevant':''}" style="${locked?'filter:blur(4px);pointer-events:none;user-select:none':''}">
+                    <div class="fc-meta">
+                        ${prob?`<div class="fc-prob" style="color:${prob>=75?'var(--danger)':prob>=50?'var(--gold)':'var(--text-secondary)'}">${prob}%</div>`:''}
+                        ${score?`<div class="fc-score">${score}/10</div>`:''}
+                    </div>
+                    <div class="fc-body">
+                        <div class="fc-tags">
+                            ${isRel?`<span class="fc-tag rel">✦ Relevant</span>`:''}
+                            ${f.category?`<span class="fc-tag">${f.category}</span>`:''}
+                        </div>
+                        <div class="fc-title">${f.title}</div>
+                        <div class="fc-desc">${(f.description||'').slice(0,200)}</div>
+                        ${!locked?`
+                        <div>
+                            ${isGen?`<span style="font-size:10px;color:var(--accent);display:flex;align-items:center;gap:6px"><span class="spinner" style="width:12px;height:12px;border-width:2px;margin:0"></span>Generating...</span>`
+                            :`<button class="btn btn-${isUsed?'ghost':'secondary'} btn-small" data-gen-forecast="${f.id}">${isUsed?'↻ Regenerate opps':'+ Generate opportunities →'}</button>`}
+                        </div>`:''}
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>`).join('')}
+
+        ${isSnapshot ? `
+        <div class="paywall-gate">
+            <div class="paywall-gate-icon">◈</div>
+            <div class="paywall-gate-title">Unlock the Full Forecast Database</div>
+            <p class="paywall-gate-sub">You've seen ${PREVIEW} of ${forecasts.length} forecasts. Intelligence unlocks all of them — and lets you generate company-specific opportunities from any forecast, on-demand.</p>
+            <div class="paywall-actions">
+                <button class="btn btn-gold" id="btn-upgrade-fc">Upgrade to Intelligence — $99.99</button>
+                <a href="${CALENDLY}" target="_blank" class="btn btn-secondary btn-small">Talk to a Human</a>
+            </div>
+        </div>` : ''}`;
 }
 
-// ── SETTINGS TAB ─────────────────────────────────────────────────────────────
-function settingsTabHTML() {
+// ── OPPORTUNITIES TAB ─────────────────────────────────────────────────────────
+function oppsTabHTML(r) {
+    const all = r.opportunities||[];
+    const isSnapshot = S.tier === 'snapshot';
+    const opps = S.oppFilter==='quickwins' ? all.filter(o=>o.quickWin)
+               : S.oppFilter==='strategic'  ? all.filter(o=>o.strategicBet)
+               : all;
+    const remaining = S.scoredForecasts.filter(sf => !S.usedForecastIds.has(sf.forecast?.id));
+
     return `
-    <div class="page-header">
-        <div class="page-title">Settings</div>
-        <div class="page-subtitle">Your intelligence report configuration</div>
-    </div>
-    <div class="card">
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px">Company Profile</div>
-        <div style="font-size:12px;display:grid;gap:8px">
-            <div><span class="text-muted">Website:</span> <span>${S.form.url||'—'}</span></div>
-            <div><span class="text-muted">Size:</span> <span>${S.form.size||'—'}</span></div>
-            <div><span class="text-muted">AI Usage:</span> <span>${S.form.aiUsage||'—'}</span></div>
-            <div><span class="text-muted">Goal:</span> <span>${S.form.goal||'—'}</span></div>
+        <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:16px">
+            ${all.length} opportunities — each tied to a specific AI forecast, with a 30-day quick win and a 12–24 month strategic bet.
+            ${isSnapshot?'<a class="text-link" id="opp-upsell-link">Upgrade to Intelligence</a> to keep generating.':'Keep generating to surface more from the forecast database.'}
+        </p>
+
+        <div class="filter-bar">
+            <button class="filter-pill ${S.oppFilter==='all'?'active':''}" data-filter="all">All (${all.length})</button>
+            ${all.filter(o=>o.quickWin).length ? `<button class="filter-pill ${S.oppFilter==='quickwins'?'active':''}" data-filter="quickwins">⚡ Quick Wins (${all.filter(o=>o.quickWin).length})</button>` : ''}
+            ${all.filter(o=>o.strategicBet).length ? `<button class="filter-pill ${S.oppFilter==='strategic'?'active':''}" data-filter="strategic">◎ Strategic Bets (${all.filter(o=>o.strategicBet).length})</button>` : ''}
         </div>
-    </div>
-    <div class="card">
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px">Report</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-secondary btn-sm" id="btn-new-report">Start New Report</button>
-            <a href="${STRATEGY_URL}" target="_blank" class="btn btn-gold btn-sm">Book Strategy Call</a>
+
+        <div id="opp-grid">
+        ${opps.map((o, displayIdx) => {
+            const globalIdx = all.indexOf(o);
+            const isOpen    = S.expandedOpp === globalIdx;
+            return `
+            <div class="opp-card ${isOpen?'open':''}" data-opp="${globalIdx}">
+                <div class="opp-header">
+                    <span class="opp-source">↳ ${o.forecast||''}</span>
+                    <span class="opp-num">${displayIdx+1} / ${opps.length}</span>
+                </div>
+                <div class="opp-title">${o.title}</div>
+                <div class="opp-why">${o.whyMatters||''}</div>
+                ${o.quickWin ? `
+                <div class="opp-quick">
+                    <div class="opp-quick-lbl">⚡ Quick Win — 30 Days</div>
+                    <p>${o.quickWin}</p>
+                </div>` : ''}
+                <div class="opp-expand">
+                    ${o.strategicBet ? `
+                    <div>
+                        <div class="opp-bet-lbl">◎ Strategic Bet — 12–24 Months</div>
+                        <p class="opp-bet p">${o.strategicBet}</p>
+                    </div>` : ''}
+                </div>
+            </div>`;
+        }).join('')}
         </div>
-    </div>
-    <div class="card">
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px">Other Modes</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <a href="/founder.html" class="btn btn-secondary btn-sm">💡 Founder Mode</a>
-            <a href="/company.html" class="btn btn-secondary btn-sm">◎ Company Mode ($29.99)</a>
-            <a href="/app.html" class="btn btn-secondary btn-sm">← Individual Mode</a>
+
+        <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--bg-tertiary);text-align:center">
+            ${isSnapshot ? `
+            <div class="paywall-gate">
+                <div class="paywall-gate-icon">⚡</div>
+                <div class="paywall-gate-title">Unlock the Evolving Feed</div>
+                <p class="paywall-gate-sub">Your Snapshot includes ${all.length} opportunities. Intelligence gives you an ever-growing feed — generate from all ${S.scoredForecasts.length} forecasts relevant to your company, any time.</p>
+                <div class="paywall-actions"><button class="btn btn-gold" id="btn-upgrade-opps">Upgrade to Intelligence — $99.99</button></div>
+            </div>` : S.generatingMore ? `
+            <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:18px">
+                <div class="spinner"></div>
+                <span style="font-size:12px;color:var(--text-secondary)">Generating more from ${remaining.length} remaining forecasts...</span>
+            </div>` : remaining.length > 0 ? `
+            <p style="font-size:11px;color:var(--text-secondary);margin-bottom:10px">${remaining.length} more forecasts not yet explored</p>
+            <button class="btn btn-secondary" id="btn-generate-more">Generate 20 More →</button>` : `
+            <p style="font-size:11px;color:var(--text-muted)">✓ All ${S.scoredForecasts.length} relevant forecasts explored</p>`}
+        </div>`;
+}
+
+// ── RISKS TAB ─────────────────────────────────────────────────────────────────
+function risksTabHTML(r, domain) {
+    const risks = r.risks||[];
+    return `
+        <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:20px">
+            Not generic industry risks — these are specific to ${domain} and what AI shifts will do to your model.
+        </p>
+        ${risks.map(risk => `
+        <div class="risk-row">
+            <div class="risk-pct">
+                <div class="risk-pct-num">${risk.probability||'?'}%</div>
+                <span class="risk-pct-lbl">prob.</span>
+            </div>
+            <div>
+                <div class="risk-name">${risk.prediction||risk.title||''}</div>
+                <div class="risk-impact">${risk.impact||risk.description||''}</div>
+            </div>
+        </div>`).join('')}
+
+        <div class="card" style="margin-top:22px;border-left:3px solid var(--gold)">
+            <div style="font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">What to do about these risks</div>
+            <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:14px">The AI Consultant knows every risk in this report and can walk you through mitigation specific to your resources. Or book 30 minutes with a human strategist.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-secondary btn-small" id="btn-risk-chat">Ask AI Consultant →</button>
+                <a href="${CALENDLY}" target="_blank" class="btn btn-primary btn-small">Talk to a Human →</a>
+            </div>
+        </div>`;
+}
+
+// ── CHAT TAB ──────────────────────────────────────────────────────────────────
+function chatTabHTML(domain) {
+    const opps = S.report?.opportunities||[];
+    if (!S.chatMessages.length) {
+        S.chatMessages = [{role:'ai', content:`I've analyzed ${domain} and read your full report — your industry (${S.company.industry||''}), all ${opps.length} opportunities, and your key risks.\n\nWhat would you like to dig into?\n— "Which opportunity should I start with?"\n— "How do I defend against our top risk?"\n— "Give me a 90-day action plan"\n— "What does [forecast] mean for us specifically?"`}];
+    }
+    return `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px">
+            <div class="card" style="border-color:rgba(0,240,255,0.2);margin-bottom:0;padding:20px">
+                <div style="font-size:9px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">◈ AI Consultant</div>
+                <div style="font-size:13px;font-weight:700;margin-bottom:4px">Chat below — free</div>
+                <p style="font-size:11px;color:var(--text-secondary);line-height:1.6">Knows your full report. Instant. Ask anything.</p>
+            </div>
+            <div class="card" style="border-color:rgba(255,170,0,0.25);background:linear-gradient(135deg,var(--bg-secondary),rgba(255,170,0,0.02));margin-bottom:0;padding:20px">
+                <div style="font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">◎ Human Strategist</div>
+                <div style="font-size:13px;font-weight:700;margin-bottom:8px">30-min strategy call</div>
+                <a href="${CALENDLY}" target="_blank" class="btn btn-gold btn-full btn-small">Book a Session →</a>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-msgs">
+                ${S.chatMessages.map(m=>`
+                <div class="chat-msg ${m.role==='user'?'user':'ai'}">
+                    <div class="chat-avatar">${m.role==='user'?'You':'AI'}</div>
+                    <div class="chat-bubble">${m.content.replace(/\n/g,'<br>')}</div>
+                </div>`).join('')}
+                ${S.chatThinking?`
+                <div class="chat-msg ai">
+                    <div class="chat-avatar">AI</div>
+                    <div class="chat-bubble"><div class="chat-thinking"><div class="chat-dot"></div><div class="chat-dot"></div><div class="chat-dot"></div></div></div>
+                </div>`:''}
+            </div>
+            <div class="chat-input-row">
+                <input class="chat-input" id="chat-input" type="text" placeholder="Ask about your report..." ${S.chatThinking?'disabled':''}>
+                <button class="chat-send" id="chat-send" ${S.chatThinking?'disabled':''}>↑ Send</button>
+            </div>
+        </div>
+
+        <div class="quick-pills">
+            ${['Which opportunity first?','90-day action plan','Defend against top risk','What should I prioritize?'].map(q=>`
+            <button class="quick-pill" data-quick="${q}">${q}</button>`).join('')}
+        </div>
+
+        ${S.tier==='snapshot'?`
+        <div class="paywall-gate" style="margin-top:22px">
+            <div class="paywall-gate-title">Unlock Deeper Guidance</div>
+            <p class="paywall-gate-sub">Upgrade to Intelligence for an evolving report — plus priority access to the human strategy team for complex decisions.</p>
+            <div class="paywall-actions"><button class="btn btn-gold" id="btn-upgrade-chat">Upgrade to Intelligence →</button></div>
+        </div>`:''}`;
+}
+
+// ── EDIT OVERLAY ──────────────────────────────────────────────────────────────
+function editOverlayHTML() {
+    const c = S.company;
+    const industries = ['Luxury Fashion & Retail','Fashion & Apparel','Beauty & Personal Care','Food & Beverage','Hospitality & Travel','Consumer Goods & Retail','Media & Entertainment','Creator Economy / Content','Gaming','Financial Services & Fintech','Healthcare & Wellness','Education & EdTech','Real Estate & PropTech','Legal & Professional Services','Marketing & Advertising','SaaS & Software','AI / ML Tools','E-commerce','Manufacturing & Supply Chain','Energy & Climate Tech','Other'];
+    return `
+    <div class="modal-overlay">
+        <div class="modal">
+            <div style="font-size:9px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Edit Profile</div>
+            <div class="modal-title">Update &amp; Refresh</div>
+            <div class="form-group">
+                <label class="form-label">Industry</label>
+                <select class="form-select" id="e-industry">
+                    ${industries.map(s=>`<option value="${s}" ${c.industry===s?'selected':''}>${s}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">What your company does</label>
+                <textarea class="form-textarea" id="e-desc">${c.desc||''}</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">AI tools already in use</label>
+                <textarea class="form-textarea" id="e-existing" style="min-height:60px">${c.existing||''}</textarea>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px">
+                <button class="btn btn-primary" style="flex:1" id="edit-refresh">Refresh Report →</button>
+                <button class="btn btn-ghost btn-small" id="edit-cancel">Cancel</button>
+            </div>
         </div>
     </div>`;
 }
 
-// ── MODAL ─────────────────────────────────────────────────────────────────────
-function modalHTML() {
-    if (S.modal==='genOpp') {
-        return `<div class="modal-overlay" id="modal-bg">
+// ── UPGRADE MODAL ─────────────────────────────────────────────────────────────
+function upgradeModalHTML() {
+    const opps = S.report?.opportunities||[];
+    return `
+    <div class="modal-overlay">
         <div class="modal">
-            <div class="modal-title">Generating Opportunity</div>
-            <div class="modal-sub">Tailoring this forecast to your business...</div>
-            <div style="text-align:center;padding:20px"><div class="spinner spinner-gold" style="width:28px;height:28px;border-width:3px"></div></div>
-        </div></div>`;
-    }
-    return '';
+            <div style="font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">◎ Upgrade to Intelligence</div>
+            <div class="modal-title">Unlock the full platform</div>
+            <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:20px">Your Snapshot includes ${opps.length} ranked opportunities. Intelligence unlocks the full evolving feed — generate from every forecast in our database, anytime.</p>
+            <div style="background:var(--bg-primary);border:1px solid var(--bg-tertiary);padding:16px 18px;margin-bottom:18px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                    <span style="font-size:12px;font-weight:700">Intelligence Platform</span>
+                    <span style="font-size:22px;font-weight:700;color:var(--gold)">$99.99</span>
+                </div>
+                <ul style="list-style:none;font-size:11px;color:var(--text-secondary);line-height:2">
+                    <li>✓ Unlimited opportunity generation</li>
+                    <li>✓ Full forecast database access</li>
+                    <li>✓ Generate from any forecast on-demand</li>
+                    <li>✓ Priority human strategist access</li>
+                </ul>
+            </div>
+            <button class="btn btn-gold btn-full" style="margin-bottom:8px" id="upgrade-confirm">Upgrade Now — $99.99</button>
+            <button class="btn btn-ghost btn-full btn-small" id="upgrade-cancel">Maybe Later</button>
+        </div>
+    </div>`;
 }
 
-// ── EVENTS ───────────────────────────────────────────────────────────────────
-function attachEvents() {
+// ── BIND ──────────────────────────────────────────────────────────────────────
+function bind() {
     // Landing
-    document.getElementById('btn-start')?.addEventListener('click', ()=>{ S.screen='diagnostic'; render(); });
-    document.getElementById('btn-back-landing')?.addEventListener('click', e=>{ e.preventDefault(); S.screen='landing'; render(); });
+    document.getElementById('btn-snapshot')?.addEventListener('click', ()=>{ S.tier='snapshot'; S.screen='form'; render(); });
+    document.getElementById('btn-intel')?.addEventListener('click', ()=>{ S.tier='intelligence'; S.screen='form'; render(); });
 
-    // Diagnostic form
-    document.getElementById('btn-submit')?.addEventListener('click', submitDiagnostic);
+    // Form
+    document.getElementById('btn-back-form')?.addEventListener('click', ()=>{ S.screen='landing'; render(); });
+    document.getElementById('btn-submit')?.addEventListener('click', submitForm);
 
-    // Nav tabs
-    document.querySelectorAll('[data-tab]').forEach(el=>{
-        el.addEventListener('click', ()=>{ S.activeTab=el.dataset.tab; render(); });
+    // Report header
+    document.getElementById('btn-edit')?.addEventListener('click', ()=>{ S.editOpen=true; render(); });
+    document.getElementById('btn-new')?.addEventListener('click', ()=>{ S.screen='landing'; S.report=null; S.chatMessages=[]; render(); });
+
+    // Tabs (both desktop + mobile)
+    document.querySelectorAll('[data-tab]').forEach(el => {
+        el.addEventListener('click', ()=>{ S.tab=el.dataset.tab; render(); window.scrollTo(0,0); });
     });
 
-    // Toggle opportunity expand
-    document.querySelectorAll('[data-toggle-opp]').forEach(el=>{
+    // Stat boxes → tabs
+    document.getElementById('stat-opps')?.addEventListener('click', ()=>{ S.tab='opportunities'; S.oppFilter='all'; render(); window.scrollTo(0,0); });
+    document.getElementById('stat-qw')?.addEventListener('click',   ()=>{ S.tab='opportunities'; S.oppFilter='quickwins'; render(); window.scrollTo(0,0); });
+    document.getElementById('stat-sb')?.addEventListener('click',   ()=>{ S.tab='opportunities'; S.oppFilter='strategic'; render(); window.scrollTo(0,0); });
+    document.getElementById('stat-risks')?.addEventListener('click',()=>{ S.tab='risks'; render(); window.scrollTo(0,0); });
+
+    // Briefing CTA buttons
+    document.getElementById('btn-all-opps')?.addEventListener('click', ()=>{ S.tab='opportunities'; S.oppFilter='all'; render(); window.scrollTo(0,0); });
+    document.getElementById('btn-go-chat')?.addEventListener('click',  ()=>{ S.tab='chat'; render(); window.scrollTo(0,0); });
+    document.getElementById('btn-risk-chat')?.addEventListener('click',()=>{ S.tab='chat'; render(); window.scrollTo(0,0); });
+
+    // Opp filter
+    document.querySelectorAll('[data-filter]').forEach(el => {
+        el.addEventListener('click', ()=>{ S.oppFilter=el.dataset.filter; S.expandedOpp=null; render(); });
+    });
+
+    // Opp expand/collapse
+    document.querySelectorAll('[data-opp]').forEach(el => {
         el.addEventListener('click', ()=>{
-            const i = parseInt(el.dataset.toggleOpp);
-            S.expandedOpp = S.expandedOpp===i ? null : i;
+            const i = parseInt(el.dataset.opp);
+            S.expandedOpp = S.expandedOpp === i ? null : i;
             render();
         });
     });
 
-    // Toggle forecast expand
-    document.querySelectorAll('[data-toggle-forecast]').forEach(el=>{
-        el.addEventListener('click', ()=>{
-            const id = el.dataset.toggleForecast;
-            S.expandedForecast = S.expandedForecast===id ? null : id;
-            render();
+    // Per-forecast generate buttons
+    document.querySelectorAll('[data-gen-forecast]').forEach(el => {
+        el.addEventListener('click', e => { e.stopPropagation(); generateForForecast(el.dataset.genForecast); });
+    });
+
+    // Generate more
+    document.getElementById('btn-generate-more')?.addEventListener('click', generateMore);
+
+    // Chat
+    document.getElementById('chat-send')?.addEventListener('click', sendChat);
+    document.getElementById('chat-input')?.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();} });
+    document.querySelectorAll('[data-quick]').forEach(el => {
+        el.addEventListener('click', ()=>{ const inp=document.getElementById('chat-input'); if(inp){inp.value=el.dataset.quick; sendChat();} });
+    });
+    const msgs = document.getElementById('chat-msgs');
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+
+    // Edit overlay
+    document.getElementById('edit-cancel')?.addEventListener('click', ()=>{ S.editOpen=false; render(); });
+    document.getElementById('edit-refresh')?.addEventListener('click', editAndRefresh);
+
+    // Upgrade triggers
+    ['btn-upgrade-fc','btn-upgrade-opps','btn-upgrade-chat','opp-upsell-link'].forEach(id => {
+        document.getElementById(id)?.addEventListener('click', ()=>{ S.upgradeModal=true; render(); });
+    });
+    document.getElementById('upgrade-cancel')?.addEventListener('click', ()=>{ S.upgradeModal=false; render(); });
+    document.getElementById('upgrade-confirm')?.addEventListener('click', ()=>{
+        // TODO: hook Stripe here — for now simulate unlock
+        S.tier='intelligence'; S.upgradeModal=false; render();
+    });
+}
+
+// ── SUBMIT FORM ───────────────────────────────────────────────────────────────
+async function submitForm() {
+    const email    = document.getElementById('f-email')?.value.trim();
+    const url      = document.getElementById('f-url')?.value.trim();
+    const industry = document.getElementById('f-industry')?.value;
+    const desc     = document.getElementById('f-desc')?.value.trim();
+    const existing = document.getElementById('f-existing')?.value.trim()||'';
+    const size     = document.getElementById('f-size')?.value;
+    const goal     = document.getElementById('f-goal')?.value;
+    const errEl    = document.getElementById('form-err');
+    if (!email||!url||!industry||!desc||!size||!goal) { if(errEl) errEl.style.display='block'; return; }
+    if (errEl) errEl.style.display='none';
+    S.company = {email,url,industry,desc,existing,size,goal};
+    S.chatMessages=[]; S.expandedOpp=null; S.screen='loading'; S.loadStep=0; render();
+    try { await db('profiles','POST',{email,source:'intelligence_page',user_type:'lead',tier:S.tier,created_at:new Date().toISOString()}); } catch(e){}
+    await generateReport();
+}
+
+// ── GENERATE REPORT ───────────────────────────────────────────────────────────
+async function generateReport() {
+    const c = S.company;
+    const descriptor  = `${c.industry} company (${c.size}, goal: ${c.goal})`;
+    const ctx         = `${descriptor} | What they do: ${c.desc}`;
+    const existingAI  = c.existing ? `ALREADY HAS — do NOT suggest: ${c.existing}` : '';
+    const stepTimer   = setInterval(()=>{ if(S.loadStep < LOAD_STEPS.length-2){ S.loadStep++; render(); } }, 1600);
+
+    try {
+        // Step 1: fetch
+        S.loadStep=1; render();
+        const rawFC  = await db('forecasts','GET',null,'?active=eq.true&select=id,title,category,probability,timeframe,description&order=probability.desc.nullslast');
+        const rawOpps= await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description');
+        S.forecasts  = Array.isArray(rawFC)   ? rawFC   : [];
+        const safeOp = Array.isArray(rawOpps) ? rawOpps : [];
+        S.forecastOppMap = {};
+        safeOp.forEach(o=>{ if(!S.forecastOppMap[o.forecast_id])S.forecastOppMap[o.forecast_id]=[]; S.forecastOppMap[o.forecast_id].push({title:o.title,desc:o.description||''}); });
+        console.log('Fetched',S.forecasts.length,'forecasts');
+
+        // Step 2: score
+        S.loadStep=2; render();
+        const titles = S.forecasts.map((f,i)=>`${i+1}. ${f.title}`).join('\n');
+        const scorePrompt = `Score each forecast for relevance to this company.\n\nCOMPANY: ${ctx}\n${existingAI}\n\nForecasts:\n${titles}\n\nScore 0-10. Think laterally — indirect disruptions count.\n\nAlso return: industry, businessModel, ai_status (level: "Well Positioned"|"Moderately Positioned"|"High Risk", summary), summary.\n\nReturn ONLY valid JSON:\n{"scores":[{"i":1,"s":8}],"industry":"...","businessModel":"...","ai_status":{"level":"...","summary":"..."},"summary":"..."}\n\nAll ${S.forecasts.length} forecasts. JSON only.`;
+        const rawScore   = await ai([{role:'user',content:scorePrompt}],3500,'company_report');
+        const scoreData  = parseJSON(rawScore,{scores:[],ai_status:null,summary:''});
+        S.scoredForecasts = (scoreData.scores||[]).filter(s=>s.s>=5).sort((a,b)=>b.s-a.s)
+            .map(s=>({forecast:S.forecasts[s.i-1],score:s.s})).filter(x=>x.forecast);
+        S.usedForecastIds = new Set();
+        console.log('Relevant forecasts:',S.scoredForecasts.length);
+
+        // Step 3: build 15 opps from top 35
+        S.loadStep=3; render();
+        const top35 = S.scoredForecasts.slice(0,35);
+        let candidates = [];
+        top35.forEach(({forecast:fc,score})=>{
+            if(!fc) return;
+            S.usedForecastIds.add(fc.id);
+            const fOpps = S.forecastOppMap[fc.id]||[];
+            if(fOpps.length) fOpps.forEach(o=>candidates.push({forecast:fc.title,title:o.title,desc:o.desc,score}));
+            else candidates.push({forecast:fc.title,title:fc.title,desc:(fc.description||'').slice(0,100),score});
         });
-    });
+        candidates.sort((a,b)=>b.score-a.score);
 
-    // Complete opportunity
-    document.querySelectorAll('[data-complete-opp]').forEach(el=>{
-        el.addEventListener('click', e=>{ e.stopPropagation(); const i=parseInt(el.dataset.completeOpp); if(!S.completedQuests.includes(i)) S.completedQuests.push(i); render(); });
-    });
+        const oppList = candidates.slice(0,60).map((o,i)=>`${i+1}. [${o.forecast}] ${o.title}: ${o.desc}`).join('\n');
+        const genPrompt = `Rewrite the 15 best opportunities for this company.\n\nCOMPANY: ${ctx}\n${existingAI}\n\nTemplates:\n${oppList}\n\nRules:\n- Cover at least 12 different forecasts\n- Every opportunity must be specific to this type of company\n- Think BIG and lateral — second-order effects\n- Never suggest what they already have\n- Order by impact\n\nReturn ONLY valid JSON:\n{"o":[{"forecast":"forecast name","title":"opp title","why":"2 vivid sentences specific to this company type"}]}\n\n15 items. JSON only.`;
+        const raw1   = await ai([{role:'user',content:genPrompt}],3000,'general');
+        let opps     = (parseJSON(raw1,{o:[]}).o||[]).map(x=>({forecast:x.forecast||'',title:x.title||'',whyMatters:x.why||'',quickWin:'',strategicBet:''}));
+        console.log('Generated',opps.length,'opps');
 
-    // Filter chips
-    document.querySelectorAll('[data-cat]').forEach(el=>{
-        el.addEventListener('click', ()=>{ S.filterCat=el.dataset.cat; render(); });
-    });
-
-    // Filter search
-    document.getElementById('filter-search')?.addEventListener('input', e=>{ S.filterSearch=e.target.value; render(); });
-
-    // Generate opp from forecast
-    document.querySelectorAll('[data-gen-opp]').forEach(el=>{
-        el.addEventListener('click', e=>{ e.stopPropagation(); generateOppFromForecast(el.dataset.genOpp); });
-    });
-
-    // New report
-    document.getElementById('btn-new-report')?.addEventListener('click', ()=>{ S.screen='diagnostic'; S.report=null; render(); });
-
-    // Modal close
-    document.getElementById('modal-bg')?.addEventListener('click', e=>{ if(e.target.id==='modal-bg'){S.modal=null;render();} });
-}
-
-// ── DIAGNOSTIC SUBMIT ─────────────────────────────────────────────────────────
-async function submitDiagnostic() {
-    const name    = document.getElementById('f-name')?.value.trim();
-    const email   = document.getElementById('f-email')?.value.trim();
-    const url     = document.getElementById('f-url')?.value.trim();
-    const desc    = document.getElementById('f-desc')?.value.trim();
-    const size    = document.getElementById('f-size')?.value;
-    const aiUsage = document.getElementById('f-ai')?.value;
-    const goal    = document.getElementById('f-goal')?.value;
-    const errEl   = document.getElementById('form-error');
-
-    if (!email || !url || !desc || !size || !aiUsage || !goal) {
-        errEl.textContent = 'Please fill in all fields.';
-        errEl.style.display = 'block';
-        return;
-    }
-    errEl.style.display = 'none';
-
-    S.form = { name, email, url, desc, size, aiUsage, goal };
-    S.screen = 'loading';
-    S.loadingStep = 0;
-    S.loadingDone = false;
-    render();
-
-    // Capture lead
-    try {
-        await db('profiles','POST',{ email, source:'intelligence_platform', user_type:'lead', created_at:new Date().toISOString() });
-        subscribeBeehiiv(email, 'intelligence_platform');
-    } catch(e) { console.error('Lead capture:', e); }
-
-    // Step through loading animation
-    const stepInterval = setInterval(()=>{ if(S.loadingStep<LOADING_STEPS.length-1){ S.loadingStep++; render(); } }, 1200);
-
-    try {
-        // 1. Fetch ALL forecasts from Supabase
-        S.loadingStep = 1; render();
-        const forecasts = await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description,mode,difficulty,timeframe&order=sort_order.asc');
-        S.forecasts = forecasts || [];
-
-        // 2. Build AI context
-        S.loadingStep = 2; render();
-        const domain = url.replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'');
-        const forecastList = S.forecasts.map((f,i)=>`${i+1}. [${f.forecast_id||f.id}] ${f.title} (${f.timeframe||'?'}) — ${(f.description||'').slice(0,120)}`).join('\n');
-
-        // 3. Generate full intelligence report
-        S.loadingStep = 3; render();
-        const prompt = `You are an AI strategy consultant generating a full intelligence report for a company.
-
-COMPANY:
-Website: ${domain}
-Description: ${desc}
-Size: ${size}
-Current AI usage: ${aiUsage}
-Primary goal: ${goal}
-
-FULL AI FORECAST DATABASE (${S.forecasts.length} forecasts):
-${forecastList}
-
-Generate a comprehensive intelligence report. Return ONLY valid JSON:
-{
-  "industry": "inferred industry",
-  "businessModel": "brief business model description",
-  "ai_status": {
-    "level": "Well Positioned|Moderately Positioned|High Risk",
-    "summary": "2-3 sentence assessment"
-  },
-  "opportunities": [
-    {
-      "forecast": "forecast title this is derived from",
-      "forecastId": "forecast id",
-      "title": "opportunity title",
-      "whyMatters": "why this AI trend specifically matters for this company (2-3 sentences)",
-      "quickWin": "concrete action achievable in 30 days",
-      "strategicBet": "larger 12-24 month opportunity if they invest",
-      "steps": [
-        {"title": "step title", "desc": "what to do", "timeline": "timeframe"},
-        {"title": "step title", "desc": "what to do", "timeline": "timeframe"},
-        {"title": "step title", "desc": "what to do", "timeline": "timeframe"},
-        {"title": "step title", "desc": "what to do", "timeline": "timeframe"}
-      ]
-    }
-  ],
-  "risks": [
-    {"prediction": "risk title", "probability": 75, "impact": "how it affects this company"}
-  ],
-  "summary": "bottom line paragraph"
-}
-
-Rules:
-- Include ALL forecasts that are genuinely relevant (aim for 20-40 opportunities for intelligence tier)
-- Rank by relevance to THIS specific company's business model and goal
-- Every opportunity must have whyMatters, quickWin, strategicBet, and 4-6 steps
-- Be specific to their industry and company size
-- Language should be practical and business-outcome focused`;
-
-        S.loadingStep = 5; render();
-        const raw = await ai([{role:'user',content:prompt}], 4000, 'general');
-
-        S.loadingStep = 7; render();
-        clearInterval(stepInterval);
-        S.loadingDone = true; render();
-
-        // Parse response
-        let report;
-        try {
-            const cleaned = raw.replace(/```json|```/g,'').trim();
-            report = JSON.parse(cleaned);
-        } catch(e) {
-            console.error('Parse error:', e, raw);
-            report = { ai_status:{level:'Moderately Positioned',summary:'Analysis complete.'}, opportunities:[], risks:[], summary:raw.slice(0,500) };
+        // Step 4: enrich
+        S.loadStep=4; render();
+        if (opps.length >= 3) {
+            const enrichList = opps.map((o,i)=>`${i+1}. [${o.forecast}] ${o.title}: ${o.whyMatters}`).join('\n');
+            const enrichPrompt = `Write a 30-day quick win and a 12-24 month strategic bet for each.\n\nCompany: ${ctx}\n\nOpportunities:\n${enrichList}\n\nReturn ONLY valid JSON:\n{"e":[{"q":"30-day quick win","b":"12-24 month strategic bet"}]}\n\n${opps.length} items. JSON only.`;
+            const raw2 = await ai([{role:'user',content:enrichPrompt}],3000,'company_report');
+            const ed   = parseJSON(raw2,{e:[]});
+            if(ed.e) ed.e.forEach((en,i)=>{ if(opps[i]){opps[i].quickWin=en.q||'';opps[i].strategicBet=en.b||'';} });
         }
 
-        S.report = report;
-        S.loadingStep = LOADING_STEPS.length;
-        S.screen = 'dashboard';
-        S.activeTab = 'opportunities';
-        render();
-
-        // Save report
-        try {
-            await db('profiles','PATCH',{ intelligence_result:JSON.stringify(report) },`?email=eq.${encodeURIComponent(email)}&source=eq.intelligence_platform`);
-        } catch(e) { console.error('Save report:', e); }
-
-    } catch(e) {
-        clearInterval(stepInterval);
-        console.error('Report generation error:', e);
-        S.screen = 'diagnostic';
-        render();
-        alert('Something went wrong generating your report. Please try again.');
-    }
-}
-
-// ── GENERATE OPP FROM INDIVIDUAL FORECAST ────────────────────────────────────
-async function generateOppFromForecast(forecastId) {
-    const forecast = S.forecasts.find(f=>f.id===forecastId||f.id==forecastId);
-    if (!forecast) return;
-
-    S.modal = 'genOpp'; render();
-
-    const prompt = `Generate a specific business opportunity for this company based on this AI forecast.
-
-COMPANY: ${S.form.desc} (${S.form.size}, goal: ${S.form.goal})
-FORECAST: ${forecast.title} — ${forecast.description}
-
-Return ONLY valid JSON:
-{
-  "title": "opportunity title",
-  "whyMatters": "why this matters for this specific company",
-  "quickWin": "30-day action",
-  "strategicBet": "12-24 month opportunity",
-  "steps": [
-    {"title":"step","desc":"detail","timeline":"timeframe"}
-  ]
-}`;
-
-    const raw = await ai([{role:'user',content:prompt}], 1000, 'general');
-    S.modal = null;
-
-    try {
-        const opp = JSON.parse(raw.replace(/```json|```/g,'').trim());
-        opp.forecast = forecast.title;
-        opp.forecastId = forecastId;
-        if (!S.report) S.report = { opportunities:[], risks:[] };
-        S.report.opportunities.unshift(opp);
-        S.expandedOpp = 0;
-        S.activeTab = 'opportunities';
-        render();
-    } catch(e) {
-        console.error('Opp parse:', e);
-        S.modal = null;
-        render();
-    }
-}
-
-// ── BEEHIIV ───────────────────────────────────────────────────────────────────
-async function subscribeBeehiiv(email, source) {
-    try {
-        await fetch(BEEHIIV_API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,user_type:'lead',utm_source:source}) });
-    } catch(e) { console.error('Beehiiv:', e); }
-}
-
-// ── INIT ─────────────────────────────────────────────────────────────────────
-(function init() {
-    // Check URL params for provider entry points
-    const params = new URLSearchParams(location.search);
-    const providerParam = params.get('provider') || params.get('p');
-    if (providerParam && PROVIDERS[providerParam]) {
-        S.provider = providerParam;
-    }
-
-    // Stripe success redirect — unlock diagnostic
-    if (params.get('paid') === 'true') {
-        S.paid = true;
-        S.screen = 'diagnostic';
-    }
-
-    // Check for saved session
-    const saved = localStorage.getItem('apc_intel_session');
-    if (saved) {
-        try {
-            const session = JSON.parse(saved);
-            S.form   = session.form   || S.form;
-            S.report = session.report || null;
-            S.forecasts = session.forecasts || [];
-            S.completedQuests = session.completedQuests || [];
-            if (S.report) {
-                S.screen = 'dashboard';
-                S.activeTab = 'opportunities';
+        // Step 5: rank
+        S.loadStep=5; render();
+        if (opps.length >= 5) {
+            const rankPrompt = `Reorder these ${opps.length} opportunities from most to least impactful.\n\nCOMPANY: ${ctx}\n\nCriteria: (1) immediate actionability (2) core business fit (3) revenue impact (4) competitive moat\n\nOpps:\n${opps.map((o,i)=>`${i+1}. [${o.forecast}] ${o.title}`).join('\n')}\n\n{"ranked":[1,5,3...]}\n\nJSON only.`;
+            const raw3 = await ai([{role:'user',content:rankPrompt}],600,'company_report');
+            const rd   = parseJSON(raw3,{});
+            if(rd.ranked&&rd.ranked.length>=5){
+                const ranked=[];
+                rd.ranked.forEach(idx=>{ const i=(typeof idx==='number'?idx:parseInt(idx))-1; if(i>=0&&i<opps.length)ranked.push(opps[i]); });
+                opps.forEach(o=>{ if(!ranked.includes(o))ranked.push(o); });
+                if(ranked.length>=5) opps=ranked;
             }
-        } catch(e) { localStorage.removeItem('apc_intel_session'); }
-    }
-
-    render();
-
-    // Auto-save session when report exists
-    setInterval(()=>{
-        if (S.report) {
-            localStorage.setItem('apc_intel_session', JSON.stringify({
-                form: S.form, report: S.report,
-                forecasts: S.forecasts, completedQuests: S.completedQuests
-            }));
         }
-    }, 5000);
-})();
+
+        // Step 6: risks
+        S.loadStep=6; render();
+        let risks=[];
+        const riskPrompt = `Generate 6 specific AI-driven risks for this company.\n\nCompany: ${ctx}\n\nBe specific — what startups could replicate them? What behavior shifts hurt them? What gets commoditized?\n\nReturn ONLY valid JSON:\n{"risks":[{"prediction":"threat name","probability":75,"impact":"2 sentences specific to this company"}]}\n\n6 risks. JSON only.`;
+        const raw4 = await ai([{role:'user',content:riskPrompt}],1200,'company_report');
+        const rkd  = parseJSON(raw4,{});
+        if(rkd.risks) risks=rkd.risks;
+        if(!risks.length) risks=[
+            {prediction:'AI-native entrant replicates core offering at lower cost',probability:74,impact:'A well-funded startup could deliver equivalent value at a fraction of the cost within 24 months.'},
+            {prediction:'Customer expectations outpace adoption speed',probability:81,impact:'Customers in this industry will expect AI-powered experiences as standard within 12 months.'},
+        ];
+
+        clearInterval(stepTimer);
+        S.loadStep = LOAD_STEPS.length;
+        render();
+
+        S.report = {
+            industry:   scoreData.industry||c.industry,
+            ai_status:  scoreData.ai_status||{level:'Moderately Positioned',summary:'Real opportunities ahead — the window to act is now.'},
+            summary:    scoreData.summary||'Your company faces a shifting AI landscape with several major forecasts directly impacting its model.',
+            opportunities: opps,
+            risks,
+        };
+
+        try { await db('profiles','PATCH',{intelligence_result:JSON.stringify(S.report)},`?email=eq.${encodeURIComponent(c.email)}&source=eq.intelligence_page`); } catch(e){}
+        S.screen='report'; S.tab='briefing'; render();
+
+    } catch(e) {
+        clearInterval(stepTimer);
+        console.error('generateReport error:', e);
+        S.screen='form'; render();
+    }
+}
+
+// ── GENERATE MORE ─────────────────────────────────────────────────────────────
+async function generateMore() {
+    if (S.generatingMore) return;
+    const c = S.company;
+    const ctx = `${c.industry} company (${c.size}, goal: ${c.goal}) | ${c.desc}`;
+    const remaining = S.scoredForecasts.filter(sf => !S.usedForecastIds.has(sf.forecast?.id));
+    if (!remaining.length) return;
+    S.generatingMore=true; S.moreError=null; render();
+    try {
+        const batch = remaining.slice(0,20);
+        let candidates=[];
+        batch.forEach(({forecast:fc,score})=>{
+            if(!fc)return;
+            S.usedForecastIds.add(fc.id);
+            const fOpps=S.forecastOppMap[fc.id]||[];
+            if(fOpps.length) fOpps.forEach(o=>candidates.push({forecast:fc.title,title:o.title,desc:o.desc,score}));
+            else candidates.push({forecast:fc.title,title:fc.title,desc:(fc.description||'').slice(0,100),score});
+        });
+        const oppText = candidates.map((o,i)=>`${i+1}. [${o.forecast}] ${o.title}: ${o.desc}`).join('\n');
+        const raw1 = await ai([{role:'user',content:`Generate up to 20 more opportunities for this company.\n\nCOMPANY: ${ctx}\nALREADY HAS: ${c.existing||'nothing'}\n\nNew templates:\n${oppText}\n\nMake each distinct. Specific to this company type.\n\nReturn ONLY valid JSON:\n{"o":[{"forecast":"name","title":"title","why":"2 sentences"}]}\n\nJSON only.`}],3000,'general');
+        let newOpps = (parseJSON(raw1,{o:[]}).o||[]).map(x=>({forecast:x.forecast||'',title:x.title||'',whyMatters:x.why||'',quickWin:'',strategicBet:''}));
+        if(newOpps.length>=3){
+            const el=newOpps.map((o,i)=>`${i+1}. [${o.forecast}] ${o.title}: ${o.whyMatters}`).join('\n');
+            const raw2=await ai([{role:'user',content:`Write a 30-day quick win and 12-24 month strategic bet for each.\n\nCompany: ${ctx}\n\nOpportunities:\n${el}\n\nReturn ONLY valid JSON:\n{"e":[{"q":"quick win","b":"strategic bet"}]}\n\n${newOpps.length} items. JSON only.`}],3000,'company_report');
+            const ed=parseJSON(raw2,{e:[]});
+            if(ed.e) ed.e.forEach((en,i)=>{ if(newOpps[i]){newOpps[i].quickWin=en.q||'';newOpps[i].strategicBet=en.b||'';} });
+        }
+        S.report.opportunities=[...(S.report.opportunities||[]),...newOpps];
+    } catch(e) { console.error('generateMore:',e); S.moreError='Something went wrong.'; }
+    S.generatingMore=false; render();
+    setTimeout(()=>{ document.getElementById('opp-grid')?.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'}); },100);
+}
+
+// ── GENERATE FOR FORECAST ─────────────────────────────────────────────────────
+async function generateForForecast(forecastId) {
+    if(S.generatingForecast) return;
+    const forecast = S.forecasts.find(f=>String(f.id)===String(forecastId));
+    if(!forecast) return;
+    const c = S.company;
+    const ctx = `${c.industry} company (${c.size}, goal: ${c.goal}) | ${c.desc}`;
+    S.generatingForecast=forecastId; render();
+    try {
+        const seeds = (S.forecastOppMap[forecast.id]||[]).map(o=>`- ${o.title}: ${o.desc}`).join('\n') || `- ${forecast.title}`;
+        const raw   = await ai([{role:'user',content:`Generate 3 specific opportunities for this company based on this AI forecast.\n\nCOMPANY: ${ctx}\n\nFORECAST: ${forecast.title}\n${forecast.description?`Context: ${(forecast.description||'').slice(0,300)}`:''}\n\nSeeds:\n${seeds}\n\nReturn ONLY valid JSON:\n{"o":[{"title":"title","why":"2 sentences","quickWin":"30-day action","strategicBet":"12-24 month bet"}]}\n\n3 items. JSON only.`}],1500,'company_report');
+        const newOpps = (parseJSON(raw,{o:[]}).o||[]).map(x=>({forecast:forecast.title,title:x.title||'',whyMatters:x.why||'',quickWin:x.quickWin||'',strategicBet:x.strategicBet||''}));
+        S.usedForecastIds.add(forecast.id);
+        S.report.opportunities=[...(S.report.opportunities||[]),...newOpps];
+        S.tab='opportunities';
+    } catch(e) { console.error('generateForForecast:',e); }
+    S.generatingForecast=null; render();
+    setTimeout(()=>{ document.getElementById('opp-grid')?.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'}); },100);
+}
+
+// ── EDIT & REFRESH ────────────────────────────────────────────────────────────
+async function editAndRefresh() {
+    S.company.industry = document.getElementById('e-industry')?.value||S.company.industry;
+    S.company.desc     = document.getElementById('e-desc')?.value.trim()||S.company.desc;
+    S.company.existing = document.getElementById('e-existing')?.value.trim()||'';
+    S.editOpen=false; S.screen='loading'; S.loadStep=0; S.chatMessages=[]; render();
+    await generateReport();
+}
+
+// ── SEND CHAT ─────────────────────────────────────────────────────────────────
+async function sendChat() {
+    const input = document.getElementById('chat-input');
+    const msg   = input?.value.trim();
+    if (!msg||S.chatThinking) return;
+    input.value='';
+    S.chatMessages.push({role:'user',content:msg});
+    S.chatThinking=true; render();
+    const r=S.report||{}, c=S.company;
+    const domain=(c.url||'').replace(/https?:\/\//,'').replace(/www\./,'').replace(/\/$/,'')||'the company';
+    const sysCtx=`You are an expert AI strategy consultant. You have analyzed ${domain}.\n\nCOMPANY: ${c.industry||''}, ${c.size||''}, goal: ${c.goal||''}\nWhat they do: ${c.desc||''}\nExisting AI: ${c.existing||'none'}\n\nSTATUS: ${r.ai_status?.level} — ${r.ai_status?.summary}\nSUMMARY: ${r.summary}\n\nTOP OPPORTUNITIES:\n${(r.opportunities||[]).slice(0,10).map((o,i)=>`${i+1}. [${o.forecast}] ${o.title}: ${o.whyMatters}`).join('\n')}\n\nKEY RISKS:\n${(r.risks||[]).slice(0,5).map(rk=>`- ${rk.prediction} (${rk.probability}%): ${rk.impact}`).join('\n')}\n\nBe direct and specific. Reference their actual business. Never be generic.`;
+    const msgs=[{role:'user',content:sysCtx}];
+    S.chatMessages.slice(-8).forEach(m=>msgs.push({role:m.role==='user'?'user':'assistant',content:m.content}));
+    try {
+        const reply=await ai(msgs,1000,'general');
+        S.chatMessages.push({role:'ai',content:reply||"Couldn't generate a response. Please try again."});
+    } catch(e) { S.chatMessages.push({role:'ai',content:'Something went wrong. Please try again.'}); }
+    S.chatThinking=false; render();
+}
+
+render();
 </script>
 </body>
 </html>
