@@ -248,7 +248,10 @@ async function db(table, method, data=null, query='') {
     const headers = { 'Content-Type':'application/json', 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}`, 'Prefer':'return=minimal' };
     if (method==='GET') delete headers['Prefer'];
     const r = await fetch(url, { method, headers, body: data ? JSON.stringify(data) : null });
-    if (method==='GET') return r.json();
+    if (method==='GET') {
+        if (!r.ok) { console.error('Supabase error', r.status, url); return []; }
+        return r.json();
+    }
     return r;
 }
 
@@ -880,14 +883,15 @@ async function generateReport() {
     try {
         // STEP 1: Fetch ALL forecasts + opps from Supabase
         S.loadingStep = 1; render();
-        const rawForecasts = await db('forecasts','GET',null,'?active=eq.true&select=id,title,category,probability,timeframe,description&order=probability.desc');
+        const rawForecasts = await db('forecasts','GET',null,'?active=eq.true&select=id,title,category,probability,timeframe,description&order=probability.desc.nullslast');
         const rawOpps      = await db('forecast_opportunities','GET',null,'?active=eq.true&select=id,forecast_id,title,description');
-        S.forecasts = rawForecasts || [];
-        console.log('Fetched', S.forecasts.length, 'forecasts,', (rawOpps||[]).length, 'opps');
+        S.forecasts = Array.isArray(rawForecasts) ? rawForecasts : [];
+        const safeOpps = Array.isArray(rawOpps) ? rawOpps : [];
+        console.log('Fetched', S.forecasts.length, 'forecasts,', safeOpps.length, 'opps');
 
         // Build forecast → opps lookup map — saved to state for "generate more" calls
         S.forecastOppMap = {};
-        (rawOpps||[]).forEach(fo=>{
+        safeOpps.forEach(fo=>{
             if (!S.forecastOppMap[fo.forecast_id]) S.forecastOppMap[fo.forecast_id] = [];
             S.forecastOppMap[fo.forecast_id].push({ title: fo.title, desc: fo.description||'' });
         });
