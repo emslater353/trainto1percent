@@ -382,14 +382,15 @@ function landingHTML() {
             <div class="card" style="border-color:rgba(0,240,255,0.2);cursor:pointer;margin-bottom:0" id="card-snapshot">
                 <div style="font-size:9px;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px">◈ Snapshot</div>
                 <div style="font-size:26px;font-weight:700;margin-bottom:2px">$29.99</div>
-                <div style="font-size:10px;color:var(--text-secondary);margin-bottom:16px">One-time report</div>
+                <div style="font-size:10px;color:var(--text-secondary);margin-bottom:12px">One-time report</div>
+                <p style="font-size:11px;color:var(--text-secondary);line-height:1.7;margin-bottom:14px">15 ranked opportunities specific to your company — drawn from a curated set of forecasts and delivered as a point-in-time intelligence report.</p>
                 <ul style="list-style:none;font-size:10px;color:var(--text-secondary);line-height:2.2;margin-bottom:18px">
-                    <li>✓ Ranked opportunities for your company</li>
+                    <li>✓ 15 ranked opportunities</li>
                     <li>✓ Quick wins &amp; strategic bets</li>
                     <li>✓ Risk analysis</li>
                     <li>✓ AI consultant access</li>
-                    <li style="color:var(--text-muted)">— Evolving feed (more anytime)</li>
                     <li style="color:var(--text-muted)">— Full forecast database</li>
+                    <li style="color:var(--text-muted)">— Evolving feed</li>
                 </ul>
                 <button class="btn btn-primary btn-full" id="btn-snapshot" style="font-size:10px;padding:12px">Get Snapshot →</button>
             </div>
@@ -397,14 +398,15 @@ function landingHTML() {
             <div class="card" style="border-color:rgba(255,170,0,0.3);background:linear-gradient(135deg,var(--bg-secondary),rgba(255,170,0,0.02));cursor:pointer;margin-bottom:0" id="card-intel">
                 <div style="font-size:9px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px">◎ Intelligence</div>
                 <div style="font-size:26px;font-weight:700;margin-bottom:2px;color:var(--gold)">$99.99</div>
-                <div style="font-size:10px;color:var(--text-secondary);margin-bottom:16px">Evolving platform</div>
+                <div style="font-size:10px;color:var(--text-secondary);margin-bottom:12px">Living platform</div>
+                <p style="font-size:11px;color:var(--text-secondary);line-height:1.7;margin-bottom:14px">Every relevant opportunity across hundreds of forecasts from trusted researchers, institutions, and market leaders — constantly refreshed as new predictions emerge.</p>
                 <ul style="list-style:none;font-size:10px;color:var(--text-secondary);line-height:2.2;margin-bottom:18px">
-                    <li>✓ All relevant opportunities, always growing</li>
+                    <li>✓ All relevant opportunities</li>
                     <li>✓ Quick wins &amp; strategic bets</li>
                     <li>✓ Risk analysis</li>
                     <li>✓ AI consultant access</li>
-                    <li style="color:var(--text-primary)">✓ <strong>Evolving feed — generate anytime</strong></li>
-                    <li style="color:var(--text-primary)">✓ <strong>150+ forecasts, full database</strong></li>
+                    <li style="color:var(--text-primary)">✓ <strong>150+ forecasts, always growing</strong></li>
+                    <li style="color:var(--text-primary)">✓ <strong>Generate more anytime</strong></li>
                 </ul>
                 <button class="btn btn-gold btn-full" id="btn-intel" style="font-size:10px;padding:12px">Get Intelligence →</button>
             </div>
@@ -665,7 +667,7 @@ function briefingTabHTML(r, domain) {
         <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
             <button class="btn btn-secondary btn-small" id="btn-all-opps">View All Opportunities${S.tier==='intelligence'?' →':' ('+opps.length+') →'}</button>
             <button class="btn btn-secondary btn-small" id="btn-go-chat">Ask AI Consultant →</button>
-            <a href="${CALENDLY}" target="_blank" class="btn btn-primary btn-small">Talk to a Human →</a>
+            <a href="${CALENDLY}" target="_blank" class="btn btn-primary btn-small">Consult with a Human →</a>
         </div>`;
 }
 
@@ -693,9 +695,9 @@ function forecastsTabHTML() {
 
     return `
         <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:20px">
-            We track <strong>${forecasts.length}</strong> AI predictions across every industry. Forecasts marked
-            <span style="color:var(--accent)">✦ Relevant</span> scored 7+ for your company.
-            ${isSnapshot?'Upgrade to Intelligence to generate opportunities from any forecast.':'Click any to generate tailored opportunities on-demand.'}
+            We track hundreds of AI predictions from research institutions, market forecasters, and industry leaders.
+            Forecasts marked <span style="color:var(--accent)">✦ Relevant</span> scored highest for your company.
+            ${isSnapshot?'Your opportunities were drawn from the most relevant forecasts for your industry. Upgrade to Intelligence to explore the full database.':'Click any forecast to generate tailored opportunities on-demand.'}
         </p>
 
         ${sortedTf.map(tf => `
@@ -739,11 +741,11 @@ function forecastsTabHTML() {
         ${isSnapshot ? `
         <div class="paywall-gate">
             <div class="paywall-gate-icon">◈</div>
-            <div class="paywall-gate-title">Unlock the Full Forecast Database</div>
-            <p class="paywall-gate-sub">You've seen ${PREVIEW} of ${forecasts.length} forecasts. Intelligence unlocks all of them — and lets you generate company-specific opportunities from any forecast, on-demand.</p>
+            <div class="paywall-gate-title">Your opportunities come from our full database</div>
+            <p class="paywall-gate-sub">Your snapshot drew from a curated selection of forecasts most relevant to your company. Our full database tracks hundreds of predictions from research institutions, market forecasters, and industry leaders — Intelligence lets you explore all of them and generate opportunities on-demand as new forecasts emerge.</p>
             <div class="paywall-actions">
                 <button class="btn btn-gold" id="btn-upgrade-fc">Upgrade to Intelligence — $99.99</button>
-                <a href="${CALENDLY}" target="_blank" class="btn btn-secondary btn-small">Talk to a Human</a>
+                <a href="${CALENDLY}" target="_blank" class="btn btn-secondary btn-small">Consult with a Human</a>
             </div>
         </div>` : ''}`;
 }
@@ -838,7 +840,7 @@ function risksTabHTML(r, domain) {
             <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:14px">The AI Consultant knows every risk in this report and can walk you through mitigation specific to your resources. Or book 30 minutes with a human strategist.</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
                 <button class="btn btn-secondary btn-small" id="btn-risk-chat">Ask AI Consultant →</button>
-                <a href="${CALENDLY}" target="_blank" class="btn btn-primary btn-small">Talk to a Human →</a>
+                <a href="${CALENDLY}" target="_blank" class="btn btn-primary btn-small">Consult with a Human →</a>
             </div>
         </div>`;
 }
@@ -850,17 +852,10 @@ function chatTabHTML(domain) {
         S.chatMessages = [{role:'ai', content:`I've analyzed ${domain} and read your full report — your industry (${S.company.industry||''}), all ${opps.length} opportunities, and your key risks.\n\nWhat would you like to dig into?\n— "Which opportunity should I start with?"\n— "How do I defend against our top risk?"\n— "Give me a 90-day action plan"\n— "What does [forecast] mean for us specifically?"`}];
     }
     return `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px">
-            <div class="card" style="border-color:rgba(0,240,255,0.2);margin-bottom:0;padding:20px">
-                <div style="font-size:9px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">◈ AI Consultant</div>
-                <div style="font-size:13px;font-weight:700;margin-bottom:4px">Chat below — free</div>
-                <p style="font-size:11px;color:var(--text-secondary);line-height:1.6">Knows your full report. Instant. Ask anything.</p>
-            </div>
-            <div class="card" style="border-color:rgba(255,170,0,0.25);background:linear-gradient(135deg,var(--bg-secondary),rgba(255,170,0,0.02));margin-bottom:0;padding:20px">
-                <div style="font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">◎ Human Strategist</div>
-                <div style="font-size:13px;font-weight:700;margin-bottom:8px">30-min strategy call</div>
-                <a href="${CALENDLY}" target="_blank" class="btn btn-gold btn-full btn-small">Book a Session →</a>
-            </div>
+        <!-- Quick pills first — above the chat so input stays visible -->
+        <div class="quick-pills" style="margin-bottom:12px">
+            ${['Which opportunity first?','90-day action plan','Defend against top risk','What should I prioritize?'].map(q=>`
+            <button class="quick-pill" data-quick="${q}">${q}</button>`).join('')}
         </div>
 
         <div class="chat-container">
@@ -882,13 +877,17 @@ function chatTabHTML(domain) {
             </div>
         </div>
 
-        <div class="quick-pills">
-            ${['Which opportunity first?','90-day action plan','Defend against top risk','What should I prioritize?'].map(q=>`
-            <button class="quick-pill" data-quick="${q}">${q}</button>`).join('')}
+        <!-- Human strategist banner — below chat, compact -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;background:linear-gradient(135deg,var(--bg-secondary),rgba(255,170,0,0.03));border:1px solid rgba(255,170,0,0.2);margin-top:12px;flex-wrap:wrap">
+            <div>
+                <div style="font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">◎ Human Strategist</div>
+                <div style="font-size:12px;color:var(--text-secondary)">Prefer a real conversation? Book a 30-min strategy call.</div>
+            </div>
+            <a href="${CALENDLY}" target="_blank" class="btn btn-gold btn-small" style="white-space:nowrap;flex-shrink:0">Consult with a Human →</a>
         </div>
 
         ${S.tier==='snapshot'?`
-        <div class="paywall-gate" style="margin-top:22px">
+        <div class="paywall-gate" style="margin-top:12px">
             <div class="paywall-gate-title">Unlock Deeper Guidance</div>
             <p class="paywall-gate-sub">Upgrade to Intelligence for an evolving report — plus priority access to the human strategy team for complex decisions.</p>
             <div class="paywall-actions"><button class="btn btn-gold" id="btn-upgrade-chat">Upgrade to Intelligence →</button></div>
