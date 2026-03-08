@@ -1,21 +1,6 @@
 [build]
   publish = "."
 
-[functions]
-  directory = "netlify/functions"
-
-[[plugins]]
-  package = "@netlify/plugin-functions-install-core"
-
-# Scheduled: trial reminder — runs daily at 10am EST (15:00 UTC)
-[functions."trial-reminder"]
-  schedule = "0 15 * * *"
-
-# Scheduled: weekly emails — runs every Monday at 6am EST (11:00 UTC)
-[functions."weekly-emails"]
-  schedule = "0 11 * * 1"
-
-
 [[redirects]]
   from = "/company"
   to = "/app.html"
@@ -28,15 +13,15 @@
 
 [[redirects]]
   from = "/google"
-  to = "/app.html"
-  status = 200
-
-[[redirects]]
-  from = "/claude"
-  to = "/app.html"
+  to = "/intelligence.html?provider=google"
   status = 200
 
 [[redirects]]
   from = "/openai"
-  to = "/app.html"
+  to = "/intelligence.html?provider=openai"
+  status = 200
+
+[[redirects]]
+  from = "/claude"
+  to = "/intelligence.html?provider=claude"
   status = 200
