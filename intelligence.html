@@ -5991,7 +5991,7 @@ function landingHTML() {
             <!-- Intelligence -->
             <div class="card" style="border-color:rgba(255,170,0,0.3);background:linear-gradient(135deg,var(--bg-secondary),rgba(255,170,0,0.02));cursor:pointer;margin-bottom:0" id="card-intel">
                 <div style="font-size:9px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px">◎ Intelligence</div>
-                <div style="font-size:26px;font-weight:700;margin-bottom:2px;color:var(--gold)">$99.99</div>
+                <div style="font-size:9px;color:var(--gold);letter-spacing:1px;padding:4px 10px;border:1px solid rgba(255,170,0,0.25);display:inline-block;margin-bottom:10px">COMING SOON — Free to join waitlist</div>
                 <div style="font-size:10px;color:var(--text-secondary);margin-bottom:12px">Living platform</div>
                 <p style="font-size:11px;color:var(--text-secondary);line-height:1.7;margin-bottom:14px">Every relevant opportunity across hundreds of forecasts from trusted researchers, institutions, and market leaders — constantly refreshed as new predictions emerge.</p>
                 <ul style="list-style:none;font-size:10px;color:var(--text-secondary);line-height:2.2;margin-bottom:18px">
@@ -6076,7 +6076,7 @@ function formHTML() {
         <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px">
                 <div>
-                    <div style="font-size:9px;color:${isIntel?'var(--gold)':'var(--accent)'};letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">${isIntel?'◎ Intelligence — $99.99':'◈ Snapshot — $29.99'}</div>
+                    <div style="font-size:9px;color:${isIntel?'var(--gold)':'var(--accent)'};letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">${isIntel?'◎ Intelligence':'◈ Snapshot — $29.99'}</div>
                     <div style="font-family:var(--font-display);font-size:20px">Tell us about your company</div>
                 </div>
                 <button class="btn btn-ghost btn-small" id="btn-back-form">← Back</button>
@@ -6337,7 +6337,7 @@ function forecastsTabHTML() {
         <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:20px">
             We track hundreds of AI predictions from research institutions, market forecasters, and industry leaders.
             Forecasts marked <span style="color:var(--accent)">✦ Relevant</span> scored highest for your company.
-            ${isSnapshot?'Your opportunities were drawn from the most relevant forecasts for your industry. Upgrade to Intelligence to explore the full database.':'Click any forecast to generate tailored opportunities on-demand.'}
+            ${isSnapshot?'Your opportunities were drawn from the most relevant forecasts for your industry. <a class="text-link" id="fc-waitlist-link">Join the Intelligence waitlist</a> to explore the full database and generate on-demand.':'Click any forecast to generate tailored opportunities on-demand.'}
         </p>
 
         ${sortedTf.map(tf => `
@@ -6354,9 +6354,13 @@ function forecastsTabHTML() {
                 const isGen   = S.generatingForecast === f.id;
                 const prob    = f.probability ? Math.round(f.probability*100) : null;
                 const gi      = flat.find(x=>x.f===f)?.gIdx ?? 999;
-                const locked  = isSnapshot && gi >= PREVIEW;
+                const locked  = isSnapshot; // snapshot users see generic opps but can't generate company-specific
+                // Get generic opps from embedded FORECAST_DATABASE for this forecast
+                const embeddedFC = FORECAST_DATABASE.find(ef => ef.id === f.id);
+                const genericOpps = embeddedFC?.opportunities?.slice(0,3) || [];
+
                 return `
-                <div class="fc-row ${isRel?'relevant':''}" style="${locked?'filter:blur(4px);pointer-events:none;user-select:none':''}">
+                <div class="fc-row ${isRel?'relevant':''}">
                     <div class="fc-meta">
                         ${prob?`<div class="fc-prob" style="color:${prob>=75?'var(--danger)':prob>=50?'var(--gold)':'var(--text-secondary)'}">${prob}%</div>`:''}
                         ${score?`<div class="fc-score">${score}/10</div>`:''}
@@ -6367,12 +6371,24 @@ function forecastsTabHTML() {
                             ${f.category?`<span class="fc-tag">${f.category}</span>`:''}
                         </div>
                         <div class="fc-title">${f.title}</div>
-                        <div class="fc-desc">${(f.description||'').slice(0,200)}</div>
+                        <div class="fc-desc">${(f.description||'').slice(0,180)}</div>
+                        ${genericOpps.length ? `
+                        <div style="margin-top:10px;padding:10px 12px;background:rgba(0,240,255,0.03);border-left:2px solid var(--bg-tertiary)">
+                            <div style="font-size:8px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Emerging opportunities</div>
+                            ${genericOpps.map(o=>`
+                            <div style="font-size:11px;color:var(--text-secondary);padding:3px 0;display:flex;gap:8px;align-items:baseline">
+                                <span style="color:var(--faint);flex-shrink:0">→</span>
+                                <span>${(o.title||'').replace(/[🧠🛡️🎓🌐💰🔮🏗️🧭⚡🔑🌊🎯🏛️📱💡🤝🔄🌍✨🚀]/gu,'').trim()}</span>
+                            </div>`).join('')}
+                        </div>` : ''}
                         ${!locked?`
-                        <div>
-                            ${isGen?`<span style="font-size:10px;color:var(--accent);display:flex;align-items:center;gap:6px"><span class="spinner" style="width:12px;height:12px;border-width:2px;margin:0"></span>Generating...</span>`
-                            :`<button class="btn btn-${isUsed?'ghost':'secondary'} btn-small" data-gen-forecast="${f.id}">${isUsed?'↻ Regenerate opps':'+ Generate opportunities →'}</button>`}
-                        </div>`:''}
+                        <div style="margin-top:10px">
+                            ${isGen?`<span style="font-size:10px;color:var(--accent);display:flex;align-items:center;gap:6px"><span class="spinner" style="width:12px;height:12px;border-width:2px;margin:0"></span>Generating for your company...</span>`
+                            :`<button class="btn btn-${isUsed?'ghost':'secondary'} btn-small" data-gen-forecast="${f.id}">${isUsed?'↻ Regenerate for your company':'+ Generate for your company →'}</button>`}
+                        </div>` : `
+                        <div style="margin-top:10px">
+                            <span style="font-size:10px;color:var(--text-muted)">→ <a class="text-link" id="fc-waitlist-link" style="font-size:10px">Join Intelligence waitlist</a> to generate company-specific opportunities from this forecast</span>
+                        </div>`}
                     </div>
                 </div>`;
             }).join('')}
@@ -6381,10 +6397,10 @@ function forecastsTabHTML() {
         ${isSnapshot ? `
         <div class="paywall-gate">
             <div class="paywall-gate-icon">◈</div>
-            <div class="paywall-gate-title">Your opportunities come from our full database</div>
-            <p class="paywall-gate-sub">Your snapshot drew from a curated selection of forecasts most relevant to your company. Our full database tracks hundreds of predictions from research institutions, market forecasters, and industry leaders — Intelligence lets you explore all of them and generate opportunities on-demand as new forecasts emerge.</p>
+            <div class="paywall-gate-title">Intelligence — every forecast, always expanding</div>
+            <p class="paywall-gate-sub">Above you can see every forecast we track, along with the generic emerging opportunities each one creates. Intelligence lets you generate opportunities tailored specifically to your company from any forecast — on-demand, as new predictions emerge from trusted researchers and market leaders worldwide.</p>
             <div class="paywall-actions">
-                <button class="btn btn-gold" id="btn-upgrade-fc">Upgrade to Intelligence — $99.99</button>
+                <button class="btn btn-gold" id="btn-upgrade-fc">Join Intelligence Waitlist →</button>
                 <a href="${CALENDLY}" target="_blank" class="btn btn-secondary btn-small">Consult with a Human</a>
             </div>
         </div>` : ''}`;
@@ -6401,7 +6417,7 @@ function oppsTabHTML(r) {
 
     return `
         <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:16px">
-            Every opportunity tied to a specific AI forecast — with a 30-day quick win and a 12–24 month strategic bet. ${S.tier==='intelligence'?`<strong style="color:var(--text-primary)">${all.length} generated so far</strong> — keep adding more anytime from the ${S.scoredForecasts.length} forecasts relevant to you.`:all.length+' generated. <a class="text-link" id="opp-upsell-link">Upgrade to Intelligence</a> to keep generating from all '+S.scoredForecasts.length+' relevant forecasts.'}
+            Every opportunity tied to a specific AI forecast — with a 30-day quick win and a 12–24 month strategic bet. ${S.tier==='intelligence'?`<strong style="color:var(--text-primary)">${all.length} generated so far</strong> — keep adding more anytime from the ${S.scoredForecasts.length} forecasts relevant to you.`:all.length+' generated. <a class="text-link" id="opp-upsell-link">Join the Intelligence waitlist</a> to keep generating from all '+S.scoredForecasts.length+' relevant forecasts.'}
         </p>
 
         <div class="filter-bar">
@@ -6442,9 +6458,9 @@ function oppsTabHTML(r) {
             ${isSnapshot ? `
             <div class="paywall-gate">
                 <div class="paywall-gate-icon">⚡</div>
-                <div class="paywall-gate-title">Unlock the Evolving Feed</div>
-                <p class="paywall-gate-sub">You've seen the top opportunities for your company. Intelligence gives you an ever-growing feed — generate from all ${S.scoredForecasts.length} forecasts relevant to you, any time, as new ones emerge.</p>
-                <div class="paywall-actions"><button class="btn btn-gold" id="btn-upgrade-opps">Upgrade to Intelligence — $99.99</button></div>
+                <div class="paywall-gate-title">Intelligence — unlimited opportunities, always growing</div>
+                <p class="paywall-gate-sub">Your snapshot covers the top opportunities for your company. Intelligence maps every relevant forecast — ${S.scoredForecasts.length} already scored for you — and keeps generating as new predictions emerge from trusted researchers and market forecasters worldwide.</p>
+                <div class="paywall-actions"><button class="btn btn-gold" id="btn-upgrade-opps">Join Intelligence Waitlist →</button></div>
             </div>` : S.generatingMore ? `
             <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:18px">
                 <div class="spinner"></div>
@@ -6528,9 +6544,9 @@ function chatTabHTML(domain) {
 
         ${S.tier==='snapshot'?`
         <div class="paywall-gate" style="margin-top:12px">
-            <div class="paywall-gate-title">Unlock Deeper Guidance</div>
-            <p class="paywall-gate-sub">Upgrade to Intelligence for an evolving report — plus priority access to the human strategy team for complex decisions.</p>
-            <div class="paywall-actions"><button class="btn btn-gold" id="btn-upgrade-chat">Upgrade to Intelligence →</button></div>
+            <div class="paywall-gate-title">Intelligence — coming soon</div>
+            <p class="paywall-gate-sub">Join the waitlist for the full Intelligence platform — unlimited opportunities across every forecast we track, plus priority access to the human strategy team.</p>
+            <div class="paywall-actions"><button class="btn btn-gold" id="btn-upgrade-chat">Join Intelligence Waitlist →</button></div>
         </div>`:''}`;
 }
 
@@ -6571,23 +6587,23 @@ function upgradeModalHTML() {
     return `
     <div class="modal-overlay">
         <div class="modal">
-            <div style="font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">◎ Upgrade to Intelligence</div>
-            <div class="modal-title">Unlock the full platform</div>
-            <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:20px">Your Snapshot gives you a fixed report. Intelligence is a living platform — generate more opportunities anytime from 150+ tracked forecasts, as new AI shifts emerge.</p>
-            <div style="background:var(--bg-primary);border:1px solid var(--bg-tertiary);padding:16px 18px;margin-bottom:18px">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                    <span style="font-size:12px;font-weight:700">Intelligence Platform</span>
-                    <span style="font-size:22px;font-weight:700;color:var(--gold)">$99.99</span>
-                </div>
-                <ul style="list-style:none;font-size:11px;color:var(--text-secondary);line-height:2">
-                    <li>✓ Unlimited opportunity generation</li>
-                    <li>✓ Full forecast database access</li>
-                    <li>✓ Generate from any forecast on-demand</li>
+            <div style="font-size:9px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">◎ Coming Soon</div>
+            <div class="modal-title">Intelligence Platform</div>
+            <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:18px">Your snapshot covers your top opportunities. Intelligence maps every relevant forecast we track — hundreds of predictions from researchers, institutions, and market leaders — and keeps generating as new shifts emerge.</p>
+            <div style="background:var(--bg-primary);border:1px solid rgba(255,170,0,0.2);padding:16px 18px;margin-bottom:18px">
+                <div style="font-size:10px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">What Intelligence includes</div>
+                <ul style="list-style:none;font-size:11px;color:var(--text-secondary);line-height:2.2">
+                    <li style="color:var(--text-primary)">✓ Every relevant opportunity — unlimited, always growing</li>
+                    <li style="color:var(--text-primary)">✓ 150+ forecasts from trusted researchers &amp; institutions</li>
+                    <li style="color:var(--text-primary)">✓ Generate more anytime as new predictions emerge</li>
+                    <li>✓ Full forecast database — browse and explore</li>
+                    <li>✓ Risk analysis &amp; AI consultant</li>
                     <li>✓ Priority human strategist access</li>
                 </ul>
             </div>
-            <button class="btn btn-gold btn-full" style="margin-bottom:8px" id="upgrade-confirm">Upgrade Now — $99.99</button>
-            <button class="btn btn-ghost btn-full btn-small" id="upgrade-cancel">Maybe Later</button>
+            <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:14px">Joining the waitlist is free. No commitment.</p>
+            <button class="btn btn-gold btn-full" style="margin-bottom:8px" id="upgrade-confirm">Join Intelligence Waitlist →</button>
+            <button class="btn btn-ghost btn-full btn-small" id="upgrade-cancel">Stay with Snapshot</button>
         </div>
     </div>`;
 }
@@ -6667,13 +6683,12 @@ function bind() {
     document.getElementById('edit-refresh')?.addEventListener('click', editAndRefresh);
 
     // Upgrade triggers
-    ['btn-upgrade-fc','btn-upgrade-opps','btn-upgrade-chat','opp-upsell-link'].forEach(id => {
+    ['btn-upgrade-fc','btn-upgrade-opps','btn-upgrade-chat','opp-upsell-link','fc-waitlist-link'].forEach(id => {
         document.getElementById(id)?.addEventListener('click', ()=>{ S.upgradeModal=true; render(); });
     });
     document.getElementById('upgrade-cancel')?.addEventListener('click', ()=>{ S.upgradeModal=false; render(); });
     document.getElementById('upgrade-confirm')?.addEventListener('click', ()=>{
-        // TODO: hook Stripe here — for now simulate unlock
-        S.tier='intelligence'; S.upgradeModal=false; render();
+        S.upgradeModal=false; S.screen='waitlist'; render();
     });
 }
 
