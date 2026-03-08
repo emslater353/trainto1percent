@@ -202,7 +202,7 @@
         .risk-impact { font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
 
         /* ── CHAT ── */
-        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 340px); min-height: 320px; }
+        .chat-container { display: flex; flex-direction: column; height: 420px; min-height: 280px; }
         .chat-messages { flex: 1; overflow-y: auto; padding: 15px 0; }
         .chat-msg { display: flex; gap: 10px; margin-bottom: 15px; }
         .chat-msg.user { flex-direction: row-reverse; }
@@ -292,7 +292,7 @@
             .tabs { gap: 4px; }
             .tab { padding: 8px 10px; font-size: 9px; flex: 1; text-align: center; min-width: 60px; }
             .form-input, .form-textarea, .form-select { font-size: 16px !important; }
-            .chat-container { height: calc(100vh - 420px); min-height: 240px; }
+            .chat-container { height: 300px; min-height: 220px; }
         }
     </style>
 </head>
@@ -384,11 +384,11 @@ function landingHTML() {
                 <div style="font-size:26px;font-weight:700;margin-bottom:2px">$29.99</div>
                 <div style="font-size:10px;color:var(--text-secondary);margin-bottom:16px">One-time report</div>
                 <ul style="list-style:none;font-size:10px;color:var(--text-secondary);line-height:2.2;margin-bottom:18px">
-                    <li>✓ 15 ranked opportunities</li>
+                    <li>✓ Ranked opportunities for your company</li>
                     <li>✓ Quick wins &amp; strategic bets</li>
                     <li>✓ Risk analysis</li>
                     <li>✓ AI consultant access</li>
-                    <li style="color:var(--text-muted)">— Evolving opportunity feed</li>
+                    <li style="color:var(--text-muted)">— Evolving feed (more anytime)</li>
                     <li style="color:var(--text-muted)">— Full forecast database</li>
                 </ul>
                 <button class="btn btn-primary btn-full" id="btn-snapshot" style="font-size:10px;padding:12px">Get Snapshot →</button>
@@ -399,12 +399,12 @@ function landingHTML() {
                 <div style="font-size:26px;font-weight:700;margin-bottom:2px;color:var(--gold)">$99.99</div>
                 <div style="font-size:10px;color:var(--text-secondary);margin-bottom:16px">Evolving platform</div>
                 <ul style="list-style:none;font-size:10px;color:var(--text-secondary);line-height:2.2;margin-bottom:18px">
-                    <li>✓ 15 opportunities to start</li>
+                    <li>✓ All relevant opportunities, always growing</li>
                     <li>✓ Quick wins &amp; strategic bets</li>
                     <li>✓ Risk analysis</li>
                     <li>✓ AI consultant access</li>
-                    <li style="color:var(--text-primary)">✓ <strong>Evolving opportunity feed</strong></li>
-                    <li style="color:var(--text-primary)">✓ <strong>Full forecast database</strong></li>
+                    <li style="color:var(--text-primary)">✓ <strong>Evolving feed — generate anytime</strong></li>
+                    <li style="color:var(--text-primary)">✓ <strong>150+ forecasts, full database</strong></li>
                 </ul>
                 <button class="btn btn-gold btn-full" id="btn-intel" style="font-size:10px;padding:12px">Get Intelligence →</button>
             </div>
@@ -582,7 +582,7 @@ function reportContentHTML() {
             <div>
                 <div style="font-size:9px;color:var(--text-secondary);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">AI PROOF CLUB · Company Intelligence</div>
                 <div class="page-title">${domain}</div>
-                <div class="page-subtitle">${c.industry||''} · ${now} · ${opps.length} opportunities identified</div>
+                <div class="page-subtitle">${c.industry||''} · ${now} · ${S.scoredForecasts.length} forecasts analyzed</div>
                 <div style="margin-top:8px"><span class="status-badge ${sc}">◉ ${r.ai_status?.level||'Analyzing'}</span></div>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -595,7 +595,7 @@ function reportContentHTML() {
             ${[
                 {id:'briefing',      label:'Briefing'},
                 {id:'forecasts',     label:`Forecasts (${S.forecasts.length})`},
-                {id:'opportunities', label:`Opportunities (${opps.length}${S.tier==='intelligence'?'+':''})`},
+                {id:'opportunities', label:`Opportunities${opps.length?(' — '+opps.length+(S.tier==='intelligence'?'+':'')):''}`},
                 {id:'risks',         label:'Risk Analysis'},
                 {id:'chat',          label:'◈ Consultant'},
             ].map(t=>`<div class="tab ${S.tab===t.id?'active':''}" data-tab="${t.id}">${t.label}</div>`).join('')}
@@ -620,7 +620,7 @@ function briefingTabHTML(r, domain) {
             <div class="stat" id="stat-opps">
                 <div class="stat-value">${opps.length}</div>
                 <div class="stat-label">Opportunities</div>
-                <div class="stat-hint">View all →</div>
+                <div class="stat-hint">${S.tier==='intelligence'?'Growing →':'View all →'}</div>
             </div>
             <div class="stat" id="stat-qw">
                 <div class="stat-value" style="color:var(--success)">${qw}</div>
@@ -663,7 +663,7 @@ function briefingTabHTML(r, domain) {
         </div>`).join('')}
 
         <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-            <button class="btn btn-secondary btn-small" id="btn-all-opps">View All ${opps.length} Opportunities →</button>
+            <button class="btn btn-secondary btn-small" id="btn-all-opps">View All Opportunities${S.tier==='intelligence'?' →':' ('+opps.length+') →'}</button>
             <button class="btn btn-secondary btn-small" id="btn-go-chat">Ask AI Consultant →</button>
             <a href="${CALENDLY}" target="_blank" class="btn btn-primary btn-small">Talk to a Human →</a>
         </div>`;
@@ -759,8 +759,7 @@ function oppsTabHTML(r) {
 
     return `
         <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:16px">
-            ${all.length} opportunities — each tied to a specific AI forecast, with a 30-day quick win and a 12–24 month strategic bet.
-            ${isSnapshot?'<a class="text-link" id="opp-upsell-link">Upgrade to Intelligence</a> to keep generating.':'Keep generating to surface more from the forecast database.'}
+            Every opportunity tied to a specific AI forecast — with a 30-day quick win and a 12–24 month strategic bet. ${S.tier==='intelligence'?`<strong style="color:var(--text-primary)">${all.length} generated so far</strong> — keep adding more anytime from the ${S.scoredForecasts.length} forecasts relevant to you.`:all.length+' generated. <a class="text-link" id="opp-upsell-link">Upgrade to Intelligence</a> to keep generating from all '+S.scoredForecasts.length+' relevant forecasts.'}
         </p>
 
         <div class="filter-bar">
@@ -802,7 +801,7 @@ function oppsTabHTML(r) {
             <div class="paywall-gate">
                 <div class="paywall-gate-icon">⚡</div>
                 <div class="paywall-gate-title">Unlock the Evolving Feed</div>
-                <p class="paywall-gate-sub">Your Snapshot includes ${all.length} opportunities. Intelligence gives you an ever-growing feed — generate from all ${S.scoredForecasts.length} forecasts relevant to your company, any time.</p>
+                <p class="paywall-gate-sub">You've seen the top opportunities for your company. Intelligence gives you an ever-growing feed — generate from all ${S.scoredForecasts.length} forecasts relevant to you, any time, as new ones emerge.</p>
                 <div class="paywall-actions"><button class="btn btn-gold" id="btn-upgrade-opps">Upgrade to Intelligence — $99.99</button></div>
             </div>` : S.generatingMore ? `
             <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:18px">
@@ -935,7 +934,7 @@ function upgradeModalHTML() {
         <div class="modal">
             <div style="font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">◎ Upgrade to Intelligence</div>
             <div class="modal-title">Unlock the full platform</div>
-            <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:20px">Your Snapshot includes ${opps.length} ranked opportunities. Intelligence unlocks the full evolving feed — generate from every forecast in our database, anytime.</p>
+            <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;margin-bottom:20px">Your Snapshot gives you a fixed report. Intelligence is a living platform — generate more opportunities anytime from 150+ tracked forecasts, as new AI shifts emerge.</p>
             <div style="background:var(--bg-primary);border:1px solid var(--bg-tertiary);padding:16px 18px;margin-bottom:18px">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
                     <span style="font-size:12px;font-weight:700">Intelligence Platform</span>
@@ -1100,11 +1099,13 @@ async function generateReport() {
         S.usedForecastIds = new Set();
         console.log('Relevant forecasts:',S.scoredForecasts.length);
 
-        // Step 3: build 15 opps from top 35
+        // Step 3: initial opportunity set (15 for snapshot, 20 for intelligence — user can always generate more)
         S.loadStep=3; render();
-        const top35 = S.scoredForecasts.slice(0,35);
+        const isIntelligence = S.tier === 'intelligence';
+        const initialCount = isIntelligence ? 20 : 15;
+        const seedBatch = S.scoredForecasts.slice(0, isIntelligence ? 50 : 35);
         let candidates = [];
-        top35.forEach(({forecast:fc,score})=>{
+        seedBatch.forEach(({forecast:fc,score})=>{
             if(!fc) return;
             S.usedForecastIds.add(fc.id);
             const fOpps = S.forecastOppMap[fc.id]||[];
@@ -1113,8 +1114,8 @@ async function generateReport() {
         });
         candidates.sort((a,b)=>b.score-a.score);
 
-        const oppList = candidates.slice(0,60).map((o,i)=>`${i+1}. [${o.forecast}] ${o.title}: ${o.desc}`).join('\n');
-        const genPrompt = `Rewrite the 15 best opportunities for this company.\n\nCOMPANY: ${ctx}\n${existingAI}\n\nTemplates:\n${oppList}\n\nRules:\n- Cover at least 12 different forecasts\n- Every opportunity must be specific to this type of company\n- Think BIG and lateral — second-order effects\n- Never suggest what they already have\n- Order by impact\n\nReturn ONLY valid JSON:\n{"o":[{"forecast":"forecast name","title":"opp title","why":"2 vivid sentences specific to this company type"}]}\n\n15 items. JSON only.`;
+        const oppList = candidates.slice(0,70).map((o,i)=>`${i+1}. [${o.forecast}] ${o.title}: ${o.desc}`).join('\n');
+        const genPrompt = `Generate the ${initialCount} most impactful opportunities for this company from the forecast templates below.\n\nCOMPANY: ${ctx}\n${existingAI}\n\nTemplates:\n${oppList}\n\nRules:\n- Cover at least ${Math.round(initialCount*0.8)} different forecasts\n- Every opportunity must be specific to this type of company\n- Think BIG and lateral — second-order effects count\n- Never suggest what they already have\n- Order by impact (most impactful first)\n\nReturn ONLY valid JSON:\n{"o":[{"forecast":"forecast name","title":"opportunity title","why":"2 vivid sentences specific to this company type"}]}\n\n${initialCount} items. JSON only.`;
         const raw1   = await ai([{role:'user',content:genPrompt}],3000,'general');
         let opps     = (parseJSON(raw1,{o:[]}).o||[]).map(x=>({forecast:x.forecast||'',title:x.title||'',whyMatters:x.why||'',quickWin:'',strategicBet:''}));
         console.log('Generated',opps.length,'opps');
