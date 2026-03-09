@@ -66,6 +66,9 @@ Keep it under 200 words. Be direct and insightful.`;
         if (type === 'general' || type === 'company_risk') {
             maxTokens = 1500;
         }
+        if (type === 'company_report' || type === 'founder_report') {
+            maxTokens = 4000;
+        }
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
