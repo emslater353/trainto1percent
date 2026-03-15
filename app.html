@@ -754,6 +754,9 @@ const STRIPE_ANNUAL = 'https://buy.stripe.com/dRm5kDbgP5CPdk89qO9ws02';
 const STRATEGY_CALL_URL='https://calendly.com/erica-m-slater/aiproofclub';
 const COMPANY_REPORT_PRICE=29;
 const COMPANY_REPORT_STRIPE='https://buy.stripe.com/14A3cv4Sr1mzdk8gTg9ws03';
+const SLACK_INVITE = 'YOUR_SLACK_INVITE_LINK_HERE'; // Replace with your Slack invite URL
+const COMMUNITY_MEETING_DAY = 'Thursdays'; // Day of weekly meeting
+const COMMUNITY_MEETING_TIME = '12:00 PM ET'; // Time of weekly meeting
 
 async function subscribeToBeehiiv(email, source='aiproof_app') {
     try {
@@ -1883,7 +1886,7 @@ function resetPasswordH(){return `<div class="screen-center"><div class="contain
 
 function signupH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Start training</h2><p class="card-subtitle">Build skills AI can't replace</p><div style="text-align:center;margin-bottom:16px;padding:10px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2)"><span style="font-size:12px;color:var(--accent)">🎁 3-day free trial · No charge until day 4</span></div><form id="signup-form"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="name" required></div><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required minlength="6"></div><button type="submit" class="btn btn-primary btn-full">Create Account</button></form><p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p></div></div></div>`;}
 
-function pricingH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center"><h2 class="card-title">Choose Your Plan</h2><p class="text-secondary text-small mb-20">Cancel anytime</p><div style="display:flex;flex-direction:column;gap:15px"><div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary)"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Most Popular</div><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">🎁 3-Day Free Trial</div><div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div><div style="font-size:11px;color:var(--text-muted);margin-top:6px;margin-bottom:4px">Free for 3 days · then Free 3 days · then $9.99/mo · Cancel anytime</div><a href="${STRIPE_LINK}" class="btn btn-primary btn-full mt-20">Start Free Trial →</a></div>${STRIPE_ANNUAL?`<div style="border:1px solid var(--bg-tertiary);padding:20px"><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Best Value — 2 Months Free</div><div style="font-size:36px;font-weight:700">$99<span style="font-size:14px;color:var(--text-secondary)">/year</span></div><a href="${STRIPE_ANNUAL}" class="btn btn-secondary btn-full mt-20">Start Annual →</a></div>`:''}</div><ul style="list-style:none;text-align:left;margin-top:25px;font-size:12px"><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ AI-Proof Score + personalized profile</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progressive weekly quests</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ 3 AI Coaches (Ideas, Personality, Execution)</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progress capsules + Weekly reviews</li><li style="padding:8px 0">✓ Cancel anytime</li></ul></div></div></div>`;}
+function pricingH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center"><h2 class="card-title">Choose Your Plan</h2><p class="text-secondary text-small mb-20">Cancel anytime</p><div style="display:flex;flex-direction:column;gap:15px"><div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary)"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Most Popular</div><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">🎁 3-Day Free Trial</div><div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div><div style="font-size:11px;color:var(--text-muted);margin-top:6px;margin-bottom:4px">Free for 3 days · then Free 3 days · then $9.99/mo · Cancel anytime</div><a href="${STRIPE_LINK}" class="btn btn-primary btn-full mt-20">Start Free Trial →</a></div>${STRIPE_ANNUAL?`<div style="border:1px solid var(--bg-tertiary);padding:20px"><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Best Value — 2 Months Free</div><div style="font-size:36px;font-weight:700">$99<span style="font-size:14px;color:var(--text-secondary)">/year</span></div><a href="${STRIPE_ANNUAL}" class="btn btn-secondary btn-full mt-20">Start Annual →</a></div>`:''}</div><ul style="list-style:none;text-align:left;margin-top:25px;font-size:12px"><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ AI-Proof Score + personalized profile</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progressive weekly quests</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ 3 AI Coaches (Ideas, Personality, Execution)</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progress capsules + Weekly reviews</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Private Slack community + weekly group call</li><li style="padding:8px 0">✓ Cancel anytime</li></ul></div></div></div>`;}
 
 function onboardingH(){
     const step = S.onboardStep;
@@ -1978,6 +1981,7 @@ function onboardingH(){
                     <li style="padding:5px 0">✓ AI Coaches for each mode</li>
                     <li style="padding:5px 0">✓ Forecast tracking + opportunities</li>
                     <li style="padding:5px 0">✓ Progress tracking + receipts</li>
+                    <li style="padding:5px 0">✓ Private Slack community + weekly group call</li>
                 </ul>
                 
                 <div style="display:flex;flex-direction:column;gap:12px">
@@ -2177,7 +2181,7 @@ function resultsH(){
     </div></div></div>`;
 }
 
-function appH(c){return `<div class="app-layout"><aside class="sidebar"><div class="sidebar-logo">AI PROOF <span>CLUB</span></div><div class="sidebar-streak"><div class="streak-value">🔥 ${streak()}</div><div class="streak-label">Day Streak</div></div><ul class="sidebar-nav"><li><a href="#" data-screen="dashboard" class="${S.screen==='dashboard'?'active':''}">◉ Dashboard</a></li><li><a href="#" data-screen="quests" class="${S.screen==='quests'?'active':''}">⚔ Quests</a></li><li><a href="#" data-screen="coach" class="${S.screen==='coach'?'active':''}">◎ AI Coach</a></li><li><a href="#" data-screen="forecasts" class="${S.screen==='forecasts'?'active':''}">🔮 Forecasts</a></li><li><a href="#" data-screen="receipts" class="${S.screen==='receipts'?'active':''}">◈ Receipts</a></li><li><a href="#" data-screen="capsules" class="${S.screen==='capsules'?'active':''}">📦 Capsules</a></li><li><a href="#" data-screen="review" class="${S.screen==='review'?'active':''}">📊 Review</a></li><li><a href="#" data-screen="settings" class="${S.screen==='settings'?'active':''}">⚙ Settings</a></li></ul><div class="sidebar-user"><div class="sidebar-name">${S.user?.name||'User'}</div><div class="sidebar-email">${S.user?.email||''}</div><span class="sidebar-logout" id="logout">Sign out</span></div></aside><main class="main">${c}</main><nav class="mobile-nav"><div class="mobile-nav-item ${S.screen==='dashboard'?'active':''}" data-screen="dashboard"><span>◉</span>Home</div><div class="mobile-nav-item ${S.screen==='quests'?'active':''}" data-screen="quests"><span>⚔</span>Quests</div><div class="mobile-nav-item ${S.screen==='coach'?'active':''}" data-screen="coach"><span>◎</span>Coach</div><div class="mobile-nav-item ${S.screen==='forecasts'?'active':''}" data-screen="forecasts"><span>🔮</span>Forecasts</div><div class="mobile-nav-item ${['receipts','capsules','review','settings'].includes(S.screen)?'active':''}" id="more-menu-toggle"><span>☰</span>More</div></nav><div class="more-menu ${S.showMoreMenu?'show':''}" id="more-menu"><div class="more-menu-item" data-screen="receipts"><span>◈</span> Receipts</div><div class="more-menu-item" data-screen="capsules"><span>📦</span> Capsules</div><div class="more-menu-item" data-screen="review"><span>📊</span> Review</div><div class="more-menu-item" data-screen="settings"><span>⚙</span> Settings</div><div class="more-menu-item" id="mobile-logout"><span>↩</span> Sign Out</div></div></div>`;}
+function appH(c){return `<div class="app-layout"><aside class="sidebar"><div class="sidebar-logo">AI PROOF <span>CLUB</span></div><div class="sidebar-streak"><div class="streak-value">🔥 ${streak()}</div><div class="streak-label">Day Streak</div></div><ul class="sidebar-nav"><li><a href="#" data-screen="dashboard" class="${S.screen==='dashboard'?'active':''}">◉ Dashboard</a></li><li><a href="#" data-screen="quests" class="${S.screen==='quests'?'active':''}">⚔ Quests</a></li><li><a href="#" data-screen="coach" class="${S.screen==='coach'?'active':''}">◎ AI Coach</a></li><li><a href="#" data-screen="forecasts" class="${S.screen==='forecasts'?'active':''}">🔮 Forecasts</a></li><li><a href="#" data-screen="receipts" class="${S.screen==='receipts'?'active':''}">◈ Receipts</a></li><li><a href="#" data-screen="capsules" class="${S.screen==='capsules'?'active':''}">📦 Capsules</a></li><li><a href="#" data-screen="review" class="${S.screen==='review'?'active':''}">📊 Review</a></li><li><a href="#" data-screen="settings" class="${S.screen==='settings'?'active':''}">⚙ Settings</a></li><li><a href="#" id="community-link">💬 Community</a></li></ul><div class="sidebar-user"><div class="sidebar-name">${S.user?.name||'User'}</div><div class="sidebar-email">${S.user?.email||''}</div><span class="sidebar-logout" id="logout">Sign out</span></div></aside><main class="main">${c}</main><nav class="mobile-nav"><div class="mobile-nav-item ${S.screen==='dashboard'?'active':''}" data-screen="dashboard"><span>◉</span>Home</div><div class="mobile-nav-item ${S.screen==='quests'?'active':''}" data-screen="quests"><span>⚔</span>Quests</div><div class="mobile-nav-item ${S.screen==='coach'?'active':''}" data-screen="coach"><span>◎</span>Coach</div><div class="mobile-nav-item ${S.screen==='forecasts'?'active':''}" data-screen="forecasts"><span>🔮</span>Forecasts</div><div class="mobile-nav-item ${['receipts','capsules','review','settings'].includes(S.screen)?'active':''}" id="more-menu-toggle"><span>☰</span>More</div></nav><div class="more-menu ${S.showMoreMenu?'show':''}" id="more-menu"><div class="more-menu-item" data-screen="receipts"><span>◈</span> Receipts</div><div class="more-menu-item" data-screen="capsules"><span>📦</span> Capsules</div><div class="more-menu-item" data-screen="review"><span>📊</span> Review</div><div class="more-menu-item" data-screen="settings"><span>⚙</span> Settings</div><div class="more-menu-item" id="mobile-logout"><span>↩</span> Sign Out</div></div></div>`;}
 
 function dashH(){
     const active=S.quests.filter(q=>!q.done).slice(0,3);
@@ -2379,7 +2383,31 @@ function settingsH(){
 </div>`;}
 
 
+function communityModalH(){
+    return `<div class="modal-overlay" id="modal-bg">
+        <div class="modal" style="max-width:480px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+                <h3 class="modal-title">💬 AI Proof Community</h3>
+                <button style="background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;line-height:1" id="cancel-modal">×</button>
+            </div>
+            <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:20px">
+                A private Slack channel for AI Proof Club members — share what you're building, spot opportunities together, and stay sharp on how AI is shifting your industry.
+            </p>
+            <div style="background:var(--bg-tertiary);padding:16px;margin-bottom:20px;border-left:3px solid var(--accent)">
+                <div style="font-size:11px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Weekly Group Call</div>
+                <div style="font-size:13px;font-weight:700">${COMMUNITY_MEETING_DAY} · ${COMMUNITY_MEETING_TIME}</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Open to all active members · Link posted in Slack</div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:20px;padding:10px;border:1px solid var(--bg-tertiary)">
+                ⚠ Access is included during your free trial and while your membership is active.
+            </div>
+            <a href="${SLACK_INVITE}" target="_blank" rel="noopener" class="btn btn-primary btn-full">Join Slack Community →</a>
+        </div>
+    </div>`;
+}
+
 function modalH(){
+    if(S.modal==='community') return communityModalH();
     if(S.modal==='forecastDetail') return forecastDetailModalH();
     if(S.modal==='getQuests') return getQuestsModalH();
     if(S.modal==='complete'){
@@ -3141,6 +3169,11 @@ function bindEvents(){
     // App navigation
     document.querySelectorAll('[data-screen]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();S.showMoreMenu=false;S.screen=a.dataset.screen;render();}));
     document.getElementById('logout')?.addEventListener('click',logout);
+    document.getElementById('community-link')?.addEventListener('click', e => {
+        e.preventDefault();
+        S.modal = 'community';
+        render();
+    });
     document.getElementById('mobile-logout')?.addEventListener('click',logout);
     
     // More menu toggle
