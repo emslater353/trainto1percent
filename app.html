@@ -2938,6 +2938,7 @@ function bindEvents(){
         e.preventDefault();
         S.onboardData.email = document.getElementById('ob-email').value;
         S.onboardData.industry = document.getElementById('ob-industry').value;
+        subscribeToBeehiiv(S.onboardData.email, 'onboarding');
         S.onboardStep=2; // Go to quiz intro
         render();
     });
@@ -3117,6 +3118,7 @@ function bindEvents(){
             // Store for later use after payment
             S.weeklyEmailOptIn = {email, optedIn: optIn};
             save();
+            subscribeToBeehiiv(email, 'weekly_optin');
         }
     });
     
@@ -3491,6 +3493,8 @@ async function signup(){
         alert('Signup failed: ' + (authResult.error.message || 'Unknown error'));
         return;
     }
+    
+    subscribeToBeehiiv(email, 'signup');
     
     // Store user data (without password - it's in Supabase Auth now)
     S.user = {name, email, start_date: new Date().toISOString(), onboarded: false};
