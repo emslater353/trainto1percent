@@ -4,6 +4,7 @@
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const SUPPORT_EMAIL = 'erica.m.slater@gmail.com';
 const FROM_EMAIL = 'AI Proof Club <noreply@aiproof.club>';
+const SLACK_COMMUNITY_URL = 'https://join.slack.com/t/aiproofclub/shared_invite/zt-3srqe5jkx-hodhg8ouRpAiS5kyiRkf0Q';
 
 exports.handler = async (event) => {
     // Only allow POST
@@ -76,15 +77,6 @@ exports.handler = async (event) => {
                     reply_to: data.senderEmail,
                     subject: data.subject || `AI Opportunity Report — ${data.domain}`,
                     html: generateReportEmail(data)
-                };
-                break;
-
-            case 'trial_reminder':
-                emailPayload = {
-                    from: FROM_EMAIL,
-                    to: data.email,
-                    subject: `Your AI Proof Club trial ends tomorrow — here's what you've built`,
-                    html: generateTrialReminderEmail(data)
                 };
                 break;
 
@@ -249,81 +241,6 @@ function generateReportEmail(data) {
     `;
 }
 
-function generateTrialReminderEmail(data) {
-    const { name, email, streak, totalXP, questsCompleted, trialEndDate } = data;
-    const displayName = name || 'there';
-    const displayStreak = streak || 0;
-    const displayXP = totalXP || 0;
-    const displayQuests = questsCompleted || 0;
-
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: 'Courier New', monospace; background: #050508; color: #e8e8ec; padding: 40px 20px; margin: 0;">
-    <div style="max-width: 600px; margin: 0 auto;">
-
-        <div style="text-align: center; background: #0a0a14; padding: 14px; letter-spacing: 3px; font-size: 13px; font-weight: 700; color: #00e5ff;">
-            AIPROOF.CLUB
-        </div>
-
-        <div style="background: #0d0d12; border: 1px solid #1a1a24; padding: 30px;">
-            <h2 style="font-size: 22px; font-weight: normal; margin: 0 0 6px 0;">Your trial ends tomorrow.</h2>
-            <p style="color: #6e7087; font-size: 13px; margin: 0 0 24px 0;">Hi ${displayName} — your 3-day free trial wraps up soon.</p>
-
-            <!-- Progress snapshot -->
-            <div style="background: #050508; border-left: 3px solid #00e5ff; padding: 16px 20px; margin-bottom: 24px;">
-                <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #6e7087; margin-bottom: 14px;">What you've built in 3 days</div>
-                <table style="width: 100%; text-align: center; border-spacing: 0;">
-                    <tr>
-                        <td style="padding: 10px;">
-                            <div style="font-size: 28px; font-weight: 700; color: #00e5ff;">${displayStreak}</div>
-                            <div style="font-size: 10px; color: #6e7087; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">Day Streak</div>
-                        </td>
-                        <td style="padding: 10px; border-left: 1px solid #1a1a24; border-right: 1px solid #1a1a24;">
-                            <div style="font-size: 28px; font-weight: 700;">${displayXP}</div>
-                            <div style="font-size: 10px; color: #6e7087; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">XP Earned</div>
-                        </td>
-                        <td style="padding: 10px;">
-                            <div style="font-size: 28px; font-weight: 700;">${displayQuests}</div>
-                            <div style="font-size: 10px; color: #6e7087; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">Quests Done</div>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-
-            <p style="font-size: 14px; line-height: 1.8; color: #e8e8ec; margin: 0 0 16px 0;">
-                Tomorrow you'll be charged <strong>$9.99</strong> and your membership continues automatically. If you want to cancel before then, you can do it in your account settings — no questions asked.
-            </p>
-
-            <p style="font-size: 14px; line-height: 1.8; color: #9090a0; margin: 0 0 28px 0;">
-                But if you've been showing up, the quests are working. That's the whole point — small reps now, so when AI reshapes your industry you're already ahead of it.
-            </p>
-
-            <div style="display: flex; gap: 12px;">
-                <a href="https://aiproof.club/app.html#dashboard"
-                   style="display: inline-block; background: #00e5ff; color: #050508; padding: 13px 24px; text-decoration: none; font-weight: bold; font-size: 11px; letter-spacing: 2px;">
-                    KEEP GOING →
-                </a>
-                <a href="https://aiproof.club/app.html#settings"
-                   style="display: inline-block; background: transparent; color: #6e7087; padding: 13px 24px; text-decoration: none; font-size: 11px; letter-spacing: 1px; border: 1px solid #1a1a24;">
-                    Cancel anytime
-                </a>
-            </div>
-        </div>
-
-        <p style="color: #3a3a4a; font-size: 11px; text-align: center; margin-top: 20px;">
-            AI Proof Club &middot; aiproof.club &middot; Questions? erica@aiproof.club
-        </p>
-    </div>
-</body>
-</html>
-    `;
-}
-
 function generateSharedReportEmail(data) {
     const { domain, fromName, fromEmail, message, status, statusSummary, opportunities, risks, summary } = data;
     const accentColor = '#00e5c7';
@@ -470,6 +387,16 @@ function generateWelcomeEmail(name) {
                style="display: inline-block; background: #00f0ff; color: #050508; padding: 14px 28px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 2px;">
                 START YOUR QUESTS →
             </a>
+            
+            <div style="margin-top: 28px; padding-top: 24px; border-top: 1px solid #1a1a24;">
+                <p style="color: #9090a0; font-size: 13px; line-height: 1.7; margin: 0 0 16px 0;">
+                    <strong style="color: #e8e8ec;">Slack community</strong> — meet other members, ask questions, and share wins.
+                </p>
+                <a href="${SLACK_COMMUNITY_URL}" 
+                   style="display: inline-block; background: transparent; color: #00f0ff; padding: 12px 26px; text-decoration: none; font-weight: bold; font-size: 11px; letter-spacing: 2px; border: 1px solid #2a2a36;">
+                    JOIN SLACK →
+                </a>
+            </div>
         </div>
         
         <p style="color: #6e7087; font-size: 12px; text-align: center; margin-top: 30px;">
