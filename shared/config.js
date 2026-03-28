@@ -5,6 +5,8 @@ const SUPABASE_URL = 'https://snbchuvvnbwvghmbxehv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuYmNodXZ2bmJ3dmdobWJ4ZWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MDg5NzMsImV4cCI6MjA4NTQ4NDk3M30.cKPieraN3FRT_5ilAQL0X2b9kIpklzE49xGzVJwYxZo';
 const STRIPE_LINK = 'https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01';
 const STRIPE_ANNUAL = 'https://buy.stripe.com/dRm5kDbgP5CPdk89qO9ws02';
+/** Stripe Payment Link for subscription checkout that includes a 7-day free trial (configure trial in Stripe Dashboard). */
+const STRIPE_TRIAL = 'https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01';
 const SLACK_COMMUNITY_URL = 'https://join.slack.com/t/aiproofclub/shared_invite/zt-3srqe5jkx-hodhg8ouRpAiS5kyiRkf0Q';
 const COMPANY_REPORT_PRICE=29;
 const COMPANY_REPORT_STRIPE='https://buy.stripe.com/14A3cv4Sr1mzdk8gTg9ws03';

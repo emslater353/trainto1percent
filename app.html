@@ -752,6 +752,7 @@ const SUPABASE_URL = 'https://snbchuvvnbwvghmbxehv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuYmNodXZ2bmJ3dmdobWJ4ZWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MDg5NzMsImV4cCI6MjA4NTQ4NDk3M30.cKPieraN3FRT_5ilAQL0X2b9kIpklzE49xGzVJwYxZo';
 const STRIPE_LINK = 'https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01';
 const STRIPE_ANNUAL = 'https://buy.stripe.com/dRm5kDbgP5CPdk89qO9ws02';
+const STRIPE_TRIAL = 'https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01';
 const SLACK_COMMUNITY_URL = 'https://join.slack.com/t/aiproofclub/shared_invite/zt-3srqe5jkx-hodhg8ouRpAiS5kyiRkf0Q';
 const COMPANY_REPORT_PRICE=29;
 const COMPANY_REPORT_STRIPE='https://buy.stripe.com/14A3cv4Sr1mzdk8gTg9ws03';
@@ -1566,10 +1567,17 @@ function diagnosticH(){
             </div>
         `).join('');
 
+        const trialHref = `${STRIPE_TRIAL}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}`;
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
         <div class="card" style="padding:32px">
             <h2 style="font-size:18px;font-weight:700;margin-bottom:16px">Your AI-Proof Assessment</h2>
             <p style="font-size:14px;line-height:1.8;color:var(--text-primary);margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${R.summary || ''}</p>
+
+            <div style="background:var(--bg-primary);border:1px solid var(--accent);padding:22px;margin-bottom:28px">
+                <h3 style="font-size:17px;font-weight:700;margin-bottom:10px;line-height:1.35">Stay AI-proof as things change weekly</h3>
+                <p class="text-secondary text-small" style="margin-bottom:16px;line-height:1.55">Your score is a snapshot. The Club keeps you ahead.</p>
+                <a href="${trialHref}" class="btn btn-primary btn-full diag-club-trial" id="diag-join-club-top">Join the Club &#x2192;</a>
+            </div>
 
             <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);margin-bottom:14px">Forecasts That Will Impact You</h4>
             <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${forecastCards || '<p class="text-secondary text-small">No forecasts matched.</p>'}</div>
@@ -1582,19 +1590,9 @@ function diagnosticH(){
                 <p class="text-secondary text-small">AI Proof Club gives you weekly quests built around forecasts like these — so you're always preparing for what's coming, not what already happened.</p>
             </div>
 
-            <div style="display:flex;flex-direction:column;gap:15px">
-                <div style="border:2px solid var(--accent);padding:15px;background:var(--bg-primary)">
-                    <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Monthly</div>
-                    <div style="font-size:24px;font-weight:700">$9.99<span style="font-size:12px;color:var(--text-secondary)">/month</span></div>
-                    <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}" class="btn btn-primary btn-full mt-10" id="diag-to-signup-link">Subscribe &#x2192;</a>
-                </div>
-                <div style="border:1px solid var(--success);padding:15px">
-                    <div style="font-size:10px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Best Value — 2 Months Free</div>
-                    <div style="font-size:24px;font-weight:700">$99<span style="font-size:12px;color:var(--text-secondary)">/year</span></div>
-                    <a href="${STRIPE_ANNUAL}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}" class="btn btn-secondary btn-full mt-10" id="diag-to-signup-annual">Start Annual &#x2192;</a>
-                </div>
+            <div style="text-align:center;padding:8px 0 4px">
+                <a href="${trialHref}" class="btn btn-primary btn-full diag-club-trial" id="diag-join-club-bottom" style="max-width:360px;margin:0 auto;display:inline-block;width:100%">Join the Club &#x2192;</a>
             </div>
-            <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
             <p class="text-center mt-15"><a class="text-link text-small" onclick="S.diagnosticStep=0;render()">&#x2190; Retake Assessment</a></p>
         </div>
         </div></div>`;
@@ -3060,32 +3058,21 @@ function bindEvents(){
         localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
     });
     
-    // Diagnostic results - save pending data for both monthly and annual
-    document.getElementById('diag-to-signup-link')?.addEventListener('click',()=>{
-        const scores = calculateDiagnosticScores();
-        const pendingUser = {
-            email: S.diagnosticEmail,
-            industry: S.diagnosticIndustry,
-            scores: scores,
-            baseline_scores: scores,
-            onboardStep: 4,
-            onboardData: { email: S.diagnosticEmail, industry: S.diagnosticIndustry, goals: [], forecastInterests: [] },
-            onboardSelectedForecasts: []
-        };
-        localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
-    });
-    document.getElementById('diag-to-signup-annual')?.addEventListener('click',()=>{
-        const scores = calculateDiagnosticScores();
-        const pendingUser = {
-            email: S.diagnosticEmail,
-            industry: S.diagnosticIndustry,
-            scores: scores,
-            baseline_scores: scores,
-            onboardStep: 4,
-            onboardData: { email: S.diagnosticEmail, industry: S.diagnosticIndustry, goals: [], forecastInterests: [] },
-            onboardSelectedForecasts: []
-        };
-        localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
+    // Diagnostic results — save pending user before Stripe (Join the Club / trial)
+    document.querySelectorAll('.diag-club-trial').forEach(function(el){
+        el.addEventListener('click',function(){
+            const scores = calculateDiagnosticScores();
+            const pendingUser = {
+                email: S.diagnosticEmail,
+                industry: S.diagnosticIndustry,
+                scores: scores,
+                baseline_scores: scores,
+                onboardStep: 4,
+                onboardData: { email: S.diagnosticEmail, industry: S.diagnosticIndustry, goals: [], forecastInterests: [] },
+                onboardSelectedForecasts: []
+            };
+            localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
+        });
     });
     
     // Finish onboarding
