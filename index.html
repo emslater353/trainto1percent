@@ -23,6 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
+            /* Original AI Proof Club palette */
             --bg-primary: #050508;
             --bg-secondary: #0d0d12;
             --bg-tertiary: #1a1a24;
@@ -34,6 +35,9 @@
             --personality: #ff6b9d;
             --execution: #00ff88;
             --success: #00ff88;
+            --line: #1a1a24;
+            /* Original site type: Space Mono sitewide (paired with current layout/components) */
+            --font-sans: 'Space Mono', monospace;
             --font-mono: 'Space Mono', monospace;
         }
 
@@ -41,12 +45,12 @@
         html { scroll-behavior: smooth; }
         
         body {
-            font-family: var(--font-mono);
+            font-family: var(--font-sans);
             background: var(--bg-primary);
             color: var(--text-primary);
-            line-height: 1.6;
-            font-size: 14px;
-            background-image: 
+            line-height: 1.65;
+            font-size: 15px;
+            background-image:
                 radial-gradient(ellipse at top, rgba(0, 240, 255, 0.03) 0%, transparent 50%),
                 radial-gradient(ellipse at bottom, rgba(123, 104, 238, 0.03) 0%, transparent 50%);
         }
@@ -57,18 +61,21 @@
             top: 0;
             left: 0;
             right: 0;
-            padding: 20px 40px;
+            padding: 18px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 100;
-            background: linear-gradient(to bottom, var(--bg-primary) 0%, transparent 100%);
+            background: rgba(5, 5, 8, 0.88);
+            border-bottom: 1px solid var(--line);
+            backdrop-filter: blur(10px);
         }
 
         .logo {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            letter-spacing: 3px;
+            letter-spacing: 0.12em;
+            font-family: var(--font-mono);
         }
         .logo span { color: var(--accent); }
 
@@ -78,18 +85,20 @@
         }
 
         .nav-link {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-secondary);
             text-decoration: none;
-            letter-spacing: 1px;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
             transition: color 0.3s;
-            padding: 8px 16px;
+            padding: 9px 14px;
+            border-radius: 8px;
         }
         .nav-link:hover { color: var(--accent); }
         .nav-link.primary {
             background: var(--accent);
             color: var(--bg-primary);
+            border: 1px solid transparent;
         }
         .nav-link.primary:hover {
             background: var(--text-primary);
@@ -97,80 +106,108 @@
 
         /* Hero */
         .hero {
-            min-height: 100vh;
+            min-height: 92vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 120px 40px 80px;
-            max-width: 900px;
+            padding: 124px 24px 72px;
+            max-width: 760px;
+            margin: 0 auto;
         }
 
         .hero h1 {
-            font-size: clamp(56px, 12vw, 120px);
-            font-weight: 700;
-            line-height: 1.0;
+            font-size: clamp(56px, 11vw, 112px);
+            font-weight: 800;
+            line-height: 0.95;
             margin-bottom: 20px;
-            letter-spacing: -2px;
-        }
-
-        .hero-subhead {
-            font-size: clamp(18px, 3vw, 26px);
-            color: var(--text-secondary);
-            margin-bottom: 25px;
-            font-style: italic;
+            letter-spacing: -0.03em;
         }
 
         .hero-tagline {
-            font-size: 15px;
+            font-size: 18px;
             color: var(--text-secondary);
-            margin-bottom: 40px;
-            max-width: 550px;
+            margin-bottom: 30px;
+            max-width: 64ch;
             line-height: 1.8;
+        }
+        .hero-quote {
+            display: block;
+            color: var(--text-primary);
+            font-style: italic;
         }
 
         .btn-primary {
             display: inline-block;
-            padding: 18px 36px;
+            padding: 14px 18px;
             background: var(--accent);
             color: var(--bg-primary);
             text-decoration: none;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+            letter-spacing: 0.04em;
             transition: all 0.3s;
-            box-shadow: 0 0 30px var(--accent-glow);
+            border-radius: 12px;
+            border: 1px solid transparent;
+            box-shadow: 0 0 24px var(--accent-glow);
         }
         .btn-primary:hover {
             background: var(--text-primary);
-            transform: translateY(-2px);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            margin-left: 0 !important;
+            box-shadow: none;
+        }
+        .btn-secondary:hover {
+            color: var(--text-primary);
+            border-color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .hero-meta {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .hero-meta strong {
+            color: var(--accent);
+            font-weight: 600;
         }
 
         /* How It Works Section */
         .how-it-works {
-            padding: 100px 40px;
+            padding: 90px 24px;
             background: var(--bg-secondary);
         }
 
         .section-title {
-            font-size: 11px;
-            letter-spacing: 3px;
+            font-size: 12px;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
             color: var(--accent);
-            margin-bottom: 15px;
+            margin-bottom: 14px;
+            font-weight: 600;
         }
 
         .section-heading {
-            font-size: clamp(28px, 5vw, 42px);
-            margin-bottom: 60px;
-            max-width: 600px;
+            font-size: clamp(30px, 5vw, 44px);
+            margin-bottom: 46px;
+            max-width: 720px;
+            line-height: 1.15;
         }
 
         .features-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            max-width: 1100px;
+            gap: 22px;
+            max-width: 1080px;
             margin: 0 auto;
         }
 
@@ -180,36 +217,27 @@
 
         .feature-card {
             background: var(--bg-primary);
-            border: 1px solid var(--bg-tertiary);
-            padding: 30px;
-            position: relative;
-        }
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            opacity: 0.3;
+            border: 1px solid var(--line);
+            padding: 28px;
+            border-radius: 14px;
         }
 
         .feature-label {
-            font-size: 10px;
-            letter-spacing: 2px;
+            font-size: 11px;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
             color: var(--accent);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            font-weight: 600;
         }
 
         .feature-title {
-            font-size: 18px;
-            margin-bottom: 15px;
+            font-size: 24px;
+            margin-bottom: 12px;
         }
 
         .feature-desc {
-            font-size: 13px;
+            font-size: 16px;
             color: var(--text-secondary);
             line-height: 1.7;
         }
@@ -217,9 +245,10 @@
         /* Forecasts Preview - Detailed Cards */
         .forecast-card {
             background: var(--bg-primary);
-            border: 1px solid var(--bg-tertiary);
-            padding: 25px;
+            border: 1px solid var(--line);
+            padding: 22px;
             margin-top: 20px;
+            border-radius: 12px;
         }
         .forecast-header {
             display: flex;
@@ -250,29 +279,30 @@
             margin-bottom: 20px;
         }
         .forecast-section {
-            background: rgba(255,107,157,0.1);
-            border-left: 3px solid var(--personality);
-            padding: 15px;
+            background: rgba(255, 107, 157, 0.08);
+            border: 1px solid var(--line);
+            padding: 16px 18px;
             margin-bottom: 12px;
+            border-radius: 12px;
         }
         .forecast-section.opportunities {
-            background: rgba(0,240,255,0.1);
-            border-color: var(--accent);
+            background: rgba(0, 240, 255, 0.06);
         }
         .forecast-section-label {
-            font-size: 9px;
-            letter-spacing: 1px;
+            font-size: 10px;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--personality);
             margin-bottom: 8px;
+            font-weight: 600;
         }
         .forecast-section.opportunities .forecast-section-label {
             color: var(--accent);
         }
         .forecast-section-text {
-            font-size: 12px;
+            font-size: 13px;
             color: var(--text-secondary);
-            line-height: 1.6;
+            line-height: 1.65;
         }
         .forecast-quests {
             display: flex;
@@ -317,19 +347,19 @@
             gap: 12px;
         }
         .opportunity-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            font-size: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(26, 26, 36, 0.9);
+            font-size: 13px;
             color: var(--text-secondary);
-            line-height: 1.5;
+            line-height: 1.55;
+        }
+        .opportunity-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
         }
         .opportunity-item strong {
             color: var(--text-primary);
-        }
-        .opportunity-icon {
-            font-size: 14px;
-            flex-shrink: 0;
+            font-weight: 600;
         }
 
         /* Modes Preview */
@@ -341,8 +371,9 @@
         .mode-circle {
             width: 70px;
             height: 70px;
-            border-radius: 50%;
-            border: 3px solid;
+            border-radius: 14px;
+            border: 2px solid var(--line);
+            background: rgba(255, 255, 255, 0.02);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -363,7 +394,7 @@
 
         /* Email Preview */
         .email-preview-section {
-            padding: 100px 40px;
+            padding: 90px 24px;
         }
 
         .email-preview-container {
@@ -374,9 +405,9 @@
         .email-mockup {
             background: var(--bg-secondary);
             border: 1px solid var(--bg-tertiary);
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
         }
 
         .email-header {
@@ -411,6 +442,7 @@
             font-size: 14px;
             letter-spacing: 3px;
             margin-bottom: 25px;
+            font-family: var(--font-mono);
         }
         .email-logo span { color: var(--accent); }
 
@@ -456,38 +488,39 @@
 
         .email-quest {
             background: var(--bg-secondary);
-            padding: 15px;
+            padding: 16px 18px;
             margin: 10px 0;
-            border-left: 3px solid;
+            border: 1px solid var(--line);
+            border-radius: 12px;
         }
-        .email-quest.ideas { border-color: var(--ideas); }
-        .email-quest.personality { border-color: var(--personality); }
-        .email-quest.execution { border-color: var(--execution); }
 
         .email-quest-mode {
-            font-size: 9px;
+            font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
         .email-quest.ideas .email-quest-mode { color: var(--ideas); }
         .email-quest.personality .email-quest-mode { color: var(--personality); }
         .email-quest.execution .email-quest-mode { color: var(--execution); }
 
         .email-quest-text {
-            font-size: 12px;
-            margin-bottom: 5px;
+            font-size: 13px;
+            margin-bottom: 8px;
+            line-height: 1.55;
+            color: var(--text-primary);
         }
 
         .email-quest-xp {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--accent);
             font-weight: 700;
         }
 
         .email-forecast-tag {
             background: var(--bg-secondary);
-            border: 1px solid var(--bg-tertiary);
+            border: 1px solid var(--line);
             padding: 12px 15px;
             font-size: 11px;
             color: var(--text-secondary);
@@ -496,13 +529,11 @@
             align-items: center;
             gap: 8px;
         }
-        .email-forecast-tag span {
-            font-size: 14px;
-        }
+        .email-forecast-tag span { display: none; }
 
         /* Pricing */
         .pricing-section {
-            padding: 100px 40px;
+            padding: 90px 24px;
             background: var(--bg-secondary);
         }
 
@@ -531,6 +562,7 @@
             border: 2px solid var(--accent);
             padding: 50px 40px;
             box-shadow: 0 0 40px var(--accent-glow);
+            border-radius: 14px;
         }
 
         .pricing-card-annual {
@@ -539,10 +571,11 @@
         }
 
         .pricing-amount {
-            font-size: 56px;
+            font-size: 52px;
             font-weight: 700;
             color: var(--accent);
             margin-bottom: 5px;
+            letter-spacing: -0.02em;
         }
         .pricing-period {
             font-size: 14px;
@@ -566,10 +599,10 @@
 
         /* Footer */
         footer {
-            padding: 40px;
+            padding: 32px;
             text-align: center;
             color: var(--text-secondary);
-            font-size: 12px;
+            font-size: 13px;
         }
         footer a {
             color: var(--accent);
@@ -588,10 +621,12 @@
 
         @media (max-width: 600px) {
             header { padding: 15px 20px; }
-            .hero { padding: 100px 20px 60px; }
-            .how-it-works, .email-preview-section, .pricing-section { padding: 60px 20px; }
+            .hero { padding: 104px 20px 56px; min-height: auto; }
+            .how-it-works, .email-preview-section, .pricing-section { padding: 64px 20px; }
             .email-stats { flex-direction: column; }
             .modes-preview { justify-content: center; }
+            .hero-tagline { font-size: 17px; }
+            .btn-primary { width: 100%; text-align: center; }
         }
     </style>
 </head>
@@ -606,22 +641,24 @@
 
     <section class="hero">
         <h1>Become AI Proof</h1>
-        <p class="hero-subhead">Get weekly quests to survive AGI</p>
-        <p class="hero-tagline">"To be forewarned is to be forearmed." AI is projected to take 80% of jobs. The question now becomes how can you adapt faster than AI and reshape before you become erased.</p>
-        <a href="app.html?mode=diagnostic" class="btn-primary">Am I AI Proof? →</a>
-        <a href="app.html?mode=company" class="btn-primary" style="background:transparent;border:1px solid #00f0ff;color:#00f0ff;margin-left:12px">Is My Company AI Proof? →</a>
+        <p class="hero-tagline">Most roles do not disappear overnight, rather they get trimmed down slowly. 80% of jobs are predicted to change or become obsolete with the rise of AI.<br><br><span class="hero-quote">“To be forewarned is to be forearmed.”</span></p>
+        <div class="hero-actions">
+            <a href="app.html?mode=diagnostic" class="btn-primary">Am I AI Proof? →</a>
+            <a href="app.html?mode=company" class="btn-primary btn-secondary">Is My Company AI Proof? →</a>
+        </div>
+        <p class="hero-meta"><strong>7-day free trial</strong> · Cancel anytime</p>
     </section>
 
     <section class="how-it-works">
         <div class="section-title">How It Works</div>
-        <h2 class="section-heading">Discover your modes. Follow forecasts. Get quests.</h2>
+        <h2 class="section-heading">Look at weak spots. Track what is changing. Move before everyone else does.</h2>
         
         <div class="features-grid">
             <!-- Modes Card -->
             <div class="feature-card">
                 <div class="feature-label">Step 1</div>
-                <h3 class="feature-title">Discover Your Modes</h3>
-                <p class="feature-desc">Get your AI-Proof Score to find your strengths and gaps across three modes AI can't replace.</p>
+                <h3 class="feature-title">Your Modes</h3>
+                <p class="feature-desc">There are three buckets: Ideas, Personality, and Execution. You will get a score like 72 / 45 / 83. Most people assume the wrong one matters most, and that is where they get caught off guard.</p>
                 
                 <div class="modes-preview">
                     <div class="mode-item">
@@ -642,41 +679,29 @@
             <!-- Forecasts Card -->
             <div class="feature-card">
                 <div class="feature-label">Step 2</div>
-                <h3 class="feature-title">Follow AI Forecasts</h3>
-                <p class="feature-desc">Select predictions about AI's future that matter to your career. Each forecast reveals emerging opportunities.</p>
+                <h3 class="feature-title">Forecasts</h3>
+                <p class="feature-desc">Pick what is relevant to you or what you are making your biggest bet on. We show what is likely coming, a timeline, and the opportunity shifts that could emerge if the prediction becomes true.</p>
                 
                 <div class="forecast-card">
                     <div class="forecast-header">
-                        <span class="forecast-category">🚗 Transportation</span>
+                        <span class="forecast-category">Transportation</span>
                         <span class="forecast-confidence">High Confidence</span>
                     </div>
                     <div class="forecast-title">"Fully autonomous vehicles reach mass adoption by 2030"</div>
                     <div class="forecast-source">— Waymo, Tesla FSD trajectory</div>
                     
                     <div class="forecast-section">
-                        <div class="forecast-section-label">Mode Threat</div>
-                        <div class="forecast-section-text">Driving becomes obsolete, but <em>the commute doesn't disappear</em> — it transforms. Winners design the experience inside the vehicle, not the vehicle itself.</div>
+                        <div class="forecast-section-label">What Changes</div>
+                        <div class="forecast-section-text">The time inside the car will not become obsolete. Which means something else fills it.</div>
                     </div>
                     
                     <div class="forecast-section opportunities">
-                        <div class="forecast-section-label">Opportunities Forming</div>
+                        <div class="forecast-section-label">Opportunity Shifts</div>
                         <div class="opportunities-list">
-                            <div class="opportunity-item">
-                                <span class="opportunity-icon">🛡️</span>
-                                <span><strong>Insurance</strong> shifts from driver risk to system risk</span>
-                            </div>
-                            <div class="opportunity-item">
-                                <span class="opportunity-icon">🏥</span>
-                                <span><strong>Healthcare</strong> — mobile diagnostics, sleep therapy in transit</span>
-                            </div>
-                            <div class="opportunity-item">
-                                <span class="opportunity-icon">👜</span>
-                                <span><strong>Fashion & Lifestyle</strong> — interiors become status symbols</span>
-                            </div>
-                            <div class="opportunity-item">
-                                <span class="opportunity-icon">🤖</span>
-                                <span><strong>AI Assistants</strong> — "trip concierges" become a category</span>
-                            </div>
+                            <div class="opportunity-item"><strong>Insurance</strong> starts thinking about systems instead of people</div>
+                            <div class="opportunity-item"><strong>Healthcare</strong> shows up in weird places, like your commute</div>
+                            <div class="opportunity-item"><strong>Car interiors</strong> become a focal point for businesses</div>
+                            <div class="opportunity-item"><strong>Most people miss this shift</strong> because they only watch the headline, not the second-order opportunities</div>
                         </div>
                     </div>
                 </div>
@@ -687,7 +712,8 @@
     <section class="email-preview-section">
         <div class="email-preview-container">
             <div class="section-title" style="text-align: center;">Step 3</div>
-            <h2 class="section-heading" style="text-align: center; margin: 0 auto 40px;">Get Weekly Quests in Your Inbox</h2>
+            <h2 class="section-heading" style="text-align: center; margin: 0 auto 20px;">Weekly Quests</h2>
+            <p class="feature-desc" style="text-align: center; max-width: 760px; margin: 0 auto 40px;">Every Monday you get a short list of things to do based on the predictions you are following. Simple actions you can actually finish. They are tied to your scores and what you follow, so over time you build proof that you are not standing still.</p>
             
             <div class="email-mockup">
                 <div class="email-header">
@@ -718,7 +744,7 @@
                         </div>
 
                         <div class="email-forecast-tag">
-                            <span>👜</span> Fashion & Lifestyle opportunity from: "Autonomous vehicles reach mass adoption by 2030"
+                            <span></span> Fashion & Lifestyle opportunity from: "Autonomous vehicles reach mass adoption by 2030"
                         </div>
 
                         <div class="email-quest ideas">
@@ -764,8 +790,8 @@
 
     <section class="pricing-section" id="pricing">
         <div class="pricing-container">
-            <div class="section-title">Pricing</div>
-            <h2 class="section-heading" style="text-align: center;">Start Your AI-Proof Journey</h2>
+            <div class="section-title">Join the Club</div>
+            <h2 class="section-heading" style="text-align: center;">Start free. Cancel whenever.</h2>
             
             <div class="pricing-panels">
                 <div class="pricing-card">
@@ -774,32 +800,31 @@
                     <div class="pricing-period">per month</div>
                     
                     <ul class="pricing-features">
-                        <li>✓ AI-Proof Score + personalized profile</li>
-                        <li>✓ 99 AI forecasts to follow</li>
-                        <li>✓ Weekly quests tailored to your modes</li>
-                        <li>✓ Progress tracking + receipts</li>
-                        <li>✓ Monday morning quest emails</li>
-                        <li>✓ Private Slack community of professionals staying ahead of AI</li>
-                        <li>✓ Cancel anytime</li>
+                        <li>✓ 7-day free trial</li>
+                        <li>✓ You get your score, forecasts to track, and weekly quests</li>
+                        <li>✓ Slack community if you want to see how others are approaching it</li>
+                        <li>✓ Cancel whenever</li>
                     </ul>
                     
-                    <a href="https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01" class="btn-primary btn-full" style="margin-top: auto;">Start Monthly →</a>
+                    <a href="https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01" class="btn-primary btn-full" style="margin-top: auto;">Start free trial →</a>
                 </div>
                 
                 <div class="pricing-card pricing-card-annual">
-                    <div style="font-size: 11px; color: var(--success); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Annual — Same plan, lower price</div>
+                    <div style="font-size: 11px; color: var(--success); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Annual</div>
                     <div class="pricing-amount">$99</div>
                     <div class="pricing-period">per year</div>
                     
                     <ul class="pricing-features">
-                        <li>✓ Same features as Monthly — full platform access</li>
-                        <li>✓ Save ~$20/year vs paying month-to-month (2 months free)</li>
-                        <li>✓ Cancel anytime</li>
+                        <li>✓ Same thing, just less per month</li>
+                        <li>✓ 7-day free trial</li>
+                        <li>✓ Full access to score, forecasts, and weekly quests</li>
+                        <li>✓ Cancel whenever</li>
                     </ul>
                     
-                    <a href="https://buy.stripe.com/dRm5kDbgP5CPdk89qO9ws02" class="btn-primary btn-full" style="background: #00f0ff; color: #050508; margin-top: auto;">Start Annual →</a>
+                    <a href="https://buy.stripe.com/dRm5kDbgP5CPdk89qO9ws02" class="btn-primary btn-full" style="margin-top: auto;">Start free trial →</a>
                 </div>
             </div>
+            <p class="feature-desc" style="text-align: center; max-width: 820px; margin: 30px auto 0;">Some jobs are already thinner than they were a year ago. Others look the same and some people are entirely unaware of what is coming for them. A lot of people will ignore it, but you can make a move from here.</p>
         </div>
     </section>
 
