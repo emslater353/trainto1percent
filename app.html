@@ -746,13 +746,15 @@
 <div id="app"></div>
 <script>
 const OPENAI_API = '/.netlify/functions/openai';
-const APP_VERSION = 'v2025.02.25.D'; // Version tracker
+const APP_VERSION = 'v2025.03.28.A'; // Version tracker
 console.log('AI Proof Club version:', APP_VERSION);
 const SUPABASE_URL = 'https://snbchuvvnbwvghmbxehv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuYmNodXZ2bmJ3dmdobWJ4ZWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MDg5NzMsImV4cCI6MjA4NTQ4NDk3M30.cKPieraN3FRT_5ilAQL0X2b9kIpklzE49xGzVJwYxZo';
 const STRIPE_LINK = 'https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01';
 const STRIPE_ANNUAL = 'https://buy.stripe.com/dRm5kDbgP5CPdk89qO9ws02';
 const STRIPE_TRIAL = 'https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01';
+/** 1:1 booking after diagnostic */
+const CALENDLY_URL = 'https://calendly.com/erica-m-slater/aiproofclub';
 const SLACK_COMMUNITY_URL = 'https://join.slack.com/t/aiproofclub/shared_invite/zt-3srqe5jkx-hodhg8ouRpAiS5kyiRkf0Q';
 const COMPANY_REPORT_PRICE=29;
 const COMPANY_REPORT_STRIPE='https://buy.stripe.com/14A3cv4Sr1mzdk8gTg9ws03';
@@ -1592,6 +1594,9 @@ function diagnosticH(){
 
             <div style="text-align:center;padding:8px 0 4px">
                 <a href="${trialHref}" class="btn btn-primary btn-full diag-club-trial" id="diag-join-club-bottom" style="max-width:360px;margin:0 auto;display:inline-block;width:100%">Join the Club &#x2192;</a>
+            </div>
+            <div style="text-align:center;margin-top:16px;padding-bottom:4px">
+                <a href="${CALENDLY_URL}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-full" id="diag-calendly-human" style="max-width:360px;margin:0 auto;display:inline-block;width:100%;box-sizing:border-box">Chat with a human to make my role AI-proof &#x2192;</a>
             </div>
             <p class="text-center mt-15"><a class="text-link text-small" onclick="S.diagnosticStep=0;render()">&#x2190; Retake Assessment</a></p>
         </div>
