@@ -1535,15 +1535,51 @@ function diagnosticH(){
             </div>
         `).join('');
 
-        const oppCards = (R.opportunities || []).map((o, i) => `
-            <div style="display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--bg-tertiary)">
-                <div style="color:var(--accent);font-size:12px;font-weight:700;min-width:20px;padding-top:1px">${i+1}</div>
-                <div>
-                    <div style="font-size:13px;font-weight:700;margin-bottom:3px">${o.title}</div>
-                    <div style="font-size:12px;color:var(--text-secondary);line-height:1.5">${o.why}</div>
-                </div>
-            </div>
-        `).join('');
+        const opportunitiesByForecast = (R.opportunities || []).reduce((acc, o) => {
+            const key = o.forecastId || '_general';
+            if(!acc[key]) acc[key] = [];
+            acc[key].push(o);
+            return acc;
+        }, {});
+        const orderedForecasts = (R.forecasts && R.forecasts.length)
+            ? R.forecasts
+            : Object.keys(opportunitiesByForecast).map(id => ({id, title: ''}));
+        let oppCounter = 0;
+        const oppGroups = orderedForecasts.map(f => {
+            const items = opportunitiesByForecast[f.id] || [];
+            if(!items.length) return '';
+            const header = f.title
+                ? `<div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin:18px 0 10px">From: ${f.title}</div>`
+                : '';
+            const rows = items.map(o => {
+                oppCounter += 1;
+                return `
+                    <div style="display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--bg-tertiary)">
+                        <div style="color:var(--accent);font-size:12px;font-weight:700;min-width:24px;padding-top:1px">${oppCounter}</div>
+                        <div>
+                            <div style="font-size:13px;font-weight:700;margin-bottom:3px">${o.title}</div>
+                            <div style="font-size:12px;color:var(--text-secondary);line-height:1.5">${o.why || ''}</div>
+                        </div>
+                    </div>`;
+            }).join('');
+            return header + rows;
+        }).join('');
+        const generalKey = '_general';
+        let oppCardsExtra = '';
+        if(opportunitiesByForecast[generalKey]) {
+            oppCardsExtra = opportunitiesByForecast[generalKey].map(o => {
+                oppCounter += 1;
+                return `
+                    <div style="display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--bg-tertiary)">
+                        <div style="color:var(--accent);font-size:12px;font-weight:700;min-width:24px;padding-top:1px">${oppCounter}</div>
+                        <div>
+                            <div style="font-size:13px;font-weight:700;margin-bottom:3px">${o.title}</div>
+                            <div style="font-size:12px;color:var(--text-secondary);line-height:1.5">${o.why || ''}</div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+        const oppCards = oppGroups + oppCardsExtra;
 
         const trialHref = `${STRIPE_TRIAL}?prefilled_email=${encodeURIComponent(S.diagnosticEmail||'')}`;
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
@@ -1560,7 +1596,7 @@ function diagnosticH(){
             <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);margin-bottom:14px">Forecasts That Will Impact You</h4>
             <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${forecastCards || '<p class="text-secondary text-small">No forecasts matched.</p>'}</div>
 
-            <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:14px">Your 3 Best Opportunities</h4>
+            <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:14px">Opportunities Built For Your Role</h4>
             <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--bg-tertiary)">${oppCards}</div>
 
             <div style="background:var(--bg-primary);padding:20px;margin-bottom:24px">
@@ -10076,7 +10112,7 @@ async function generateDiagnosticAssessment(email, industry, title, dayToDay) {
             }))
         }));
 
-    const systemPrompt = "You are an AI displacement analyst using a curated forecast database. Return ONLY valid JSON with no markdown or backticks: {\"summary\":\"2-3 specific sentences: where this person has durable value, then exactly where AI pressure shows up in their work\",\"forecastIds\":[\"id1\",\"id2\"],\"opportunities\":[{\"title\":\"exact opportunity title from the supplied database\",\"why\":\"one sentence tying it to their actual role\"},{\"title\":\"exact opportunity title from the supplied database\",\"why\":\"one sentence\"},{\"title\":\"exact opportunity title from the supplied database\",\"why\":\"one sentence\"}]}. Use only forecast IDs and opportunity titles from the supplied database. Prefer forecasts with direct role/industry fit, high probability, near timeframe, and clear at-risk overlap. Be concrete and avoid generic self-improvement advice.";
+    const systemPrompt = "You are an AI displacement analyst using a curated forecast database. Return ONLY valid JSON with no markdown or backticks: {\"summary\":\"2-3 specific sentences: where this person has durable value, then exactly where AI pressure shows up in their work\",\"forecastIds\":[\"id1\",\"id2\",\"id3\"],\"opportunities\":[{\"title\":\"exact opportunity title from the supplied database\",\"why\":\"one sentence tying it to their actual role\",\"forecastId\":\"matching forecast id\"}]}. Pick the 3 most impactful forecast IDs from the supplied candidates. Then list 6 to 8 opportunities total drawn from those forecasts, with each opportunity's title copied verbatim from the supplied database and forecastId referring to its parent forecast. Distribute opportunities across the chosen forecasts. Be concrete and avoid generic self-improvement advice.";
     const userMsg = 'Industry: ' + industry + '\nTitle: ' + title + '\nDay-to-day: ' + dayToDay + '\n\nRanked forecast candidates with real metadata and opportunities:\n' + JSON.stringify(candidateForecasts);
 
     try {
@@ -10099,10 +10135,10 @@ async function generateDiagnosticAssessment(email, industry, title, dayToDay) {
         let selectedForecasts = (result.forecastIds || [])
             .map(id => forecastDb.find(f => f.id === id))
             .filter(Boolean)
-            .slice(0, 2);
+            .slice(0, 3);
         if(selectedForecasts.length === 0) {
             selectedForecasts = candidateForecasts
-                .slice(0, 2)
+                .slice(0, 3)
                 .map(c => forecastDb.find(f => f.id === c.id))
                 .filter(Boolean);
         }
@@ -10113,48 +10149,59 @@ async function generateDiagnosticAssessment(email, industry, title, dayToDay) {
             .filter(f => selectedIds.has(f.id))
             .flatMap(f => (f.opportunities || []).map(o => ({...o, forecastId: f.id, forecastTitle: f.title})));
         const usedTitles = new Set();
-        const hydratedOpportunities = (result.opportunities || []).map(o => {
+        const perForecastCount = {};
+        const PER_FORECAST_MAX = 4;
+        const TOTAL_MAX = 12;
+        const tryAdd = (item) => {
+            if(!item || usedTitles.has(item.title)) return false;
+            const fId = item.forecastId || '_general';
+            if(perForecastCount[fId] >= PER_FORECAST_MAX) return false;
+            usedTitles.add(item.title);
+            perForecastCount[fId] = (perForecastCount[fId] || 0) + 1;
+            return true;
+        };
+        const hydratedOpportunities = [];
+        (result.opportunities || []).forEach(o => {
             const requestedTitle = normalize(o.title);
-            if(!requestedTitle) return null;
+            if(!requestedTitle) return;
             const match = opportunityPool.find(real => normalize(real.title) === requestedTitle)
                 || opportunityPool.find(real => normalize(real.title).includes(requestedTitle) || requestedTitle.includes(normalize(real.title)));
-            if(!match || usedTitles.has(match.title)) return null;
-            usedTitles.add(match.title);
-            return {
+            if(!match) return;
+            const item = {
                 title: match.title,
                 why: o.why || match.description,
                 forecastId: match.forecastId,
                 mode: match.mode
             };
-        }).filter(Boolean);
-        opportunityPool.forEach(o => {
-            if(hydratedOpportunities.length < 3 && !usedTitles.has(o.title)) {
-                usedTitles.add(o.title);
-                hydratedOpportunities.push({
-                    title: o.title,
-                    why: o.description,
-                    forecastId: o.forecastId,
-                    mode: o.mode
-                });
-            }
+            if(tryAdd(item)) hydratedOpportunities.push(item);
         });
-        result.opportunities = hydratedOpportunities.slice(0, 3);
+        opportunityPool.forEach(o => {
+            if(hydratedOpportunities.length >= TOTAL_MAX) return;
+            const item = {
+                title: o.title,
+                why: o.description,
+                forecastId: o.forecastId,
+                mode: o.mode
+            };
+            if(tryAdd(item)) hydratedOpportunities.push(item);
+        });
+        result.opportunities = hydratedOpportunities.slice(0, TOTAL_MAX);
 
         return result;
     } catch(e) {
         console.error('Diagnostic AI error:', e);
         const fallbackForecasts = candidateForecasts
-            .slice(0, 2)
+            .slice(0, 3)
             .map(c => forecastDb.find(f => f.id === c.id))
             .filter(Boolean);
         const fallbackOpportunities = fallbackForecasts
-            .flatMap(f => (f.opportunities || []).slice(0, 2).map(o => ({
+            .flatMap(f => (f.opportunities || []).slice(0, 4).map(o => ({
                 title: o.title,
                 why: o.description,
                 forecastId: f.id,
                 mode: o.mode
             })))
-            .slice(0, 3);
+            .slice(0, 12);
         return {
             summary: fallbackForecasts.length
                 ? 'We matched your role against the forecast database, but could not complete the AI write-up. These are the closest forecast-driven opportunities based on your industry and day-to-day work.'
