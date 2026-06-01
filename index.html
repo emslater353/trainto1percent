@@ -595,6 +595,19 @@
             text-align: center;
         }
 
+        .pricing-heading {
+            max-width: none;
+            white-space: nowrap;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media (max-width: 720px) {
+            .pricing-heading {
+                white-space: normal;
+                font-size: clamp(26px, 7vw, 36px);
+            }
+        }
+
         .pricing-panels {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -883,7 +896,7 @@
     <section class="pricing-section" id="pricing">
         <div class="pricing-container">
             <div class="section-title">Join the Club</div>
-            <h2 class="section-heading" style="text-align: center;">Start free. Cancel whenever.</h2>
+            <h2 class="section-heading pricing-heading">Start free. Cancel whenever.</h2>
             
             <div class="pricing-panels">
                 <div class="pricing-card">
