@@ -50,6 +50,7 @@
             color: var(--text-primary);
             line-height: 1.65;
             font-size: 15px;
+            overflow-x: hidden;
             background-image:
                 radial-gradient(ellipse at top, rgba(0, 240, 255, 0.03) 0%, transparent 50%),
                 radial-gradient(ellipse at bottom, rgba(123, 104, 238, 0.03) 0%, transparent 50%);
@@ -110,30 +111,80 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
+            text-align: center;
             padding: 124px 24px 72px;
-            max-width: 760px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
         .hero h1 {
-            font-size: clamp(56px, 11vw, 112px);
+            font-size: clamp(36px, 11vw, 160px);
             font-weight: 800;
             line-height: 0.95;
-            margin-bottom: 20px;
+            margin-bottom: 28px;
             letter-spacing: -0.03em;
+            white-space: nowrap;
+            max-width: 100%;
         }
 
-        .hero-tagline {
-            font-size: 18px;
+        .hero-letter {
+            max-width: 62ch;
+            margin: 56px auto 0;
+            text-align: center;
             color: var(--text-secondary);
-            margin-bottom: 30px;
-            max-width: 64ch;
+            font-size: 16px;
             line-height: 1.8;
         }
-        .hero-quote {
-            display: block;
+        .hero-letter p { margin-bottom: 18px; }
+        .hero-subhead {
+            font-size: clamp(22px, 2.4vw, 30px);
             color: var(--text-primary);
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .hero-prompt {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-top: 28px !important;
+        }
+        .hero-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 28px;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        .hero-list li {
+            padding: 6px 0 6px 26px;
+            position: relative;
+            color: var(--text-primary);
+            text-align: left;
+        }
+        .hero-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: 700;
+        }
+        .hero-emphasis {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .hero-signoff {
+            margin-top: 28px;
+            color: var(--text-primary);
+        }
+        .hero-signature {
+            display: block;
+            margin-top: 6px;
             font-style: italic;
+            color: var(--accent);
         }
 
         .btn-primary {
@@ -170,6 +221,7 @@
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
+            justify-content: center;
             margin-bottom: 14px;
         }
         .hero-meta {
@@ -620,13 +672,33 @@
         }
 
         @media (max-width: 600px) {
-            header { padding: 15px 20px; }
-            .hero { padding: 104px 20px 56px; min-height: auto; }
-            .how-it-works, .email-preview-section, .pricing-section { padding: 64px 20px; }
+            header { padding: 15px 16px; }
+            .hero {
+                padding: 96px 16px 48px;
+                min-height: auto;
+                max-width: 100%;
+            }
+            .hero h1 {
+                font-size: clamp(40px, 13vw, 72px);
+                white-space: normal;
+                line-height: 1;
+                word-break: break-word;
+                margin-bottom: 20px;
+            }
+            .hero-subhead { font-size: 22px; }
+            .hero-letter {
+                font-size: 15px;
+                line-height: 1.7;
+                margin-top: 40px;
+                max-width: 100%;
+            }
+            .how-it-works, .email-preview-section, .pricing-section { padding: 64px 16px; }
             .email-stats { flex-direction: column; }
             .modes-preview { justify-content: center; }
-            .hero-tagline { font-size: 17px; }
             .btn-primary { width: 100%; text-align: center; }
+            .hero-actions { width: 100%; }
+            .hero-list { display: flex; }
+            .hero-list li { font-size: 15px; }
         }
     </style>
 </head>
@@ -641,12 +713,32 @@
 
     <section class="hero">
         <h1>Become AI Proof</h1>
-        <p class="hero-tagline">Most roles do not disappear overnight, rather they get trimmed down slowly. 80% of jobs are predicted to change or become obsolete with the rise of AI.<br><br><span class="hero-quote">“To be forewarned is to be forearmed.”</span></p>
         <div class="hero-actions">
             <a href="app.html?mode=diagnostic" class="btn-primary">Am I AI Proof? →</a>
             <a href="app.html?mode=company" class="btn-primary btn-secondary">Is My Company AI Proof? →</a>
         </div>
         <p class="hero-meta"><strong>7-day free trial</strong> · Cancel anytime</p>
+
+        <div class="hero-letter">
+            <h2 class="hero-subhead">Stay Ahead of AI. Stay AI Proof.</h2>
+            <p>AI is changing jobs and it's also creating new ones.</p>
+            <p>The challenge is keeping up with the news to adopt AI skillsets and changes before industries shift.</p>
+            <p>AI Proof Club helps you identify emerging opportunities across AI, robotics, automation, and software and shows you how to position yourself for them.</p>
+
+            <p class="hero-prompt">Tell us what you do today.</p>
+            <p>We'll show you:</p>
+            <ul class="hero-list">
+                <li>Emerging career opportunities</li>
+                <li>Industries gaining momentum</li>
+                <li>Skills worth learning</li>
+                <li>Communities to join</li>
+                <li>Quests to stay ahead</li>
+            </ul>
+
+            <p>I built AI Proof Club after transitioning from a decade in luxury fashion to an AI startup by recognizing where technology was heading before most people around me.</p>
+            <p class="hero-emphasis">The future belongs to people who adapt early.</p>
+            <p class="hero-signoff">Stay AI Proof.<span class="hero-signature">Erica</span></p>
+        </div>
     </section>
 
     <section class="how-it-works">
