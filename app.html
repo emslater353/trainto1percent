@@ -3070,14 +3070,26 @@ function bindEvents(){
     document.querySelectorAll('.diag-club-trial').forEach(function(el){
         el.addEventListener('click',function(){
             const scores = calculateDiagnosticScores();
+            const matchedForecastIds = (S.diagnosticResult?.forecasts || []).map(f => f.id).filter(Boolean);
             const pendingUser = {
                 email: S.diagnosticEmail,
                 industry: S.diagnosticIndustry,
+                role: S.diagnosticTitle || '',
+                responsibilities: S.diagnosticDayToDay || '',
+                diagnosticSummary: S.diagnosticResult?.summary || '',
+                matchedForecastIds: matchedForecastIds,
                 scores: scores,
                 baseline_scores: scores,
                 onboardStep: 4,
-                onboardData: { email: S.diagnosticEmail, industry: S.diagnosticIndustry, goals: [], forecastInterests: [] },
-                onboardSelectedForecasts: []
+                onboardData: {
+                    email: S.diagnosticEmail,
+                    industry: S.diagnosticIndustry,
+                    role: S.diagnosticTitle || '',
+                    responsibilities: S.diagnosticDayToDay || '',
+                    goals: [],
+                    forecastInterests: []
+                },
+                onboardSelectedForecasts: matchedForecastIds
             };
             localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
         });
@@ -3566,6 +3578,8 @@ async function completeOnboarding(){
     S.user = S.user || {};
     S.user.email = S.onboardData.email;
     S.user.industry = S.onboardData.industry;
+    if(S.onboardData.role) S.user.role = S.onboardData.role;
+    if(S.onboardData.responsibilities) S.user.responsibilities = S.onboardData.responsibilities;
     S.user.onboarded = true;
     S.user.baseline_scores = {...S.scores};
     S.user.scores = S.scores;
@@ -3579,7 +3593,7 @@ async function completeOnboarding(){
     }
     
     S.quests = genQuests();
-    const res = await db('users','POST',S.user);
+    const res = await db('users','POST', S.user);
     if(res?.length){
         S.user = res[0];
         localStorage.setItem('apc_session',JSON.stringify(S.user));
@@ -3602,9 +3616,11 @@ async function startApp(){
     S.user.experience = S.onboardData.experience;
     S.user.goals = S.onboardData.goals;
     S.user.forecast_interests = S.onboardData.forecastInterests;
+    if(S.onboardData.role) S.user.role = S.onboardData.role;
+    if(S.onboardData.responsibilities) S.user.responsibilities = S.onboardData.responsibilities;
     
     S.quests = genQuests();
-    const res = await db('users','POST',S.user);
+    const res = await db('users','POST', S.user);
     if(res?.length){
         S.user = res[0];
         localStorage.setItem('apc_session',JSON.stringify(S.user));
@@ -9941,14 +9957,25 @@ async function init(){
         const pending=localStorage.getItem('apc_pending');
         if(pending){
             const pendingData = JSON.parse(pending);
-            S.user = { email: pendingData.email, plan: 'paid' };
+            S.user = {
+                email: pendingData.email,
+                plan: 'paid',
+                industry: pendingData.industry || '',
+                role: pendingData.role || '',
+                responsibilities: pendingData.responsibilities || ''
+            };
             S.scores = pendingData.scores || {ideas:50,personality:50,execution:50};
             S.freeQuizScores = pendingData.baseline_scores || S.scores;
             S.onboardData = pendingData.onboardData || {goals: [], forecastInterests: []};
             // Ensure goals array exists
             if(!S.onboardData.goals) S.onboardData.goals = [];
             if(!S.onboardData.forecastInterests) S.onboardData.forecastInterests = [];
+            if(pendingData.role && !S.onboardData.role) S.onboardData.role = pendingData.role;
+            if(pendingData.responsibilities && !S.onboardData.responsibilities) S.onboardData.responsibilities = pendingData.responsibilities;
             S.onboardSelectedForecasts = pendingData.onboardSelectedForecasts || [];
+            if(pendingData.matchedForecastIds && pendingData.matchedForecastIds.length){
+                S.followedForecasts = Array.from(new Set([...(S.followedForecasts || []), ...pendingData.matchedForecastIds]));
+            }
             S.onboardStep = pendingData.onboardStep || 4; // Continue to goals
             S.screen = 'onboarding';
             render();
