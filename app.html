@@ -1014,30 +1014,6 @@ const Qs = [
     ]}
 ];
 
-// Shortened 4-question diagnostic for landing page (email gate)
-const DiagnosticQs = [
-    {t:"When facing a complex decision, you typically:",o:[
-        {t:"Map out all possible scenarios",m:"ideas",w:2},
-        {t:"Talk through it with people you trust",m:"personality",w:2},
-        {t:"Make a quick call and adjust as you go",m:"execution",w:2}
-    ]},
-    {t:"People come to you when they need:",o:[
-        {t:"A fresh perspective or creative solution",m:"ideas",w:2},
-        {t:"Someone to listen and support them",m:"personality",w:2},
-        {t:"Someone to help get things done",m:"execution",w:2}
-    ]},
-    {t:"When you commit to something:",o:[
-        {t:"You think it through carefully first",m:"ideas",w:2},
-        {t:"You get others bought in",m:"personality",w:2},
-        {t:"You do it—your word is your bond",m:"execution",w:2}
-    ]},
-    {t:"In five years, you want people to say you:",o:[
-        {t:"See things others miss",m:"ideas",w:2},
-        {t:"Are magnetic and well-connected",m:"personality",w:2},
-        {t:"Ship and make things happen",m:"execution",w:2}
-    ]}
-];
-
 // Occupation and industry options
 const OCCUPATIONS = [
     "Software Engineer / Developer",
@@ -1598,7 +1574,7 @@ function diagnosticH(){
             <div style="text-align:center;margin-top:16px;padding-bottom:4px">
                 <a href="${CALENDLY_URL}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-full" id="diag-calendly-human" style="max-width:360px;margin:0 auto;display:inline-block;width:100%;box-sizing:border-box">Chat with a human to make my role AI-proof &#x2192;</a>
             </div>
-            <p class="text-center mt-15"><a class="text-link text-small" onclick="S.diagnosticStep=0;render()">&#x2190; Retake Assessment</a></p>
+            <p class="text-center mt-15"><a class="text-link text-small" onclick="S.diagnosticStep=0;S.diagnosticTitle='';S.diagnosticDayToDay='';S.diagnosticResult=null;render()">&#x2190; Retake Assessment</a></p>
         </div>
         </div></div>`;
     }
@@ -1607,19 +1583,7 @@ function diagnosticH(){
 }
 
 function calculateDiagnosticScores(){
-    let scores = {ideas: 50, personality: 50, execution: 50};
-    S.diagnosticAnswers.forEach((answerIdx, qIdx) => {
-        const q = DiagnosticQs[qIdx];
-        if(q && q.o[answerIdx]){
-            const opt = q.o[answerIdx];
-            scores[opt.m] += opt.w * 8; // Amplify since fewer questions
-        }
-    });
-    // Clamp scores
-    Object.keys(scores).forEach(k => {
-        scores[k] = Math.max(20, Math.min(95, scores[k]));
-    });
-    return scores;
+    return {ideas: 50, personality: 50, execution: 50};
 }
 
 // ===== THREAT PROVIDERS =====
@@ -2543,7 +2507,10 @@ function bindEvents(){
         S.diagnosticStep=0;
         S.diagnosticEmail='';
         S.diagnosticIndustry='';
-                S.screen='diagnostic';
+        S.diagnosticTitle='';
+        S.diagnosticDayToDay='';
+        S.diagnosticResult=null;
+        S.screen='diagnostic';
         render();
     });
     document.getElementById('diagnostic-start-form')?.addEventListener('submit',async e=>{
