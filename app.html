@@ -10035,14 +10035,49 @@ window.addEventListener('popstate', () => {
     }
 });
 async function generateDiagnosticAssessment(email, industry, title, dayToDay) {
-    // Build a short list of forecast titles to send to AI
-    const sampleForecasts = (typeof FORECAST_DATABASE !== 'undefined' ? FORECAST_DATABASE : [])
-        .slice(0, 40)
-        .map(f => ({ id: f.id, title: f.title, category: f.category }));
-    const forecastList = sampleForecasts.map(f => f.id + ': ' + f.title).join('\n');
+    const forecastDb = (typeof FORECAST_DATABASE !== 'undefined' ? FORECAST_DATABASE : []);
+    const profileText = [industry, title, dayToDay].join(' ').toLowerCase();
+    const stopWords = new Set(['and','the','for','with','that','this','from','into','about','your','you','are','our','their','work','role','day','to','in','of','a','an']);
+    const tokens = [...new Set(profileText.replace(/[^a-z0-9\s/+-]/gi, ' ').split(/\s+/)
+        .map(t => t.trim())
+        .filter(t => t.length > 2 && !stopWords.has(t)))]
+        .slice(0, 24);
+    const normalize = text => (text || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    const scoreForecast = f => {
+        const opportunityText = (f.opportunities || []).slice(0, 5).map(o => [o.title, o.mode, o.description].join(' ')).join(' ');
+        const haystack = normalize([f.title, f.category, f.threatMode, f.threatReason, f.atRisk, opportunityText].join(' '));
+        let score = Math.min(5, Math.round((f.probability || 0) / 20));
+        tokens.forEach(t => { if(haystack.includes(normalize(t))) score += 3; });
+        const titlePhrase = normalize(title);
+        if(titlePhrase && haystack.includes(titlePhrase)) score += 8;
+        const industryPhrase = normalize(industry).split(' ')[0];
+        if(industryPhrase && haystack.includes(industryPhrase)) score += 5;
+        return score;
+    };
 
-    const systemPrompt = "You are an AI displacement analyst. Given a person's role, return ONLY valid JSON with no markdown or backticks: {\"summary\":\"2-3 sentences: one on where they are ahead, continuing into where AI puts them at risk\",\"forecastIds\":[\"id1\",\"id2\"],\"opportunities\":[{\"title\":\"specific opportunity title\",\"why\":\"one sentence why it applies to them\"},{\"title\":\"second opportunity\",\"why\":\"one sentence\"},{\"title\":\"third opportunity\",\"why\":\"one sentence\"}]}. Pick the 2 most impactful forecast IDs from the list provided. Pick 3 opportunities most applicable to their specific role. Be specific, not generic.";
-    const userMsg = 'Industry: ' + industry + '\nTitle: ' + title + '\nDay-to-day: ' + dayToDay + '\n\nForecast list (id: title):\n' + forecastList;
+    const candidateForecasts = forecastDb
+        .map(f => ({...f, diagnosticScore: scoreForecast(f)}))
+        .sort((a, b) => (b.diagnosticScore - a.diagnosticScore) || ((b.probability || 0) - (a.probability || 0)))
+        .slice(0, 25)
+        .map(f => ({
+            id: f.id,
+            title: f.title,
+            category: f.category,
+            probability: f.probability,
+            timeframe: f.timeframe,
+            threatReason: f.threatReason,
+            atRisk: f.atRisk,
+            opportunities: (f.opportunities || []).slice(0, 4).map(o => ({
+                title: o.title,
+                mode: o.mode,
+                difficulty: o.difficulty,
+                timeframe: o.timeframe,
+                description: o.description
+            }))
+        }));
+
+    const systemPrompt = "You are an AI displacement analyst using a curated forecast database. Return ONLY valid JSON with no markdown or backticks: {\"summary\":\"2-3 specific sentences: where this person has durable value, then exactly where AI pressure shows up in their work\",\"forecastIds\":[\"id1\",\"id2\"],\"opportunities\":[{\"title\":\"exact opportunity title from the supplied database\",\"why\":\"one sentence tying it to their actual role\"},{\"title\":\"exact opportunity title from the supplied database\",\"why\":\"one sentence\"},{\"title\":\"exact opportunity title from the supplied database\",\"why\":\"one sentence\"}]}. Use only forecast IDs and opportunity titles from the supplied database. Prefer forecasts with direct role/industry fit, high probability, near timeframe, and clear at-risk overlap. Be concrete and avoid generic self-improvement advice.";
+    const userMsg = 'Industry: ' + industry + '\nTitle: ' + title + '\nDay-to-day: ' + dayToDay + '\n\nRanked forecast candidates with real metadata and opportunities:\n' + JSON.stringify(candidateForecasts);
 
     try {
         const resp = await fetch(OPENAI_API, {
@@ -10060,19 +10095,72 @@ async function generateDiagnosticAssessment(email, industry, title, dayToDay) {
         if (m) text = m[0];
         const result = JSON.parse(text);
 
-        // Hydrate forecast IDs into full forecast objects
-        result.forecasts = (result.forecastIds || [])
-            .map(id => (typeof FORECAST_DATABASE !== 'undefined' ? FORECAST_DATABASE : []).find(f => f.id === id))
+        // Hydrate forecast IDs and opportunity titles back to the curated database.
+        let selectedForecasts = (result.forecastIds || [])
+            .map(id => forecastDb.find(f => f.id === id))
             .filter(Boolean)
             .slice(0, 2);
+        if(selectedForecasts.length === 0) {
+            selectedForecasts = candidateForecasts
+                .slice(0, 2)
+                .map(c => forecastDb.find(f => f.id === c.id))
+                .filter(Boolean);
+        }
+        result.forecasts = selectedForecasts;
+
+        const selectedIds = new Set(selectedForecasts.map(f => f.id));
+        const opportunityPool = forecastDb
+            .filter(f => selectedIds.has(f.id))
+            .flatMap(f => (f.opportunities || []).map(o => ({...o, forecastId: f.id, forecastTitle: f.title})));
+        const usedTitles = new Set();
+        const hydratedOpportunities = (result.opportunities || []).map(o => {
+            const requestedTitle = normalize(o.title);
+            if(!requestedTitle) return null;
+            const match = opportunityPool.find(real => normalize(real.title) === requestedTitle)
+                || opportunityPool.find(real => normalize(real.title).includes(requestedTitle) || requestedTitle.includes(normalize(real.title)));
+            if(!match || usedTitles.has(match.title)) return null;
+            usedTitles.add(match.title);
+            return {
+                title: match.title,
+                why: o.why || match.description,
+                forecastId: match.forecastId,
+                mode: match.mode
+            };
+        }).filter(Boolean);
+        opportunityPool.forEach(o => {
+            if(hydratedOpportunities.length < 3 && !usedTitles.has(o.title)) {
+                usedTitles.add(o.title);
+                hydratedOpportunities.push({
+                    title: o.title,
+                    why: o.description,
+                    forecastId: o.forecastId,
+                    mode: o.mode
+                });
+            }
+        });
+        result.opportunities = hydratedOpportunities.slice(0, 3);
 
         return result;
     } catch(e) {
         console.error('Diagnostic AI error:', e);
+        const fallbackForecasts = candidateForecasts
+            .slice(0, 2)
+            .map(c => forecastDb.find(f => f.id === c.id))
+            .filter(Boolean);
+        const fallbackOpportunities = fallbackForecasts
+            .flatMap(f => (f.opportunities || []).slice(0, 2).map(o => ({
+                title: o.title,
+                why: o.description,
+                forecastId: f.id,
+                mode: o.mode
+            })))
+            .slice(0, 3);
         return {
-            summary: 'We could not complete your assessment right now. Please try again.',
-            forecasts: [],
-            opportunities: [
+            summary: fallbackForecasts.length
+                ? 'We matched your role against the forecast database, but could not complete the AI write-up. These are the closest forecast-driven opportunities based on your industry and day-to-day work.'
+                : 'We could not complete your assessment right now. Please try again.',
+            forecasts: fallbackForecasts,
+            opportunities: fallbackOpportunities.length ? fallbackOpportunities : [
                 {title: 'Develop AI tool fluency', why: 'Understanding what AI can and cannot do gives you a strategic edge.'},
                 {title: 'Build a personal knowledge system', why: 'Documented expertise AI cannot replicate becomes your moat.'},
                 {title: 'Systematize your decision-making', why: 'Frameworks and judgment calls are the last things AI automates.'}
