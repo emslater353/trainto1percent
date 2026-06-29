@@ -50,6 +50,18 @@ function defaultPrep(topics, headline, secondOrder) {
   return buildPulseToolsBlock(topics, headline, headline || 'pulse', { secondOrder });
 }
 
+/** High-signal stories to merge into daily refresh when RSS misses them (maxAgeDays = freshness window). */
+const CURATED_STORIES = [
+  {
+    headline: 'Cursor now has a mobile app for guiding your coding agent on the go',
+    source: 'TechCrunch',
+    url: 'https://techcrunch.com/category/artificial-intelligence/',
+    pubDate: '2026-06-29T14:00:00Z',
+    topics: ['ai', 'tech'],
+    maxAgeDays: 3,
+  },
+];
+
 const STATIC_SEED = [
   {
     id: 'pulse-ai-video-seed',
@@ -184,6 +196,17 @@ const STORY_FORECAST_RULES = [
       'Hardware is a distribution bet — the second-order play is who builds the apps and workflows on the new surface, not who wins the gadget headline.',
     defaultPredictionTake:
       'Feeds our forecast on Meta pivoting from metaverse hype to AI + long-game spatial — watch for platform SDKs, not launch-day specs.',
+  },
+  {
+    test: (h) => /\bcursor\b/.test(h) && /mobile|app|phone|ios|android|on the go/.test(h),
+    primaryId: 'ai-agents-autonomous',
+    secondaryId: 'ai-writes-code',
+    extraTopics: ['ai', 'tech'],
+    storyArchetype: 'agents',
+    defaultSecondOrder:
+      'Coding agents are leaving the desk — mobile control means async dev workflows become normal, not edge cases.',
+    defaultPredictionTake:
+      'Feeds our forecast on autonomous AI agents taking over multi-step workflows — dev is an early adopter lane.',
   },
   {
     test: (h) => /agent|workflow|operator|autonomous/.test(h) && !/vision|wearable|spatial/.test(h),
@@ -379,8 +402,11 @@ function makePulseId(headline) {
 
 const HYPE_ENTITIES = [
   'openai', 'anthropic', 'google', 'gemini', 'meta', 'apple', 'nvidia', 'microsoft',
-  'amazon', 'claude', 'gpt', 'agent', 'launch', 'billion', 'raise', 'ipo', 'chip',
+  'amazon', 'claude', 'gpt', 'cursor', 'agent', 'launch', 'billion', 'raise', 'ipo', 'chip',
 ];
+
+const FUNDING_HEADLINE = /raises \$|series [a-d]\b|funding round|venture capital|takes ceo|palihapitiya|\$[\d.]+m for|\$[\d.]+b for/i;
+const PRODUCT_HEADLINE = /launch|announc|unveil|release|ship|mobile app|now has|available now|rolls out/i;
 
 const HYPE_STOPWORDS = new Set([
   'about', 'after', 'their', 'there', 'would', 'could', 'should', 'which', 'while',
@@ -429,6 +455,45 @@ function scoreArticleHype(article, ctx = {}) {
   if (hasLaunch) score += 12;
   if (isWearablesHeadline(article.title)) score -= 14;
   return Math.round(Math.min(score, 100));
+}
+
+function scoreArticleImportance(article, ctx = {}) {
+  const {
+    sourceOverlap = 1,
+    matchStrength = 'none',
+    hasLaunch = false,
+    storyType = '',
+    archetypeId = 'general',
+    enrichedScore = null,
+  } = ctx;
+  if (typeof enrichedScore === 'number' && enrichedScore >= 0) {
+    return Math.round(Math.min(100, Math.max(0, enrichedScore)));
+  }
+
+  const h = (article.title || '').toLowerCase();
+  let score = 48;
+
+  if (PRODUCT_HEADLINE.test(h)) score += 20;
+  if (/\bcursor\b|copilot|claude code|vibe cod|coding agent/.test(h) && !FUNDING_HEADLINE.test(h)) score += 14;
+  if (archetypeId === 'agents') score += 12;
+  if (archetypeId === 'health' || archetypeId === 'policy') score += 8;
+
+  if (FUNDING_HEADLINE.test(h)) score -= 22;
+  if (/exec is|leaving for|joins openai|reportedly leaving|hires away/.test(h)) score -= 10;
+  if (/palihapitiya|chamath/.test(h) && FUNDING_HEADLINE.test(h)) score -= 8;
+
+  if (matchStrength === 'strong') score += 14;
+  else if (matchStrength === 'medium') score += 8;
+  else if (matchStrength === 'weak') score += 3;
+  if (hasLaunch) score += 10;
+  score += Math.min(12, Math.max(0, sourceOverlap - 1) * 6);
+
+  if (storyType === 'product_launch' || storyType === 'platform_shift') score += 12;
+  else if (storyType === 'policy' || storyType === 'research') score += 6;
+  else if (storyType === 'funding') score -= 18;
+  else if (storyType === 'personality') score -= 14;
+
+  return Math.round(Math.min(100, Math.max(0, score)));
 }
 
 async function enrichWithOpenAI(article, matchResult, openaiKey) {
@@ -484,6 +549,8 @@ RULES:
 9. "tools_to_try" = array of 2 indie tools from INDIE PICKS — each { "name", "hook", "why" }. "why" = one sentence on staying ahead in this lane.
 10. "condensed" = one scannable sentence: second-order → tool(s) to try → what to ignore.
 11. Do NOT output generic ChatGPT/Figma exercises. No "prep" field.
+12. "importance_score" = 0-100 for founders/operators at AI Proof Club. HIGH: product ships, platform shifts, tools people can use today, model/API releases, policy. LOW: VC rounds, CEO moves, personality drama, hiring gossip, "raises $X" headlines.
+13. "story_type" = exactly one of: product_launch, platform_shift, policy, research, funding, personality, general
 
 INDIE PICKS (prefer these):
 ${indieBlock}
@@ -499,7 +566,9 @@ Return ONLY valid JSON:
   "why_you": "...",
   "topics": ["ai","tech"],
   "tools_to_try": [{ "name": "Reelful", "hook": "...", "why": "..." }],
-  "condensed": "..."
+  "condensed": "...",
+  "importance_score": 75,
+  "story_type": "product_launch"
 }`;
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -590,7 +659,7 @@ function buildSecondOrderImpacts(enriched, forecast, secondOrderText, headline) 
   return impacts.slice(0, 8);
 }
 
-function buildPulseRow(article, matchResult, enriched, extraTopics = [], hypeScore = 0) {
+function buildPulseRow(article, matchResult, enriched, extraTopics = [], hypeScore = 0, scoreCtx = {}) {
   const forecast = matchResult?.primary;
   const secondary = matchResult?.secondary;
   const rule = matchResult?.rule;
@@ -634,6 +703,13 @@ function buildPulseRow(article, matchResult, enriched, extraTopics = [], hypeSco
     secondOrderText,
     article.title,
   );
+  const importanceScore = scoreArticleImportance(article, {
+    ...scoreCtx,
+    matchStrength,
+    storyType: enriched?.story_type || '',
+    archetypeId: archetype.id,
+    enrichedScore: enriched?.importance_score,
+  });
   const insight = {
     what_happened: enriched?.what_happened || article.title,
     second_order: secondOrderText,
@@ -647,7 +723,9 @@ function buildPulseRow(article, matchResult, enriched, extraTopics = [], hypeSco
     match_strength: matchStrength,
     story_archetype: archetype.id,
     story_label: archetype.label,
+    story_type: enriched?.story_type || (FUNDING_HEADLINE.test(article.title || '') ? 'funding' : 'general'),
     hype_score: hypeScore,
+    importance_score: importanceScore,
     cluster_id: wave?.id || null,
     cluster_label: wave?.label || null,
     secondary_forecast_id: secondary?.id || null,
@@ -729,6 +807,35 @@ async function gatherArticles(maxPerFeed = 12) {
   }
 
   return articles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+}
+
+function injectCuratedStories(articles) {
+  const now = Date.now();
+  const out = [...articles];
+
+  for (const curated of CURATED_STORIES) {
+    const ageDays = (now - new Date(curated.pubDate).getTime()) / 86400000;
+    if (ageDays > (curated.maxAgeDays || 2)) continue;
+
+    const hay = curated.headline.toLowerCase();
+    const dup = articles.some((a) => {
+      const t = (a.title || '').toLowerCase();
+      if (t === hay) return true;
+      if (hay.includes('cursor') && t.includes('cursor') && /mobile|app/.test(t)) return true;
+      return normalizeHeadlineKey(a.title) === normalizeHeadlineKey(curated.headline);
+    });
+    if (dup) continue;
+
+    out.unshift({
+      title: curated.headline,
+      link: curated.url || '',
+      pubDate: curated.pubDate,
+      source: curated.source,
+      feedTopics: curated.topics || ['ai', 'tech'],
+    });
+  }
+
+  return out.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
 }
 
 
@@ -815,6 +922,7 @@ async function runPulseRefresh(options = {}) {
     productHuntToken: process.env.PRODUCTHUNT_TOKEN || process.env.PRODUCTHUNT_DEVELOPER_TOKEN,
   });
   let articles = await gatherArticles(12);
+  articles = injectCuratedStories(articles);
 
   if (!articles.length) {
     console.warn('No RSS articles — seeding static pulse items');
@@ -867,18 +975,25 @@ async function runPulseRefresh(options = {}) {
       enriched = await enrichWithOpenAI(article, matchResult, openaiKey);
     }
     const overlapKey = normalizeHeadlineKey(article.title);
-    const hypeScore = scoreArticleHype(article, {
+    const scoreCtx = {
       sourceOverlap: sourceOverlap[overlapKey] || 1,
       matchStrength: getMatchStrength(matchResult),
       hasLaunch: (launches || []).some((l) => {
         const hay = `${article.title} ${(article.feedTopics || []).join(' ')}`.toLowerCase();
         return hay.includes((l.name || '').toLowerCase().slice(0, 8));
       }),
-    });
-    rows.push(buildPulseRow({ ...article, _launches: launches }, matchResult, enriched, article.feedTopics || [], hypeScore));
+    };
+    const hypeScore = scoreArticleHype(article, scoreCtx);
+    rows.push(buildPulseRow({ ...article, _launches: launches }, matchResult, enriched, article.feedTopics || [], hypeScore, scoreCtx));
   }
 
-  rows.sort((a, b) => (b.insight?.hype_score || 0) - (a.insight?.hype_score || 0) || new Date(b.published_at) - new Date(a.published_at));
+  rows.sort((a, b) => {
+    const imp = (b.insight?.importance_score || 0) - (a.insight?.importance_score || 0);
+    if (imp !== 0) return imp;
+    const hype = (b.insight?.hype_score || 0) - (a.insight?.hype_score || 0);
+    if (hype !== 0) return hype;
+    return new Date(b.published_at) - new Date(a.published_at);
+  });
 
   if (dryRun) {
     return { ok: true, dryRun: true, count: rows.length, rows };
@@ -898,6 +1013,9 @@ module.exports = {
   resolveForecastMatch,
   rankForecastsWithAI,
   scoreArticleHype,
+  scoreArticleImportance,
   buildSourceOverlap,
+  injectCuratedStories,
+  CURATED_STORIES,
   STATIC_SEED,
 };
