@@ -457,20 +457,24 @@ function scoreArticleHype(article, ctx = {}) {
   return Math.round(Math.min(score, 100));
 }
 
-function scoreArticleImportance(article, ctx = {}) {
+function inferStoryType(title, storyType = '') {
+  const h = (title || '').toLowerCase();
+  if (FUNDING_HEADLINE.test(h)) return 'funding';
+  if (/exec is|leaving for|joins openai|reportedly leaving|hires away|takes ceo/.test(h)) return 'personality';
+  if (PRODUCT_HEADLINE.test(h)) return 'product_launch';
+  return storyType || 'general';
+}
+
+function heuristicImportance(article, ctx = {}) {
   const {
     sourceOverlap = 1,
     matchStrength = 'none',
     hasLaunch = false,
     storyType = '',
     archetypeId = 'general',
-    enrichedScore = null,
   } = ctx;
-  if (typeof enrichedScore === 'number' && enrichedScore >= 0) {
-    return Math.round(Math.min(100, Math.max(0, enrichedScore)));
-  }
-
   const h = (article.title || '').toLowerCase();
+  const resolvedType = inferStoryType(article.title, storyType);
   let score = 48;
 
   if (PRODUCT_HEADLINE.test(h)) score += 20;
@@ -488,12 +492,63 @@ function scoreArticleImportance(article, ctx = {}) {
   if (hasLaunch) score += 10;
   score += Math.min(12, Math.max(0, sourceOverlap - 1) * 6);
 
-  if (storyType === 'product_launch' || storyType === 'platform_shift') score += 12;
-  else if (storyType === 'policy' || storyType === 'research') score += 6;
-  else if (storyType === 'funding') score -= 18;
-  else if (storyType === 'personality') score -= 14;
+  if (resolvedType === 'product_launch' || resolvedType === 'platform_shift') score += 12;
+  else if (resolvedType === 'policy' || resolvedType === 'research') score += 6;
+  else if (resolvedType === 'funding') score -= 18;
+  else if (resolvedType === 'personality') score -= 14;
 
   return Math.round(Math.min(100, Math.max(0, score)));
+}
+
+function scoreArticleImportance(article, ctx = {}) {
+  const {
+    sourceOverlap = 1,
+    matchStrength = 'none',
+    hasLaunch = false,
+    storyType = '',
+    archetypeId = 'general',
+    enrichedScore = null,
+  } = ctx;
+  const heuristic = heuristicImportance(article, {
+    sourceOverlap,
+    matchStrength,
+    hasLaunch,
+    storyType,
+    archetypeId,
+  });
+  const h = (article.title || '').toLowerCase();
+
+  if (typeof enrichedScore !== 'number' || enrichedScore < 0) {
+    return heuristic;
+  }
+
+  // Headline beats AI when it mislabels funding rounds as product news.
+  if (FUNDING_HEADLINE.test(h)) {
+    return Math.min(heuristic, enrichedScore, 52);
+  }
+
+  let aiScore = enrichedScore;
+  const resolvedType = inferStoryType(article.title, storyType);
+  if (storyType === 'product_launch' && resolvedType === 'funding') aiScore -= 28;
+  if (storyType === 'product_launch' && resolvedType === 'personality') aiScore -= 20;
+
+  return Math.round(Math.min(100, Math.max(0, Math.max(heuristic, aiScore * 0.35 + heuristic * 0.65))));
+}
+
+function estimatePreImportance(article) {
+  const title = article.title || '';
+  const topics = article.feedTopics || detectTopics(title);
+  let archetypeId = classifyStoryArchetype(title, topics).id;
+  if (FUNDING_HEADLINE.test(title)) archetypeId = 'finance';
+
+  const score = heuristicImportance(article, {
+    archetypeId,
+    storyType: inferStoryType(title),
+    matchStrength: 'none',
+    sourceOverlap: 1,
+    hasLaunch: PRODUCT_HEADLINE.test(title.toLowerCase()),
+  });
+  return score + (article._mustInclude ? 100 : 0);
 }
 
 async function enrichWithOpenAI(article, matchResult, openaiKey) {
@@ -723,7 +778,7 @@ function buildPulseRow(article, matchResult, enriched, extraTopics = [], hypeSco
     match_strength: matchStrength,
     story_archetype: archetype.id,
     story_label: archetype.label,
-    story_type: enriched?.story_type || (FUNDING_HEADLINE.test(article.title || '') ? 'funding' : 'general'),
+    story_type: inferStoryType(article.title, enriched?.story_type),
     hype_score: hypeScore,
     importance_score: importanceScore,
     cluster_id: wave?.id || null,
@@ -832,6 +887,8 @@ function injectCuratedStories(articles) {
       pubDate: curated.pubDate,
       source: curated.source,
       feedTopics: curated.topics || ['ai', 'tech'],
+      _curated: true,
+      _mustInclude: true,
     });
   }
 
@@ -850,7 +907,7 @@ function entityBucket(title) {
   return 'other';
 }
 
-/** Diverse high-level tech snapshot — max one wearables story, varied topics/entities. */
+/** Diverse tech snapshot — importance-first, with pinned curated stories. */
 function selectDiverseCandidates(articles, maxItems = 6) {
   const pool = articles.filter((a) => !isLowQualityHeadline(a.title));
   const picked = [];
@@ -858,15 +915,34 @@ function selectDiverseCandidates(articles, maxItems = 6) {
   const usedArchetypes = new Set();
   const usedEntities = new Set();
 
-  const tryPick = (article) => {
+  const mustInclude = [];
+  const mustKeys = new Set();
+  for (const article of pool) {
+    if (!article._mustInclude) continue;
+    const key = (article.title || '').toLowerCase().slice(0, 80);
+    if (mustKeys.has(key)) continue;
+    mustKeys.add(key);
+    mustInclude.push(article);
+  }
+
+  const rest = pool
+    .filter((a) => !mustKeys.has((a.title || '').toLowerCase().slice(0, 80)))
+    .sort((a, b) => estimatePreImportance(b) - estimatePreImportance(a) || new Date(b.pubDate) - new Date(a.pubDate));
+
+  const ordered = [...mustInclude, ...rest];
+
+  const tryPick = (article, force = false) => {
+    if (picked.includes(article)) return false;
     const wear = isWearablesHeadline(article.title);
-    if (wear && wearablesCount >= WEARABLES_CAP) return false;
+    if (!force && wear && wearablesCount >= WEARABLES_CAP) return false;
 
-    const arch = classifyStoryArchetype(article.title, article.feedTopics || []).id;
-    const entity = entityBucket(article.title);
+    const title = article.title || '';
+    let arch = classifyStoryArchetype(title, article.feedTopics || []).id;
+    if (FUNDING_HEADLINE.test(title)) arch = 'finance';
+    const entity = entityBucket(title);
 
-    if (arch !== 'general' && usedArchetypes.has(arch)) return false;
-    if (entity !== 'other' && usedEntities.has(entity) && arch === 'general') return false;
+    if (!force && arch !== 'general' && usedArchetypes.has(arch)) return false;
+    if (!force && entity !== 'other' && usedEntities.has(entity) && arch === 'general') return false;
 
     picked.push(article);
     if (wear) wearablesCount += 1;
@@ -875,18 +951,19 @@ function selectDiverseCandidates(articles, maxItems = 6) {
     return true;
   };
 
-  for (const article of pool) {
+  for (const article of ordered) {
     if (picked.length >= maxItems) break;
-    tryPick(article);
+    if (article._mustInclude) tryPick(article, true);
+    else tryPick(article, false);
   }
 
   if (picked.length < maxItems) {
-    for (const article of pool) {
+    for (const article of ordered) {
+      if (picked.length >= maxItems) break;
       if (picked.includes(article)) continue;
       if (isWearablesHeadline(article.title) && wearablesCount >= WEARABLES_CAP) continue;
       picked.push(article);
       if (isWearablesHeadline(article.title)) wearablesCount += 1;
-      if (picked.length >= maxItems) break;
     }
   }
 
@@ -1014,8 +1091,11 @@ module.exports = {
   rankForecastsWithAI,
   scoreArticleHype,
   scoreArticleImportance,
+  heuristicImportance,
+  estimatePreImportance,
   buildSourceOverlap,
   injectCuratedStories,
+  selectDiverseCandidates,
   CURATED_STORIES,
   STATIC_SEED,
 };
