@@ -299,6 +299,63 @@
         }
         @keyframes shimmer { 100% { left: 100%; } }
         .progress-dot.done { background: var(--accent); opacity: 0.5; }
+
+        /* Onboarding product tour */
+        .onboard-tour-slide { text-align: center; padding: 8px 0 4px; }
+        .onboard-tour-icon { font-size: 42px; margin-bottom: 14px; line-height: 1; }
+        .onboard-tour-hint {
+            font-size: 12px;
+            color: var(--accent);
+            margin-top: 14px;
+            padding: 10px 14px;
+            border: 1px dashed var(--bg-tertiary);
+            background: rgba(0, 240, 255, 0.04);
+            text-align: left;
+            line-height: 1.55;
+        }
+        .onboard-tour-mock {
+            margin-top: 18px;
+            text-align: left;
+            border: 1px solid var(--bg-tertiary);
+            background: var(--bg-primary);
+            padding: 14px;
+            border-radius: 8px;
+        }
+        .onboard-tour-mock-label {
+            font-size: 9px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .onboard-tour-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid var(--bg-tertiary);
+        }
+        .onboard-tour-dots { display: flex; gap: 6px; justify-content: center; flex: 1; }
+        .onboard-tour-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--bg-tertiary);
+            transition: background 0.2s;
+        }
+        .onboard-tour-dot.active { background: var(--accent); }
+        .onboard-tour-dot.done { background: var(--accent); opacity: 0.45; }
+        .onboard-arrow-btn {
+            background: transparent;
+            border: 1px solid var(--bg-tertiary);
+            color: var(--text-secondary);
+            padding: 10px 14px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .onboard-arrow-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+        .onboard-arrow-btn:disabled { opacity: 0.35; cursor: default; }
         .q-number { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; text-shadow: 0 0 10px var(--accent-glow); }
         .q-text { font-family: var(--font-display); font-size: 20px; line-height: 1.4; margin-bottom: 20px; }
         .options { display: flex; flex-direction: column; gap: 8px; }
@@ -1233,7 +1290,14 @@
         .pulse-topnav-right {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-left: auto;
+        }
+        .pulse-topnav-right .pulse-account-btn {
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
         .pulse-future-pill {
             padding: 6px 12px;
@@ -1707,6 +1771,28 @@
             border-top: 1px solid var(--bg-tertiary);
         }
 
+        .tracker-manage-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--bg-tertiary);
+        }
+        .tracker-manage-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .tracker-manage-title { font-size: 13px; font-weight: 600; line-height: 1.4; margin-bottom: 4px; }
+        .tracker-manage-meta { font-size: 10px; color: var(--text-muted); }
+        .tracker-manage-actions { display: flex; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
+        .tracker-priority-badge {
+            display: inline-block;
+            font-size: 9px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--warning, #ffaa00);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
         .forecast-second-order {
             background: var(--bg-primary);
             border-left: 3px solid var(--ideas);
@@ -2122,6 +2208,127 @@ const SLACK_COMMUNITY_URL = 'https://join.slack.com/t/aiproofclub/shared_invite/
 const COMPANY_REPORT_PRICE=29;
 const COMPANY_REPORT_STRIPE='https://buy.stripe.com/14A3cv4Sr1mzdk8gTg9ws03';
 
+/** Signup coupon codes — add keys in ALL CAPS. Share AIPROOFFREE for complimentary access. */
+const SIGNUP_COUPONS = {
+    AIPROOFFREE: { plan: 'free', label: 'Complimentary club access' },
+};
+
+function normalizeCouponCode(code) {
+    return (code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+function validateSignupCoupon(code) {
+    const key = normalizeCouponCode(code);
+    return key ? (SIGNUP_COUPONS[key] || null) : null;
+}
+
+function hasFreeCouponAccess() {
+    if (IS_MOBILE_APP || IS_NATIVE_APP) return true;
+    if (S.user?.plan === 'free') return true;
+    if (S.onboardData?.couponPlan === 'free') return true;
+    return !!validateSignupCoupon(S.onboardData?.couponCode || S.user?.coupon_code);
+}
+
+function stashCouponOnUser(code) {
+    const coupon = validateSignupCoupon(code);
+    if (!coupon) return null;
+    const normalized = normalizeCouponCode(code);
+    S.onboardData = S.onboardData || {};
+    S.onboardData.couponCode = normalized;
+    S.onboardData.couponPlan = coupon.plan;
+    if (S.user) {
+        S.user.coupon_code = normalized;
+        S.user.plan = coupon.plan;
+    }
+    return coupon;
+}
+
+function applyCouponFromInput(inputId, msgId, opts = {}) {
+    const input = document.getElementById(inputId);
+    const msgEl = document.getElementById(msgId);
+    const code = input?.value || '';
+    const coupon = stashCouponOnUser(code);
+    if (!coupon) {
+        if (msgEl) {
+            msgEl.textContent = code.trim() ? 'Invalid coupon code. Check spelling and try again.' : 'Enter a coupon code.';
+            msgEl.style.color = 'var(--danger, #ff6b6b)';
+        }
+        return false;
+    }
+    if (msgEl) {
+        msgEl.textContent = `${coupon.label} — applied!`;
+        msgEl.style.color = 'var(--success)';
+    }
+    if (opts.persist && S.user?.email) {
+        db('users', 'PATCH', { plan: coupon.plan, coupon_code: S.user.coupon_code }, `?email=eq.${encodeURIComponent(S.user.email)}`);
+        localStorage.setItem('apc_session', JSON.stringify(S.user));
+    }
+    if (opts.rerender !== false) render();
+    return true;
+}
+
+async function advancePastPaywall() {
+    if (hasFreeCouponAccess()) {
+        S.user = S.user || {};
+        S.user.plan = 'free';
+        if (S.onboardData?.couponCode) S.user.coupon_code = S.onboardData.couponCode;
+    }
+    const hasAccount = S.user?.name && S.user?.email;
+    if (hasAccount) {
+        S.user.scores = S.scores || { ideas: 50, personality: 50, execution: 50 };
+        S.user.baseline_scores = S.user.scores;
+        S.user.industry = getWorkProfile().industry || S.user.industry;
+        S.user.tier = S.onboardData?.tier || S.user.tier;
+        S.user.start_date = S.user.start_date || new Date().toISOString();
+        const existing = await db('users', 'GET', null, `?email=eq.${encodeURIComponent(S.user.email)}`);
+        if (existing?.length) {
+            await db('users', 'PATCH', S.user, `?email=eq.${encodeURIComponent(S.user.email)}`);
+            S.user = { ...existing[0], ...S.user };
+        } else {
+            const res = await db('users', 'POST', S.user);
+            if (res?.length) S.user = res[0];
+        }
+        localStorage.setItem('apc_session', JSON.stringify(S.user));
+        localStorage.removeItem('apc_pending');
+        await completeOnboarding();
+        return;
+    }
+    S.onboardStep = 5;
+    render();
+}
+
+function renderCouponCodeField(opts = {}) {
+    const id = opts.id || 'coupon-code';
+    const msgId = opts.msgId || `${id}-msg`;
+    const value = escHtml(opts.value || S.onboardData?.couponCode || S.user?.coupon_code || '');
+    return `<div class="form-group" style="margin-bottom:${opts.compact ? '12px' : '0'}">
+        <label class="form-label">${opts.label || 'Coupon code'}${opts.optional === false ? '' : ' <span style="font-weight:400;color:var(--text-muted)">(optional)</span>'}</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input type="text" class="form-input" id="${id}" placeholder="Enter code" value="${value}" autocomplete="off" style="flex:1;min-width:140px;text-transform:uppercase;letter-spacing:1px">
+            <button type="button" class="btn btn-secondary btn-small apply-coupon-btn" data-coupon-input="${id}" data-coupon-msg="${msgId}">Apply</button>
+        </div>
+        <p id="${msgId}" class="text-small" style="margin-top:8px;min-height:18px;color:var(--text-secondary)">${opts.hint ? escHtml(opts.hint) : ''}</p>
+    </div>`;
+}
+
+function renderAccountCouponSection() {
+    if (S.user?.coupon_code) {
+        return `<div class="card mb-20"><div class="card-header"><span class="card-header-title">Coupon code</span></div>
+            <p class="text-small mb-8"><strong>Active:</strong> ${escHtml(S.user.coupon_code)}</p>
+            <p class="text-secondary text-small" style="line-height:1.55;margin:0">Your account has complimentary access via this code.</p>
+        </div>`;
+    }
+    if (S.user?.plan === 'paid') {
+        return `<div class="card mb-20"><div class="card-header"><span class="card-header-title">Coupon code</span></div>
+            <p class="text-secondary text-small" style="line-height:1.55;margin:0">You're on a paid plan. Manage billing below if you need to change plans.</p>
+        </div>`;
+    }
+    return `<div class="card mb-20"><div class="card-header"><span class="card-header-title">Coupon code</span></div>
+        <p class="text-secondary text-small mb-12" style="line-height:1.55">Have an invite code? Apply it for complimentary access — no subscription required.</p>
+        ${renderCouponCodeField({ id: 'account-coupon', msgId: 'account-coupon-msg', optional: false })}
+    </div>`;
+}
+
 async function subscribeToBeehiiv(email, source='aiproof_app') {
     try {
         await fetch(apiUrl('/.netlify/functions/subscribe-beehiiv'), {
@@ -2212,7 +2419,8 @@ const S = {
     forecastProgress: {}, // {forecastId: {oppId: questIndex}} tracks which quest they're on
     getQuestsExpandedOpp: null, // {forecastId, oppIndex} for Get Quests modal
     // Onboarding data
-    onboardStep: 1, // 1=account, 2=occupation, 3=goals, 4=interests, 5=assessment, 6=results+forecasts, 7=email+paywall
+    onboardStep: 1, // 1=profile, 2=tour, 3=forecasts, 4=paywall, 5=account
+    onboardTourSlide: 0,
     onboardData: {
         occupation: '',
         industry: '',
@@ -2662,7 +2870,7 @@ function renderPulseToolDiscover(item, opts = {}) {
             <span class="pulse-section-title">Tools to discover</span>
             <button type="button" class="pulse-section-link" data-pulse-tab="tools">Browse all →</button>
         </div>
-        <p class="text-secondary text-small" style="margin:-6px 0 12px;line-height:1.45">Never heard of these? Each one connects to today's ripples — a place to find what's worth trying.</p>
+        <p class="text-secondary text-small" style="margin:-6px 0 12px;line-height:1.45">Never heard of these? Each one connects to today's second order impacts — worth trying before the shift lands.</p>
         <div class="pulse-discover-grid">${picks.map((m) => renderDiscoverToolCard(m)).join('')}</div>
     </div>`;
 }
@@ -2923,7 +3131,7 @@ function getPulseImpactCascade(item, linked) {
         : [{ text: headlineText, tag: 'This headline' }].filter((r) => r.text.length >= 10);
     headlineRipples.forEach((r) => add(r.text, r.tag));
 
-    (insight.second_order_impacts || []).forEach((t) => add(t, 'Ripple'));
+    (insight.second_order_impacts || []).forEach((t) => add(t, 'Impact'));
 
     if (linked) {
         getForecastImpactCascade(linked, 14).forEach((imp) => add(imp.text, imp.tag));
@@ -2932,7 +3140,7 @@ function getPulseImpactCascade(item, linked) {
             'Workflow habits change before org charts — watch who adapts first.',
             'Cost structure shifts: build vs buy vs rent decisions get revisited.',
             'New intermediaries appear — routing, review, and trust layers capture margin.',
-        ].forEach((t) => add(t, 'Ripple'));
+        ].forEach((t) => add(t, 'Impact'));
     }
 
     return out;
@@ -3013,6 +3221,48 @@ function renderPulseToolOne(block) {
     return `<div class="pulse-tool-one">${nameHtml}<div class="pulse-tool-one-hook">${escHtml(tool.hook || tool.why || '')}</div></div>`;
 }
 
+function renderStoryStayAheadBlock(item, linked) {
+    const discoverPicks = getDiscoveryForStory(item, { linked, limit: 3 });
+    const toolsBlock = getPulseToolsBlock(item);
+    const editorTools = (toolsBlock?.tools || []).slice(0, 3);
+    const toolPlay = linked ? getToolPlayForForecast(linked) : null;
+    const following = linked && S.followedForecasts.includes(linked.id);
+
+    const toolMap = new Map();
+    editorTools.forEach((t) => toolMap.set((t.name || '').toLowerCase(), t));
+    discoverPicks.forEach((m) => {
+        const key = (m.tool.name || '').toLowerCase();
+        if (!toolMap.has(key)) toolMap.set(key, { ...m.tool, hook: m.tool.hook || m.blurb, why: m.why });
+    });
+    const tools = [...toolMap.values()].slice(0, 4);
+
+    if (!linked && !tools.length) return '';
+
+    let html = `<div class="pulse-stay-ahead-block" style="margin-top:24px;padding-top:20px;border-top:1px solid var(--bg-tertiary)">
+        <div class="pulse-section-head"><span class="pulse-section-title">Stay ahead</span></div>
+        <p class="text-secondary text-small" style="margin:-6px 0 16px;line-height:1.45">Pathways and tools to act on these second order impacts — not just read them.</p>`;
+
+    if (linked) {
+        html += `<div class="card mb-15" style="padding:14px 16px">
+            <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:8px">Your pathway</div>
+            ${toolPlay ? `<p class="text-secondary text-small" style="line-height:1.55;margin-bottom:12px"><strong>${escHtml(toolPlay.emoji)} ${escHtml(toolPlay.name)}</strong> · ${escHtml(toolPlay.play)}</p>` : `<p class="text-secondary text-small" style="line-height:1.55;margin-bottom:12px">${escHtml((getPulseInsight(item).prediction_take || linked.threatReason || '').split('.')[0])}.</p>`}
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button type="button" class="btn btn-small btn-primary view-forecast-detail" data-id="${linked.id}">Full forecast →</button>
+                <button type="button" class="btn btn-small ${following ? 'btn-success' : 'btn-secondary'} follow-forecast" data-id="${linked.id}">${following ? 'Tracking' : '+ Track this'}</button>
+            </div>
+        </div>`;
+    }
+
+    if (tools.length) {
+        html += `<div class="pulse-section-head" style="margin-top:4px"><span class="pulse-section-title">Tools to try</span>
+            <button type="button" class="pulse-section-link" data-pulse-tab="tools">Browse all →</button></div>
+            <div class="pulse-discover-grid">${tools.map((t) => renderDiscoverToolCard({ tool: t, blurb: t.hook, why: t.why }, { showTried: true })).join('')}</div>`;
+    }
+
+    html += `</div>`;
+    return html;
+}
+
 function renderPulseDetailPanel(item, linked) {
     const insight = getPulseInsight(item);
     const ripples = getPulseStoryRipples(item, { excludeTakeaway: insight.second_order || item.meaning });
@@ -3032,23 +3282,34 @@ function renderPulseDetailPanel(item, linked) {
 
     if (ripples.length) {
         html += `<div class="pulse-detail-block">
-            <div class="pulse-detail-kicker">${linked ? '2' : '1'} · If this keeps going</div>
+            <div class="pulse-detail-kicker">${linked ? '2' : '1'} · Second order impacts</div>
             <ul class="pulse-ripple-lines">${ripples.map((r) => `<li>${escHtml(r.text || r)}</li>`).join('')}</ul>
-            ${linked ? `<button type="button" class="btn btn-ghost btn-small view-forecast-detail" data-id="${linked.id}" style="margin-top:8px;padding:0">All ripples & opportunities →</button>` : ''}
         </div>`;
     } else if (linked) {
         html += `<div class="pulse-detail-block">
-            <div class="pulse-detail-kicker">2 · If this keeps going</div>
-            <p class="text-secondary text-small" style="line-height:1.55;margin:0">Open the forecast for the full ripple map — who wins, who loses, what opens up.</p>
-            <button type="button" class="btn btn-ghost btn-small view-forecast-detail" data-id="${linked.id}" style="margin-top:8px;padding:0">All ripples & opportunities →</button>
+            <div class="pulse-detail-kicker">2 · Second order impacts</div>
+            <p class="text-secondary text-small" style="line-height:1.55;margin:0">Open the forecast for the full impact map — who wins, who loses, what opens up.</p>
         </div>`;
     }
 
-    const discoverPicks = getDiscoveryForStory(item, { linked });
+    const toolPlay = linked ? getToolPlayForForecast(linked) : null;
     let step = linked ? (ripples.length ? 3 : 2) : (ripples.length ? 2 : 1);
+    if (linked || toolPlay) {
+        html += `<div class="pulse-detail-block">
+            <div class="pulse-detail-kicker accent">${step} · Stay ahead</div>
+            ${toolPlay ? `<p class="text-secondary text-small" style="line-height:1.55;margin:0 0 10px"><strong>${escHtml(toolPlay.emoji)} ${escHtml(toolPlay.name)}</strong> · ${escHtml(toolPlay.play)}</p>` : ''}
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                ${linked ? `<button type="button" class="btn btn-small btn-primary view-forecast-detail" data-id="${linked.id}">Full forecast →</button>` : ''}
+                ${linked ? `<button type="button" class="btn btn-small ${following ? 'btn-success' : 'btn-secondary'} follow-forecast" data-id="${linked.id}">${following ? 'Tracking' : '+ Track this'}</button>` : ''}
+            </div>
+        </div>`;
+        step += 1;
+    }
+
+    const discoverPicks = getDiscoveryForStory(item, { linked });
     if (discoverPicks.length) {
         html += `<div class="pulse-detail-block">
-            <div class="pulse-detail-kicker">${step} · Tools to discover</div>
+            <div class="pulse-detail-kicker">${step} · Tools to try</div>
             <ul class="pulse-ripple-lines">${discoverPicks.map((m) =>
                 `<li><strong>${escHtml(m.tool.name)}</strong> — ${escHtml(m.tool.hook || m.blurb || '')}</li>`
             ).join('')}</ul>
@@ -3066,7 +3327,6 @@ function renderPulseDetailPanel(item, linked) {
     }
 
     html += `<div class="pulse-detail-foot">
-        ${linked ? `<button type="button" class="btn btn-small ${following ? 'btn-success' : 'btn-secondary'} follow-forecast" data-id="${linked.id}">${following ? 'Following' : '+ Follow forecast'}</button>` : ''}
         ${item.url ? `<a href="${escHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="text-link text-small">Read source →</a>` : ''}
         <button type="button" class="btn btn-ghost btn-small toggle-pulse-detail" data-pulse="${item.id}" style="margin-left:auto">Close</button>
     </div></div>`;
@@ -3111,7 +3371,7 @@ function renderImpactSimple(impacts, opts = {}) {
 function renderImpactCascade(impacts, opts = {}) {
     if (opts.simple) return renderImpactSimple(impacts, opts);
     const limit = opts.limit ?? 6;
-    const label = opts.label || 'Second-order ripples';
+    const label = opts.label || 'Second order impacts';
     if (!impacts?.length) return '';
     const show = impacts.slice(0, limit);
     const more = impacts.length - show.length;
@@ -3323,15 +3583,16 @@ function futureWorldH() {
     </div>`;
 
     html += `<div class="section-label">Following · ${followed.length}</div>`;
-    html += followed.map((f) => {
+    html += followed.map((f, idx) => {
         const lane = getForecastLane(f.id) || 'watching';
         const laneLabel = POSITION_LANES.find((l) => l.id === lane)?.label || 'Watching';
         return `<div class="future-follow-card">
             <div class="future-follow-title">${escHtml(f.title)}</div>
-            <div class="future-follow-meta">${f.probability}% · ${escHtml(f.timeframe || '')} · ${laneLabel}</div>
+            <div class="future-follow-meta">${f.probability}% · ${escHtml(f.timeframe || '')} · ${laneLabel}${idx === 0 ? ' · Priority' : ''}</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <button type="button" class="btn btn-ghost btn-small view-forecast-detail" data-id="${f.id}">Ripples & opportunities →</button>
-                <button type="button" class="btn btn-ghost btn-small follow-forecast" data-id="${f.id}">Unfollow</button>
+                <button type="button" class="btn btn-ghost btn-small view-forecast-detail" data-id="${f.id}">Impacts & pathways →</button>
+                ${idx === 0 ? '' : `<button type="button" class="btn btn-ghost btn-small boost-forecast" data-id="${f.id}">Show first</button>`}
+                <button type="button" class="btn btn-ghost btn-small follow-forecast" data-id="${f.id}">Remove</button>
             </div>
         </div>`;
     }).join('');
@@ -4230,6 +4491,8 @@ function renderPulseTopNav(active) {
         }).join('')}</div>
         <div class="pulse-topnav-right">
             <button type="button" class="pulse-future-pill ${active === 'future' ? 'active-future' : ''}" data-pulse-tab="future">Future world · <strong>${followedCount}</strong></button>
+            <button type="button" class="btn btn-ghost btn-small pulse-account-btn ${active === 'account' ? 'active-future' : ''}" data-screen="settings" title="Account settings">Account</button>
+            <button type="button" class="btn btn-ghost btn-small pulse-account-btn" id="pulse-sign-out" title="Sign out">Sign out</button>
             <button type="button" class="btn btn-ghost btn-small" id="refresh-pulse-btn" title="Refresh">${S.pulseLoading ? '…' : '↻'}</button>
         </div>
     </nav>`;
@@ -4260,15 +4523,13 @@ function renderPulseSidebar() {
         </div>
         ${(S.followedForecasts || []).length ? `<div class="pulse-signals-box" style="margin-top:12px">
             <div class="pulse-signals-title">Your forecasts</div>
-            ${(S.followedForecasts || []).slice(0, 4).map((id) => {
-                const f = FORECAST_DATABASE.find((x) => x.id === id);
-                if (!f) return '';
-                return `<button type="button" class="pulse-signal-row view-forecast-detail" data-id="${f.id}" style="cursor:pointer;width:100%;background:none;border:none;border-bottom:1px solid var(--bg-tertiary);color:inherit;font-family:inherit;text-align:left">
-                    <span class="pulse-signal-icon">${f.probability}</span>
+            ${getFollowedForecastsOrdered().slice(0, 4).map((f, i) => `
+                <button type="button" class="pulse-signal-row view-forecast-detail" data-id="${f.id}" style="cursor:pointer;width:100%;background:none;border:none;border-bottom:1px solid var(--bg-tertiary);color:inherit;font-family:inherit;text-align:left">
+                    <span class="pulse-signal-icon">${i === 0 ? '★' : f.probability}</span>
                     <span class="pulse-signal-name">${escHtml(f.title.length > 20 ? f.title.slice(0, 17) + '…' : f.title)}</span>
                     <span class="pulse-signal-chg up">→</span>
-                </button>`;
-            }).join('')}
+                </button>`).join('')}
+            <button type="button" class="pulse-signals-cta" data-pulse-tab="trackers">Manage tracking →</button>
         </div>` : ''}
     </aside>`;
 }
@@ -4334,10 +4595,11 @@ function renderMoreStoryRow(item) {
 
 function renderImpactGrid(item, linked) {
     const cards = getImpactCardsForStory(item, linked, 4);
-    if (!cards.length) return '';
-    return `<div class="pulse-section-head">
+    let html = '';
+    if (cards.length) {
+        html += `<div class="pulse-section-head">
             <span class="pulse-section-title">Second order impacts</span>
-            <span class="pulse-section-link" style="cursor:default;opacity:0.7">Click any card</span>
+            <span class="pulse-section-link" style="cursor:default;opacity:0.7">Tap for full breakdown</span>
         </div>
         <div class="pulse-impact-grid">${cards.map((c, i) => `
             <button type="button" class="pulse-impact-card open-pulse-story" data-pulse-id="${item.id}" data-impact-idx="${i}">
@@ -4345,6 +4607,9 @@ function renderImpactGrid(item, linked) {
                 <div class="pulse-impact-card-title">${escHtml(c.title)}</div>
                 ${c.text ? `<div class="pulse-impact-card-text">${escHtml(c.text)}</div>` : ''}
             </button>`).join('')}</div>`;
+    }
+    html += renderStoryStayAheadBlock(item, linked);
+    return html;
 }
 
 function renderPulseForecastTab() {
@@ -4400,28 +4665,56 @@ function renderPulseToolsTab() {
     </div>`;
 }
 
-function renderPulseTrackersTab() {
-    const followed = (S.followedForecasts || [])
+function getFollowedForecastsOrdered() {
+    return (S.followedForecasts || [])
         .map((id) => FORECAST_DATABASE.find((f) => f.id === id))
         .filter(Boolean);
+}
+
+function renderTrackerManageRow(f, idx) {
+    const isPrimary = idx === 0;
+    return `<div class="tracker-manage-row">
+        <div style="flex:1;min-width:0">
+            ${isPrimary ? '<div class="tracker-priority-badge">Priority · shows first</div>' : ''}
+            <div class="tracker-manage-title">${escHtml(f.title)}</div>
+            <div class="tracker-manage-meta">${f.probability}% · ${escHtml(f.timeframe || '')}</div>
+        </div>
+        <div class="tracker-manage-actions">
+            ${isPrimary ? '' : `<button type="button" class="btn btn-small btn-secondary boost-forecast" data-id="${f.id}">Show first</button>`}
+            <button type="button" class="btn btn-small btn-ghost follow-forecast" data-id="${f.id}">Remove</button>
+            <button type="button" class="btn btn-small btn-primary view-forecast-detail" data-id="${f.id}">Open</button>
+        </div>
+    </div>`;
+}
+
+function renderTrackingSettingsSection() {
+    const followed = getFollowedForecastsOrdered();
+    if (!followed.length) {
+        return `<div class="card mb-20"><div class="card-header"><span class="card-header-title">What you're tracking</span></div>
+            <p class="text-secondary text-small mb-12">Follow forecasts from Pulse or Explore — they'll shape your feed and Future world tab.</p>
+            <button type="button" class="btn btn-small btn-primary" data-screen="forecasts">Explore forecasts →</button>
+        </div>`;
+    }
+    return `<div class="card mb-20"><div class="card-header"><span class="card-header-title">What you're tracking</span><span class="card-badge">${followed.length}</span></div>
+        <p class="text-secondary text-small mb-12">Pin a forecast to see it first across your feed. Remove any you're done watching.</p>
+        ${followed.map((f, i) => renderTrackerManageRow(f, i)).join('')}
+        <button type="button" class="btn btn-ghost btn-small" data-pulse-tab="trackers" style="margin-top:12px;padding:0">Open Trackers tab →</button>
+    </div>`;
+}
+
+function renderPulseTrackersTab() {
+    const followed = getFollowedForecastsOrdered();
 
     return `<div class="pulse-dashboard">
         ${renderPulseTopNav('trackers')}
         <h1 class="pulse-hero-title">Your <em>trackers</em></h1>
-        <p class="pulse-hero-sub">Forecasts you're following — tap for ripples and tools.</p>
+        <p class="pulse-hero-sub">Forecasts you're following — pin what matters most, remove the rest.</p>
 
         <div class="pulse-dash-grid">
             <div class="pulse-dash-main">
-                ${followed.length ? followed.map((f) => `
-                    <div class="card mb-15" style="padding:16px">
-                        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:8px">
-                            <span style="font-size:28px;font-weight:700;color:var(--warning)">${f.probability}%</span>
-                            <span style="font-size:10px;color:var(--text-muted)">${escHtml(f.timeframe || '')}</span>
-                        </div>
-                        <h3 style="font-size:15px;line-height:1.4;margin-bottom:10px">${escHtml(f.title)}</h3>
-                        <p class="text-secondary text-small" style="line-height:1.55;margin-bottom:12px">${escHtml(f.threatReason || '')}</p>
-                        <button type="button" class="btn btn-small btn-primary view-forecast-detail" data-id="${f.id}">Ripples & opportunities →</button>
-                    </div>`).join('') : `
+                ${followed.length ? `<div class="card" style="padding:16px 20px">
+                    ${followed.map((f, i) => renderTrackerManageRow(f, i)).join('')}
+                </div>` : `
                 <div class="card" style="padding:24px;text-align:center">
                     <p class="text-secondary text-small" style="line-height:1.6;margin-bottom:14px">You're not tracking any forecasts yet. Follow from Today or Explore.</p>
                     <button type="button" class="btn btn-primary btn-small" data-screen="forecasts">Explore forecasts →</button>
@@ -4442,7 +4735,7 @@ function renderPulseDashboard() {
     const takeaway = insight.second_order || lead.meaning || '';
     const desc = takeaway.split('.')[0] + (takeaway.includes('.') ? '.' : '');
     const forecastForWidget = linked
-        || (S.followedForecasts || []).map((id) => FORECAST_DATABASE.find((f) => f.id === id)).filter(Boolean)[0]
+        || getFollowedForecastsOrdered()[0]
         || null;
     const moreToday = byDay.today.slice(1);
     const yesterdayStories = byDay.yesterday;
@@ -4470,8 +4763,6 @@ function renderPulseDashboard() {
                 </article>
 
                 ${renderImpactGrid(lead, linked)}
-
-                ${renderPulseToolDiscover(lead)}
 
                 <div class="pulse-bottom-grid">
                     ${renderTrackedForecastWidget(forecastForWidget)}
@@ -5316,7 +5607,15 @@ function rankForecastsForUser(forecastList, user) {
 
     const ranked = forecastList
         .map(f => ({...f, _relevance: score(f)}))
-        .sort((a, b) => (b._relevance - a._relevance) || ((b.probability || 0) - (a.probability || 0)));
+        .sort((a, b) => {
+            const followedOrder = S.followedForecasts || [];
+            const af = followedOrder.indexOf(a.id);
+            const bf = followedOrder.indexOf(b.id);
+            if (af !== -1 && bf !== -1) return af - bf;
+            if (af !== -1) return -1;
+            if (bf !== -1) return 1;
+            return (b._relevance - a._relevance) || ((b.probability || 0) - (a.probability || 0));
+        });
     ranked._hasProfileSignal = hasProfileSignal;
     return ranked;
 }
@@ -5936,7 +6235,7 @@ function loginH(){
         }
     }
     var mobileBadge = IS_MOBILE_APP ? `<div class="mobile-free-badge">Mobile app · Free access</div>` : '';
-    return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>${mobileBadge}${installBanner}<div class="card"><h2 class="card-title">Welcome back</h2><p class="card-subtitle">Continue your training</p><form id="login-form"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required></div><button type="submit" class="btn btn-primary btn-full">Sign In</button></form><p class="text-center mt-10"><a class="text-link text-small" id="forgot-pass">Forgot password?</a></p><p class="text-center text-secondary text-small mt-20">New? <a class="text-link" id="to-signup">Start training</a></p></div><div class="card mt-20 text-center" style="border-color:var(--accent)"><p class="text-small mb-10">Not sure yet?</p><button class="btn btn-secondary btn-full" id="take-free-quiz">Get My AI-Proof Score →</button><p class="text-secondary text-small mt-10">4 questions. 60 seconds.</p></div></div></div>`;
+    return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>${mobileBadge}${installBanner}<div class="card"><h2 class="card-title">Welcome back</h2><p class="card-subtitle">Your forecast feed & daily Pulse</p><form id="login-form"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required></div><button type="submit" class="btn btn-primary btn-full">Sign In</button></form><p class="text-center mt-10"><a class="text-link text-small" id="forgot-pass">Forgot password?</a></p><p class="text-center text-secondary text-small mt-20">New? <a class="text-link" id="to-signup">Get started free</a></p></div><div class="card mt-20 text-center" style="border-color:var(--accent)"><p class="text-small mb-8" style="font-weight:600">Not ready to commit?</p><p class="text-secondary text-small mb-12" style="line-height:1.55">See how AI shifts affect your industry — 60 seconds, no account.</p><button class="btn btn-secondary btn-full" id="take-free-quiz">Quick industry scan →</button></div></div></div>`;
 }
 
 function freeResultsH(){
@@ -5980,31 +6279,156 @@ function forgotH(){return `<div class="screen-center"><div class="container-sm">
 
 function resetPasswordH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Set New Password</h2><p class="card-subtitle">Enter your new password below</p><form id="reset-password-form"><div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-input" id="reset-new-pass" required minlength="6" placeholder="Min 6 characters"></div><div class="form-group"><label class="form-label">Confirm Password</label><input type="password" class="form-input" id="reset-confirm-pass" required minlength="6"></div><button type="submit" class="btn btn-primary btn-full">Set New Password</button></form><p class="text-center text-secondary text-small mt-20"><a class="text-link" id="back-login">Back to sign in</a></p></div></div></div>`;}
 
-function signupH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Start training</h2><p class="card-subtitle">Build skills AI can't replace</p><ul style="list-style:none;text-align:left;margin:0 0 20px 0;padding:0;font-size:13px;color:var(--text-secondary)"><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ AI-Proof Score & personalized profile</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progressive weekly quests</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ 3 AI Coaches (Ideas, Personality, Execution)</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progress capsules & weekly reviews</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Slack community</li><li style="padding:6px 0">✓ Cancel anytime</li></ul><form id="signup-form"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="name" required></div><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required minlength="6"></div><button type="submit" class="btn btn-primary btn-full">Create Account</button></form><p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p></div></div></div>`;}
+function signupH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Stay ahead of what's shifting</h2><p class="card-subtitle">Track forecasts, read daily Pulse, act before the crowd</p><ul style="list-style:none;text-align:left;margin:0 0 20px 0;padding:0;font-size:13px;color:var(--text-secondary)"><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Daily Pulse — news tied to forecasts you follow</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Second-order impacts — what headlines actually mean</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Tools to try — 10-min experiments matched to your role</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Forecast tracking & pathways if predictions hit</li><li style="padding:6px 0">✓ Cancel anytime · invite codes welcome</li></ul><form id="signup-form"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="name" required></div><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required minlength="6"></div>${renderCouponCodeField({ id: 'signup-coupon', msgId: 'signup-coupon-msg', hint: 'Have an invite code? Apply before creating your account.' })}<button type="submit" class="btn btn-primary btn-full">Create Account</button></form><p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p></div></div></div>`;}
 
-function pricingH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center"><h2 class="card-title">Choose Your Plan</h2><p class="text-secondary text-small mb-20">Cancel anytime</p><div style="display:flex;flex-direction:column;gap:15px"><div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary)"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Most Popular</div><div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div><div style="font-size:11px;color:var(--text-muted);margin-top:6px;margin-bottom:4px">$9.99/mo · Cancel anytime</div><a href="${STRIPE_LINK}" class="btn btn-primary btn-full mt-20">Subscribe →</a></div>${STRIPE_ANNUAL?`<div style="border:1px solid var(--bg-tertiary);padding:20px"><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Best Value — 2 Months Free</div><div style="font-size:36px;font-weight:700">$99<span style="font-size:14px;color:var(--text-secondary)">/year</span></div><a href="${STRIPE_ANNUAL}" class="btn btn-secondary btn-full mt-20">Start Annual →</a></div>`:''}</div><ul style="list-style:none;text-align:left;margin-top:25px;font-size:12px"><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ AI-Proof Score + personalized profile</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progressive weekly quests</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ 3 AI Coaches (Ideas, Personality, Execution)</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Progress capsules + Weekly reviews</li><li style="padding:8px 0">✓ Cancel anytime</li></ul></div></div></div>`;}
+function pricingH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center"><h2 class="card-title">Choose Your Plan</h2><p class="text-secondary text-small mb-20">Full Pulse feed, forecast tracking & tools to try</p>${hasFreeCouponAccess() ? `<div style="border:2px solid var(--accent);padding:16px;margin-bottom:20px;text-align:left;background:rgba(0,240,255,0.04)"><div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Coupon applied</div><p class="text-small" style="line-height:1.55;margin-bottom:12px">Code <strong>${escHtml(S.onboardData?.couponCode || S.user?.coupon_code || '')}</strong> unlocks complimentary access.</p><button type="button" class="btn btn-primary btn-full" id="coupon-continue-onboarding">Continue free →</button></div>` : `<div style="text-align:left;margin-bottom:20px">${renderCouponCodeField({ id: 'pricing-coupon', msgId: 'pricing-coupon-msg', hint: 'Have an invite code? Apply to skip payment.' })}</div>`}<div style="display:flex;flex-direction:column;gap:15px;${hasFreeCouponAccess() ? 'opacity:0.45;pointer-events:none;' : ''}"><div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary)"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Most Popular</div><div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div><div style="font-size:11px;color:var(--text-muted);margin-top:6px;margin-bottom:4px">$9.99/mo · Cancel anytime</div><a href="${STRIPE_LINK}" class="btn btn-primary btn-full mt-20">Subscribe →</a></div>${STRIPE_ANNUAL?`<div style="border:1px solid var(--bg-tertiary);padding:20px"><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Best Value — 2 Months Free</div><div style="font-size:36px;font-weight:700">$99<span style="font-size:14px;color:var(--text-secondary)">/year</span></div><a href="${STRIPE_ANNUAL}" class="btn btn-secondary btn-full mt-20">Start Annual →</a></div>`:''}</div><ul style="list-style:none;text-align:left;margin-top:25px;font-size:12px"><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Daily Pulse tuned to your role & topics</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Forecast tracking + second-order impacts</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Tools to try — short experiments each week</li><li style="padding:8px 0">✓ Cancel anytime</li></ul></div></div></div>`;}
+
+const ONBOARD_TOUR_SLIDES = [
+    {
+        icon: '📡',
+        title: 'Today\'s Pulse',
+        body: 'Every morning we scan the news and connect headlines to the forecasts you care about — with a plain-English take on what it means for you.',
+        hint: 'Headlines → meaning → what to watch next. No doom-scrolling.',
+        mock: `<div class="pulse-card-compact" style="margin:0"><div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">TechCrunch · Autonomous vehicles</div><div style="font-size:12px;font-weight:600;line-height:1.4;margin-bottom:6px">Waymo expands to 4 new cities</div><p style="font-size:11px;color:var(--text-secondary);margin:0;line-height:1.5">→ Car interiors become the next status battleground — accessories, comfort, mobile offices.</p></div>`
+    },
+    {
+        icon: '🔮',
+        title: 'Track forecasts',
+        body: 'Follow predictions that matter to your work — AI agents, job shifts, autonomous vehicles. See odds, timelines, and pathways if they land.',
+        hint: 'Your Following list powers everything else in the app.',
+        mock: `<div style="font-size:11px;color:var(--accent);margin-bottom:6px">72% likely · 2028–2030</div><div style="font-size:12px;font-weight:600;line-height:1.4">Fully autonomous vehicles reach mass adoption</div><div style="font-size:10px;color:var(--text-muted);margin-top:8px">Watching · Priority forecast</div>`
+    },
+    {
+        icon: '🌊',
+        title: 'Second-order impacts',
+        body: 'We don\'t stop at the headline. Each story opens into ripple effects — who wins, who loses, what shifts before most people notice.',
+        hint: 'This is how you stay ahead, not just informed.',
+        mock: `<div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:11px;padding:8px;border-left:2px solid var(--accent);background:var(--bg-secondary)"><strong>Insurance</strong> shifts from drivers to systems</div><div style="font-size:11px;padding:8px;border-left:2px solid var(--personality);background:var(--bg-secondary)"><strong>Healthcare</strong> shows up in commutes</div><div style="font-size:11px;padding:8px;border-left:2px solid var(--execution);background:var(--bg-secondary)"><strong>Interiors</strong> become mobile living rooms</div></div>`
+    },
+    {
+        icon: '🛠',
+        title: 'Tools to try',
+        body: 'Matched plays you can run this week — 10-minute experiments with real tools, tied to what you\'re tracking. Scan, understand, act.',
+        hint: 'No homework. One small move beats reading another thread.',
+        mock: `<div style="font-size:11px;padding:10px;border:1px dashed var(--accent)">⚡ <strong>Try now (12 min · Runway):</strong> Generate a 4-sec clip visualizing your top forecast. Use it as a storyboard frame.</div>`
+    }
+];
+
+function onboardProgressBar(step, totalSteps) {
+    return `<div class="progress-bar" style="margin-bottom:30px">${Array(totalSteps).fill(0).map((_, i) => `<div class="progress-dot ${i < step ? 'done' : i === step - 1 ? 'active' : ''}"></div>`).join('')}</div>`;
+}
+
+function renderOnboardTourH() {
+    const slides = ONBOARD_TOUR_SLIDES;
+    const idx = S.onboardTourSlide || 0;
+    const slide = slides[idx];
+    return `<div class="onboard-tour-slide">
+        <div class="onboard-tour-icon">${slide.icon}</div>
+        <h2 class="card-title" style="margin-bottom:10px">${slide.title}</h2>
+        <p class="text-secondary text-small" style="line-height:1.65;max-width:420px;margin:0 auto">${slide.body}</p>
+        <div class="onboard-tour-mock"><div class="onboard-tour-mock-label">Preview</div>${slide.mock}</div>
+        <div class="onboard-tour-hint"><strong style="color:var(--text-primary)">Why it matters:</strong> ${slide.hint}</div>
+        <div class="onboard-tour-nav">
+            <button type="button" class="onboard-arrow-btn" id="tour-prev" ${idx === 0 ? 'disabled' : ''}>← Back</button>
+            <div class="onboard-tour-dots">${slides.map((_, i) => `<div class="onboard-tour-dot ${i < idx ? 'done' : i === idx ? 'active' : ''}"></div>`).join('')}</div>
+            <button type="button" class="btn btn-primary btn-small" id="tour-next">${idx === slides.length - 1 ? 'Continue →' : 'Next →'}</button>
+        </div>
+    </div>`;
+}
+
+function renderOnboardPaywallH() {
+    const wp = getWorkProfile();
+    const roleLine = wp.role ? ` tuned for <strong>${escHtml(wp.role)}</strong>` : '';
+    return `<div style="background:var(--bg-primary);padding:20px;margin-top:8px;border:1px solid var(--accent)">
+        <h3 style="font-size:14px;text-align:center;margin-bottom:12px">${IS_MOBILE_APP ? '📱 Free on mobile' : '🚀 Unlock your feed'}</h3>
+        <p class="text-secondary text-small text-center mb-15" style="line-height:1.55">Your profile is set${roleLine}. Get daily Pulse, forecast impacts, and tools matched to what you track.</p>
+        <ul style="list-style:none;font-size:11px;margin-bottom:15px">
+            <li style="padding:5px 0">✓ Daily Pulse — news for your forecasts</li>
+            <li style="padding:5px 0">✓ Second-order impacts on every story</li>
+            <li style="padding:5px 0">✓ Tools to try this week</li>
+            <li style="padding:5px 0">✓ Track & boost what you're watching</li>
+        </ul>
+        ${IS_MOBILE_APP ? `
+        <button class="btn btn-primary btn-full" id="mobile-skip-paywall">Continue Free →</button>
+        <p class="text-center text-secondary text-small mt-10">Free on mobile for now</p>
+        ` : hasFreeCouponAccess() ? `
+        <div style="border:2px solid var(--accent);padding:16px;background:rgba(0,240,255,0.04)">
+            <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Coupon applied</div>
+            <p class="text-small text-center mb-12" style="line-height:1.55">Code <strong>${escHtml(S.onboardData?.couponCode || S.user?.coupon_code || '')}</strong> unlocks complimentary access.</p>
+            <button class="btn btn-primary btn-full" id="onboard-coupon-continue">Continue free →</button>
+        </div>
+        ` : `
+        <div style="margin-bottom:16px;text-align:left">${renderCouponCodeField({ id: 'onboard-paywall-coupon', msgId: 'onboard-paywall-coupon-msg', compact: true, hint: 'Have an invite code? Apply to skip payment.' })}</div>
+        <div style="display:flex;flex-direction:column;gap:12px" id="onboard-stripe-options">
+            <div style="border:2px solid var(--accent);padding:12px;background:var(--bg-secondary)">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                        <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Monthly</div>
+                        <div style="font-size:20px;font-weight:700">$9.99<span style="font-size:11px;color:var(--text-secondary)">/month</span></div>
+                    </div>
+                    <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email || S.user?.email || '')}" class="btn btn-primary btn-small" id="go-to-stripe-link">Subscribe →</a>
+                </div>
+            </div>
+            <div style="border:1px solid var(--success);padding:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                        <div style="font-size:10px;color:var(--success);text-transform:uppercase;letter-spacing:1px">Best Value</div>
+                        <div style="font-size:20px;font-weight:700">$99<span style="font-size:11px;color:var(--text-secondary)">/year</span></div>
+                    </div>
+                    <a href="${STRIPE_ANNUAL}?prefilled_email=${encodeURIComponent(S.onboardData.email || S.user?.email || '')}" class="btn btn-secondary btn-small" id="go-to-stripe-annual">Start Annual →</a>
+                </div>
+            </div>
+        </div>
+        <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
+        `}
+    </div>`;
+}
+
+function stashOnboardPending(nextStep) {
+    const pendingUser = {
+        email: S.onboardData?.email || S.user?.email,
+        name: S.user?.name,
+        industry: getWorkProfile().industry,
+        work_profile: S.user?.work_profile,
+        tier: S.onboardData?.tier || S.user?.tier,
+        scores: S.scores || { ideas: 50, personality: 50, execution: 50 },
+        baseline_scores: S.scores || { ideas: 50, personality: 50, execution: 50 },
+        onboardStep: needsOnboardAccount() ? (nextStep || 5) : 0,
+        onboardData: S.onboardData,
+        onboardSelectedForecasts: S.onboardSelectedForecasts,
+        followedForecasts: S.followedForecasts,
+        coupon_code: S.user?.coupon_code,
+        plan: S.user?.plan
+    };
+    localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
+}
+
+function needsOnboardPaywall() {
+    return !IS_MOBILE_APP && !IS_NATIVE_APP && !hasFreeCouponAccess() && S.user?.plan !== 'paid';
+}
+
+function needsOnboardAccount() {
+    return !(S.user?.name && S.user?.email);
+}
 
 function onboardingH(){
     const step = S.onboardStep;
-    const totalSteps = 6; // 1-email/industry, 2-quiz, 3-results+pay, 4-account, 5-goals, 6-interests
+    const totalSteps = 5;
+    const progressBar = onboardProgressBar(step, totalSteps);
     
-    // Progress bar
-    const progressBar = `<div class="progress-bar" style="margin-bottom:30px">${Array(totalSteps).fill(0).map((_,i)=>`<div class="progress-dot ${i<step?'done':i===step-1?'active':''}"></div>`).join('')}</div>`;
-    
-    if(step === 1) {
-        // Email + Industry (first step - collect email immediately)
-        return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
+    if (step === 1) {
+        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
         ${progressBar}
         <div class="card">
-            <h2 class="card-title">Let's get started</h2>
-            <p class="card-subtitle">First, tell us a bit about you</p>
-            <form id="onboard-email-form">
+            <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Step 1 · Your profile</div>
+            <h2 class="card-title">What do you do — and what are you tracking?</h2>
+            <p class="card-subtitle">Same fields as your Account profile. We use this to rank Pulse stories, forecasts, and tools for you.</p>
+            <form id="onboard-profile-form">
                 <div class="form-group">
                     <label class="form-label">Which best describes you?</label>
-                    <p class="text-secondary text-small mb-10">We'll tailor quests, forecasts, and coaching to your path.</p>
                     <div class="goal-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px">
-                        ${TIERS.map(t=>`
-                            <div class="choice-card tier-option ${S.onboardData.tier===t.id?'selected':''}" data-tier="${t.id}" style="padding:14px;cursor:pointer">
+                        ${TIERS.map(t => `
+                            <div class="choice-card tier-option ${S.onboardData.tier === t.id ? 'selected' : ''}" data-tier="${t.id}" style="padding:14px;cursor:pointer">
                                 <div style="font-size:22px;margin-bottom:6px">${t.icon}</div>
                                 <div style="font-size:12px;font-weight:700;margin-bottom:4px">${t.label}</div>
                                 <div style="font-size:10px;color:var(--text-secondary);line-height:1.4">${t.job}</div>
@@ -6012,192 +6436,73 @@ function onboardingH(){
                         `).join('')}
                     </div>
                 </div>
-                <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="ob-email" value="${S.onboardData.email||S.diagnosticEmail||''}" required></div>
-                <div class="form-group">
-                    <label class="form-label">Industry</label>
-                    <select class="form-input" id="ob-industry" required>
-                        <option value="">Select your industry...</option>
-                        ${INDUSTRIES.map(i=>`<option value="${i}" ${(S.onboardData.industry||S.diagnosticIndustry)===i?'selected':''}>${i}</option>`).join('')}
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary btn-full">Continue to Assessment →</button>
+                <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="ob-email" value="${escHtml(S.onboardData.email || S.user?.email || S.diagnosticEmail || '')}" ${S.user?.email ? 'readonly style="opacity:0.75"' : ''} required></div>
+                ${profileFormFieldsH('ob', { expanded: true })}
+                <button type="submit" class="btn btn-primary btn-full">Next: how it works →</button>
             </form>
         </div>
         <p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p>
         </div></div>`;
     }
     
-    if(step === 2) {
-        // 7-question Quiz intro
-        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
-        ${progressBar}
-        <div class="card text-center">
-            <h2 class="card-title">Mode Assessment</h2>
-            <p class="card-subtitle">7 questions to understand your strengths</p>
-            
-            <div style="background:var(--bg-primary);padding:25px;margin:25px 0;text-align:left">
-                <div style="display:flex;gap:20px;margin-bottom:20px">
-                    <div style="text-align:center;flex:1">
-                        <div style="font-size:28px;margin-bottom:5px;color:var(--ideas)">💡</div>
-                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--ideas)">Ideas</div>
-                    </div>
-                    <div style="text-align:center;flex:1">
-                        <div style="font-size:28px;margin-bottom:5px;color:var(--personality)">⚡</div>
-                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--personality)">Personality</div>
-                    </div>
-                    <div style="text-align:center;flex:1">
-                        <div style="font-size:28px;margin-bottom:5px;color:var(--execution)">🎯</div>
-                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--execution)">Execution</div>
-                    </div>
-                </div>
-                <p style="font-size:12px;color:var(--text-secondary);text-align:center">We'll measure these three modes that separate the top 1% from everyone else.</p>
-            </div>
-            
-            <button class="btn btn-primary btn-full" id="start-assessment">Start Assessment →</button>
-            <p class="text-secondary text-small mt-20">Takes about 2 minutes</p>
-        </div>
-        </div></div>`;
-    }
-    
-    if(step === 3) {
-        // Results + Paywall (show results, require payment to continue)
-        const {ideas:i,personality:p,execution:e}=S.freeQuizScores||S.scores;
-        const avgScore = Math.round((i+p+e)/3);
-        const percentile = getPercentile(avgScore);
-        const weak = weakest();
-        
+    if (step === 2) {
         return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
         ${progressBar}
         <div class="card">
-            <h2 class="card-title text-center">Your Mode Profile</h2>
-            
-            <div class="results-meters">
-                <div class="meter"><div class="meter-circle ideas">${i}%</div><div class="meter-label">Ideas</div></div>
-                <div class="meter"><div class="meter-circle personality">${p}%</div><div class="meter-label">Personality</div></div>
-                <div class="meter"><div class="meter-circle execution">${e}%</div><div class="meter-label">Execution</div></div>
-            </div>
-            
-            <div class="verdict">
-                <div class="verdict-title">Your Position</div>
-                <div class="verdict-text">You're in the <strong>${percentile}th percentile</strong>. AI Proof Club operates at 85%+ across all modes. Your <strong style="text-transform:capitalize">${weak}</strong> mode needs the most work.</div>
-            </div>
-            
-            <div style="background:var(--bg-primary);padding:20px;margin-top:20px;border:1px solid var(--accent)">
-                <h3 style="font-size:14px;text-align:center;margin-bottom:15px">${IS_MOBILE_APP ? '📱 You\'re in — it\'s free on mobile' : '🚀 Ready to Level Up?'}</h3>
-                <p class="text-secondary text-small text-center mb-15">${IS_MOBILE_APP ? 'Continue to create your account and start weekly quests, coaches, and forecasts.' : 'Get weekly quests to build your ' + weak + ' mode. Track forecasts. Become irreplaceable.'}</p>
-                <ul style="list-style:none;font-size:11px;margin-bottom:15px">
-                    <li style="padding:5px 0">✓ Weekly quests based on your profile</li>
-                    <li style="padding:5px 0">✓ AI Coaches for each mode</li>
-                    <li style="padding:5px 0">✓ Forecast tracking + opportunities</li>
-                    <li style="padding:5px 0">✓ Progress tracking + receipts</li>
-                </ul>
-                
-                ${IS_MOBILE_APP ? `
-                <button class="btn btn-primary btn-full" id="mobile-skip-paywall">Continue Free →</button>
-                <p class="text-center text-secondary text-small mt-10">Free on mobile for now</p>
-                ` : `
-                <div style="display:flex;flex-direction:column;gap:12px">
-                    <div style="border:2px solid var(--accent);padding:12px;background:var(--bg-secondary)">
-                        <div style="display:flex;justify-content:space-between;align-items:center">
-                            <div>
-                                <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Monthly</div>
-                                <div style="font-size:20px;font-weight:700">$9.99<span style="font-size:11px;color:var(--text-secondary)">/month</span></div><div style="font-size:10px;color:var(--text-muted);margin-top:4px">$9.99/mo · Cancel anytime</div>
-                            </div>
-                            <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email||'')}" class="btn btn-primary btn-small" id="go-to-stripe-link">Subscribe →</a>
-                        </div>
-                    </div>
-                    <div style="border:1px solid var(--success);padding:12px">
-                        <div style="display:flex;justify-content:space-between;align-items:center">
-                            <div>
-                                <div style="font-size:10px;color:var(--success);text-transform:uppercase;letter-spacing:1px">Best Value — 2 Months Free</div>
-                                <div style="font-size:20px;font-weight:700">$99<span style="font-size:11px;color:var(--text-secondary)">/year</span></div>
-                            </div>
-                            <a href="${STRIPE_ANNUAL}?prefilled_email=${encodeURIComponent(S.onboardData.email||'')}" class="btn btn-secondary btn-small" id="go-to-stripe-annual">Start Annual →</a>
-                        </div>
-                    </div>
-                </div>
-                <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
-                `}
-            </div>
+            <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Step 2 · How it works</div>
+            ${renderOnboardTourH()}
         </div>
         </div></div>`;
     }
     
-    if(step === 4) {
-        // Create account (after payment) - collect name and password
+    if (step === 3) {
+        const suggestedForecasts = getSuggestedForecasts();
+        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
+        ${progressBar}
+        <div class="card">
+            <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Step 3 · Your forecasts</div>
+            <h2 class="card-title">What shifts are you watching?</h2>
+            <p class="card-subtitle">Pick forecasts to follow — Pulse and tools will prioritize these. Change anytime in Trackers.</p>
+            <div style="display:flex;flex-direction:column;gap:10px;margin:20px 0">
+                ${suggestedForecasts.slice(0, 6).map(f => `
+                    <div class="suggested-forecast choice-card ${S.onboardSelectedForecasts?.includes(f.id) ? 'selected' : ''}" data-fid="${f.id}" style="padding:15px;cursor:pointer;border:1px solid var(--bg-tertiary)">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                            <span style="font-size:11px;color:var(--accent);text-transform:uppercase">${f.probability}% likely</span>
+                            <span style="font-size:10px;color:var(--text-secondary)">${escHtml(f.timeframe || '')}</span>
+                        </div>
+                        <div style="font-size:13px;line-height:1.45">${escHtml(f.title)}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <button class="btn btn-primary btn-full" id="finish-onboarding">Continue →</button>
+        </div>
+        </div></div>`;
+    }
+    
+    if (step === 4) {
+        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
+        ${progressBar}
+        <div class="card">
+            <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Step 4 · Join</div>
+            <h2 class="card-title text-center">Almost there</h2>
+            ${renderOnboardPaywallH()}
+        </div>
+        </div></div>`;
+    }
+    
+    if (step === 5) {
         return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div>
         ${progressBar}
         <div class="card">
-            <h2 class="card-title">Create Your Account</h2>
-            <p class="card-subtitle">Set up your login credentials</p>
+            <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Step 5 · Account</div>
+            <h2 class="card-title">Create your login</h2>
+            <p class="card-subtitle">Save your profile, forecasts, and Pulse feed</p>
             <form id="post-payment-account-form">
-                <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="ob-name" value="${S.user?.name||''}" required></div>
-                <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="ob-email-display" value="${S.onboardData?.email||S.user?.email||''}" disabled style="opacity:0.7"></div>
+                <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="ob-name" value="${escHtml(S.user?.name || '')}" required></div>
+                <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="ob-email-display" value="${escHtml(S.onboardData?.email || S.user?.email || '')}" disabled style="opacity:0.7"></div>
                 <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="ob-pass" minlength="6" required placeholder="Min 6 characters"></div>
-                <button type="submit" class="btn btn-primary btn-full">Continue →</button>
+                <button type="submit" class="btn btn-primary btn-full">Open my feed →</button>
             </form>
-        </div>
-        </div></div>`;
-    }
-    
-    if(step === 5) {
-        // Goals (after account creation)
-        const selectedGoals = S.onboardData.goals || [];
-        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
-        ${progressBar}
-        <div class="card">
-            <h2 class="card-title">What's driving you here?</h2>
-            <p class="card-subtitle">Select all that apply</p>
-            <div class="goal-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0">
-                ${GOALS.map(g=>`
-                    <div class="choice-card goal-option ${selectedGoals.includes(g.id)?'selected':''}" data-goal="${g.id}" style="padding:15px;cursor:pointer">
-                        <div style="font-size:24px;margin-bottom:8px">${g.icon}</div>
-                        <div style="font-size:12px">${g.label}</div>
-                    </div>
-                `).join('')}
-            </div>
-            <button class="btn btn-primary btn-full" id="goals-continue" ${selectedGoals.length===0?'disabled':''}>Continue →</button>
-        </div>
-        </div></div>`;
-    }
-    
-    if(step === 6) {
-        // Interests + suggested forecasts (final step)
-        const selectedInterests = S.onboardData.forecastInterests || [];
-        const suggestedForecasts = getSuggestedForecasts();
-        
-        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
-        ${progressBar}
-        <div class="card">
-            <h2 class="card-title">What topics interest you?</h2>
-            <p class="card-subtitle">We'll show you relevant forecasts and opportunities</p>
-            <div class="interest-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:20px 0">
-                ${FORECAST_INTERESTS.map(f=>`
-                    <div class="choice-card interest-option ${selectedInterests.includes(f.id)?'selected':''}" data-interest="${f.id}" style="padding:15px;cursor:pointer">
-                        <div style="font-size:24px;margin-bottom:8px">${f.icon}</div>
-                        <div style="font-size:11px">${f.label}</div>
-                    </div>
-                `).join('')}
-            </div>
-            
-            ${suggestedForecasts.length ? `
-            <div style="margin-top:25px">
-                <h3 style="font-size:14px;margin-bottom:15px">🔮 Suggested Forecasts</h3>
-                <div style="display:flex;flex-direction:column;gap:10px">
-                    ${suggestedForecasts.slice(0,3).map(f=>`
-                        <div class="suggested-forecast" data-fid="${f.id}" style="background:var(--bg-primary);border:1px solid var(--bg-tertiary);padding:15px;cursor:pointer;transition:all 0.3s;${S.onboardSelectedForecasts?.includes(f.id)?'border-color:var(--accent);':''}">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                                <span style="font-size:11px;color:var(--accent);text-transform:uppercase">${f.probability}% likely</span>
-                                <span style="font-size:10px;color:var(--text-secondary)">${f.timeframe}</span>
-                            </div>
-                            <div style="font-size:13px">${f.title}</div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            ` : ''}
-            
-            <button class="btn btn-primary btn-full mt-20" id="finish-onboarding">Start Training →</button>
         </div>
         </div></div>`;
     }
@@ -6295,13 +6600,13 @@ function resultsH(){
 }
 
 function appH(c) {
-    const mobileNav = `<nav class="mobile-nav"><div class="mobile-nav-item ${S.screen==='dashboard'?'active':''}" data-screen="dashboard"><span>◉</span>Pulse</div><div class="mobile-nav-item ${S.screen==='forecasts'?'active':''}" data-screen="forecasts"><span>🔮</span>Explore</div><div class="mobile-nav-item ${S.screen==='settings'?'active':''}" data-screen="settings"><span>⚙</span>Profile</div><div class="mobile-nav-item ${['coach','receipts','mypath','quests'].includes(S.screen)?'active':''}" id="more-menu-toggle"><span>☰</span>More</div></nav><div class="more-menu ${S.showMoreMenu?'show':''}" id="more-menu"><div class="more-menu-item" data-screen="coach"><span>💬</span> Coach</div><div class="more-menu-item" data-screen="receipts"><span>◈</span> Receipts</div><div class="more-menu-item" data-screen="mypath"><span>◎</span> My Path</div><div class="more-menu-item" data-screen="quests"><span>🎮</span> Try Tools</div><a href="${SLACK_COMMUNITY_URL}" target="_blank" rel="noopener noreferrer" class="more-menu-item more-menu-link"><span>💬</span> Slack</a><div class="more-menu-item" id="mobile-logout"><span>↩</span> Sign Out</div></div>`;
+    const mobileNav = `<nav class="mobile-nav"><div class="mobile-nav-item ${S.screen==='dashboard'?'active':''}" data-screen="dashboard"><span>◉</span>Pulse</div><div class="mobile-nav-item ${S.screen==='forecasts'?'active':''}" data-screen="forecasts"><span>🔮</span>Explore</div><div class="mobile-nav-item ${S.screen==='settings'?'active':''}" data-screen="settings"><span>⚙</span>Account</div><div class="mobile-nav-item ${['coach','receipts','mypath','quests'].includes(S.screen)?'active':''}" id="more-menu-toggle"><span>☰</span>More</div></nav><div class="more-menu ${S.showMoreMenu?'show':''}" id="more-menu"><div class="more-menu-item" data-screen="coach"><span>💬</span> Coach</div><div class="more-menu-item" data-screen="receipts"><span>◈</span> Receipts</div><div class="more-menu-item" data-screen="mypath"><span>◎</span> My Path</div><div class="more-menu-item" data-screen="quests"><span>🎮</span> Try Tools</div><a href="${SLACK_COMMUNITY_URL}" target="_blank" rel="noopener noreferrer" class="more-menu-item more-menu-link"><span>💬</span> Slack</a><div class="more-menu-item" id="mobile-logout"><span>↩</span> Sign Out</div></div>`;
 
-    if (S.screen === 'dashboard') {
+    if (S.screen === 'dashboard' || S.screen === 'settings') {
         return `<div class="app-layout app-layout-full"><main class="main main-full">${c}</main>${mobileNav}</div>`;
     }
 
-    return `<div class="app-layout"><aside class="sidebar"><div class="sidebar-logo">AI PROOF <span>CLUB</span></div><div class="sidebar-streak"><div class="streak-value">🔥 ${streak()}</div><div class="streak-label">Day Streak</div></div><ul class="sidebar-nav"><li><a href="#" data-screen="dashboard" class="${S.screen==='dashboard'?'active':''}">◉ Pulse</a></li><li><a href="#" data-screen="forecasts" class="${S.screen==='forecasts'?'active':''}">🔮 Explore</a></li><li><a href="#" data-screen="settings" class="${S.screen==='settings'?'active':''}">⚙ Profile</a></li><li><a href="${SLACK_COMMUNITY_URL}" target="_blank" rel="noopener noreferrer">💬 Slack</a></li><li><a href="#" data-screen="coach" class="${S.screen==='coach'?'active':''}">💬 Coach</a></li><li><a href="#" data-screen="receipts" class="${S.screen==='receipts'?'active':''}">◈ Receipts</a></li></ul><div class="sidebar-user"><div class="sidebar-name">${S.user?.name||'User'}</div><div class="sidebar-email">${S.user?.email||''}</div><span class="sidebar-logout" id="logout">Sign out</span></div></aside><main class="main">${c}</main>${mobileNav}</div>`;
+    return `<div class="app-layout"><aside class="sidebar"><div class="sidebar-logo">AI PROOF <span>CLUB</span></div><div class="sidebar-streak"><div class="streak-value">🔥 ${streak()}</div><div class="streak-label">Day Streak</div></div><ul class="sidebar-nav"><li><a href="#" data-screen="dashboard" class="${S.screen==='dashboard'?'active':''}">◉ Pulse</a></li><li><a href="#" data-screen="forecasts" class="${S.screen==='forecasts'?'active':''}">🔮 Explore</a></li><li><a href="#" data-screen="settings" class="${S.screen==='settings'?'active':''}">⚙ Account</a></li><li><a href="${SLACK_COMMUNITY_URL}" target="_blank" rel="noopener noreferrer">💬 Slack</a></li><li><a href="#" data-screen="coach" class="${S.screen==='coach'?'active':''}">💬 Coach</a></li><li><a href="#" data-screen="receipts" class="${S.screen==='receipts'?'active':''}">◈ Receipts</a></li></ul><div class="sidebar-user"><div class="sidebar-name">${S.user?.name||'User'}</div><div class="sidebar-email">${S.user?.email||''}</div><span class="sidebar-logout" id="logout">Sign out</span></div></aside><main class="main">${c}</main>${mobileNav}</div>`;
 }
 
 function pulseEmptyStateH() {
@@ -6529,12 +6834,12 @@ function capsulesH(){const caps=capsules(),base=S.user?.baseline_scores||S.score
 
 function reviewH(){const week=S.receipts.filter(r=>(Date.now()-new Date(r.ts))<7*86400000);return `<div class="page-header"><h1 class="page-title">Weekly Review</h1><p class="page-subtitle">AI analysis of your progress</p></div><div class="card mb-20"><div class="card-header"><span class="card-header-title">This Week</span></div><div class="stats" style="grid-template-columns:repeat(3,1fr);margin:0"><div class="stat"><div class="stat-value">${week.length}</div><div class="stat-label">Quests</div></div><div class="stat"><div class="stat-value">${week.reduce((s,r)=>s+r.xp,0)}</div><div class="stat-label">XP</div></div><div class="stat"><div class="stat-value">${streak()}</div><div class="stat-label">Streak</div></div></div></div><div class="card"><div class="card-header"><span class="card-header-title">AI Analysis</span><button class="btn btn-small btn-secondary" id="gen-review">Generate</button></div><div id="review-out">${S.weeklyReview?`<div style="font-size:13px;line-height:1.6">${S.weeklyReview.replace(/\n/g,'<br>')}</div>`:`<p class="text-secondary text-small">${week.length<3?'Complete 3+ quests this week to generate.':'Click Generate for AI review.'}</p>`}</div></div>`;}
 
-function settingsH(){
+function settingsContentH(){
     const isLightMode = document.documentElement.classList.contains('light-mode');
-    const planLabel = S.user?.plan === 'free' || IS_MOBILE_APP || IS_NATIVE_APP ? 'Free (Mobile)' : (S.user?.plan === 'paid' ? 'Paid' : 'Trial');
+    const planLabel = S.user?.coupon_code ? 'Free (Coupon)'
+        : (S.user?.plan === 'free' || IS_MOBILE_APP || IS_NATIVE_APP ? 'Free (Mobile)' : (S.user?.plan === 'paid' ? 'Paid' : 'Trial'));
     const showBilling = !IS_MOBILE_APP && !IS_NATIVE_APP && S.user?.plan === 'paid';
-    return `<div class="page-header"><h1 class="page-title">Settings</h1></div>
-
+    return `
 <div class="card mb-20" style="${needsProfileSetup() ? 'border-color:var(--accent)' : ''}"><div class="card-header"><span class="card-header-title">Your Work Profile</span>${needsProfileSetup() ? '<span class="card-badge" style="background:var(--accent);color:var(--bg)">Needed</span>' : ''}</div>
 <p class="text-secondary text-small mb-15">${needsProfileSetup() ? 'Add your role and topics you track — we\'ll build your personalized forecast feed with tools to try.' : 'Topics, forecasts, and tools — update any time.'}</p>
 <form id="profile-form">
@@ -6551,7 +6856,15 @@ ${profileFormFieldsH('profile')}
 ${(() => { const t = getTierInfo(userTier()); return t ? `<p class="text-small mb-10"><strong>Path:</strong> ${t.icon} ${t.label} — ${t.job}</p>` : ''; })()}
 <p class="text-small"><strong>Day:</strong> ${dayNum()}</p>
 ${userGoals().length ? `<p class="text-small mt-10"><strong>Goals:</strong> ${goalLabels(3).join(' · ')}</p>` : ''}
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid var(--bg-tertiary)">
+    <button type="button" class="btn btn-small btn-secondary" id="settings-sign-out">Sign out</button>
+    ${showBilling ? `<a href="https://billing.stripe.com/p/login/3cIeVd98He9l4NC1Ym9ws00" target="_blank" rel="noopener noreferrer" class="btn btn-small btn-ghost">Cancel subscription</a>` : ''}
 </div>
+</div>
+
+${renderAccountCouponSection()}
+
+${renderTrackingSettingsSection()}
 
 <div class="card mb-20"><div class="card-header"><span class="card-header-title">Your Path</span></div>
 <p class="text-secondary text-small mb-15">Change your tier to shift how quests and forecasts are tailored.</p>
@@ -6622,7 +6935,24 @@ ${showBilling ? `<div class="card mb-20"><div class="card-header"><span class="c
 <div class="card"><div class="card-header"><span class="card-header-title">Delete Account</span></div>
 <p class="text-secondary text-small mb-15">Permanently delete your account and all associated data. This cannot be undone.</p>
 <button type="button" class="btn btn-small btn-secondary" id="delete-account-btn" style="border-color:var(--danger);color:var(--danger)">Delete My Account</button>
-</div>`;}
+</div>`;
+}
+
+function renderAccountPage() {
+    return `<div class="pulse-dashboard">
+        ${renderPulseTopNav('account')}
+        <h1 class="pulse-hero-title">Your <em>account</em></h1>
+        <p class="pulse-hero-sub">Profile, what you're tracking, billing, and preferences.</p>
+        <div class="pulse-dash-grid">
+            <div class="pulse-dash-main">${settingsContentH()}</div>
+            ${renderPulseSidebar()}
+        </div>
+    </div>`;
+}
+
+function settingsH() {
+    return renderAccountPage();
+}
 
 
 function pulseStoryModalH() {
@@ -6656,10 +6986,23 @@ function pulseStoryModalH() {
                 </div>`).join('')}</div>` : ''}
 
             ${(() => {
+                const toolPlay = linked ? getToolPlayForForecast(linked) : null;
+                if (!linked && !toolPlay) return '';
+                return `<div class="section-label">Stay ahead</div>
+                <div style="background:var(--bg-secondary);border:1px solid var(--bg-tertiary);padding:14px;margin-bottom:20px">
+                    ${toolPlay ? `<p class="text-secondary text-small" style="line-height:1.55;margin-bottom:12px"><strong>${escHtml(toolPlay.emoji)} ${escHtml(toolPlay.name)}</strong> · ${escHtml(toolPlay.play)}</p>` : ''}
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        ${linked ? `<button type="button" class="btn btn-small btn-primary view-forecast-detail" data-id="${linked.id}">Full forecast →</button>` : ''}
+                        ${linked ? `<button type="button" class="btn btn-small ${following ? 'btn-success' : 'btn-secondary'} follow-forecast" data-id="${linked.id}">${following ? 'Tracking' : '+ Track this'}</button>` : ''}
+                    </div>
+                </div>`;
+            })()}
+
+            ${(() => {
                 const discoverPicks = getDiscoveryForStory(item, { linked });
                 if (!discoverPicks.length) return '';
-                return `<div class="section-label">Tools to discover</div>
-                <p class="text-secondary text-small" style="line-height:1.5;margin:-6px 0 12px">New to you? These connect to this story's ripples.</p>
+                return `<div class="section-label">Tools to try</div>
+                <p class="text-secondary text-small" style="line-height:1.5;margin:-6px 0 12px">Matched to this story's second order impacts — try one today.</p>
                 <div style="margin-bottom:20px">${discoverPicks.map((m) => renderDiscoverToolCard(m, { showTried: true })).join('')}</div>`;
             })()}
 
@@ -6842,6 +7185,32 @@ function bindEvents(){
     // Auth forms
     document.getElementById('login-form')?.addEventListener('submit',e=>{e.preventDefault();login();});
     document.getElementById('signup-form')?.addEventListener('submit',e=>{e.preventDefault();signup();});
+    document.querySelectorAll('.apply-coupon-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const inputId = btn.dataset.couponInput;
+            const msgId = btn.dataset.couponMsg;
+            const persist = inputId === 'account-coupon';
+            applyCouponFromInput(inputId, msgId, { persist, rerender: true });
+        });
+    });
+    document.getElementById('coupon-continue-onboarding')?.addEventListener('click', () => {
+        if (!hasFreeCouponAccess()) return;
+        S.onboardData = S.onboardData || {};
+        S.onboardData.email = S.onboardData.email || S.user?.email;
+        if (S.user) {
+            S.user.plan = 'free';
+            if (S.onboardData.couponCode) S.user.coupon_code = S.onboardData.couponCode;
+            localStorage.setItem('apc_pending', JSON.stringify(S.user));
+        }
+        S.onboardStep = 1;
+        S.onboardTourSlide = 0;
+        S.screen = 'onboarding';
+        render();
+    });
+    document.getElementById('onboard-coupon-continue')?.addEventListener('click', () => {
+        if (!hasFreeCouponAccess()) return;
+        advancePastPaywall();
+    });
     document.getElementById('forgot-form')?.addEventListener('submit',e=>{e.preventDefault();resetPassword();});
     document.getElementById('reset-password-form')?.addEventListener('submit',e=>{e.preventDefault();completePasswordReset();});
 
@@ -6856,7 +7225,7 @@ function bindEvents(){
     });
     
     // Navigation
-    document.getElementById('to-signup')?.addEventListener('click',()=>{S.onboardStep=1;S.screen='onboarding';render();});
+    document.getElementById('to-signup')?.addEventListener('click',()=>{S.onboardStep=1;S.onboardTourSlide=0;S.screen='onboarding';render();});
     document.getElementById('to-login')?.addEventListener('click',()=>{S.screen='login';S.freeQuizMode=false;render();});
     document.getElementById('forgot-pass')?.addEventListener('click',()=>{S.screen='forgot';render();});
     document.getElementById('back-login')?.addEventListener('click',()=>{S.screen='login';S.freeQuizMode=false;render();});
@@ -7276,18 +7645,50 @@ function bindEvents(){
         }
         render();
     }));
-    document.getElementById('onboard-email-form')?.addEventListener('submit',e=>{
+    document.getElementById('onboard-profile-form')?.addEventListener('submit', async e => {
         e.preventDefault();
-        if(!S.onboardData.tier){
+        if (!S.onboardData.tier) {
             alert('Pick the path that best describes you.');
             return;
         }
-        S.onboardData.email = document.getElementById('ob-email').value;
-        S.onboardData.industry = document.getElementById('ob-industry').value;
+        const patch = await readProfileFromForm('ob');
+        if (!patch.role || !patch.responsibilities) {
+            alert('Add your role and day-to-day work — we use this to personalize Pulse and forecasts.');
+            return;
+        }
+        S.onboardData.email = document.getElementById('ob-email').value.trim();
+        S.onboardData.industry = patch.industry;
+        S.onboardData.role = patch.role;
+        S.onboardData.responsibilities = patch.responsibilities;
+        S.user = S.user || {};
+        S.user.email = S.onboardData.email;
+        applyWorkProfile(patch);
         applyTierDefaults();
+        ensureFollowedForecasts();
         subscribeToBeehiiv(S.onboardData.email, 'onboarding');
-        S.onboardStep=2; // Go to quiz intro
+        S.onboardTourSlide = 0;
+        S.onboardStep = 2;
         render();
+    });
+    document.getElementById('tour-prev')?.addEventListener('click', () => {
+        if ((S.onboardTourSlide || 0) > 0) {
+            S.onboardTourSlide--;
+            render();
+        }
+    });
+    document.getElementById('tour-next')?.addEventListener('click', () => {
+        const last = ONBOARD_TOUR_SLIDES.length - 1;
+        if ((S.onboardTourSlide || 0) < last) {
+            S.onboardTourSlide++;
+            render();
+        } else {
+            if (!S.onboardSelectedForecasts?.length) {
+                const suggested = getSuggestedForecasts();
+                S.onboardSelectedForecasts = suggested.slice(0, 2).map(f => f.id);
+            }
+            S.onboardStep = 3;
+            render();
+        }
     });
     
     // Step 4: Post-payment account creation (name + password)
@@ -7316,9 +7717,12 @@ function bindEvents(){
         S.user.email = email;
         S.user.industry = S.onboardData?.industry;
         S.user.tier = S.onboardData?.tier;
-        S.user.scores = S.freeQuizScores || S.scores || {ideas:50,personality:50,execution:50};
+        S.user.scores = S.scores || { ideas: 50, personality: 50, execution: 50 };
         S.user.baseline_scores = S.user.scores;
-        S.user.plan = IS_MOBILE_APP ? 'free' : 'paid';
+        S.user.plan = hasFreeCouponAccess() ? 'free' : (IS_MOBILE_APP ? 'free' : 'paid');
+        if (S.onboardData?.couponCode) S.user.coupon_code = S.onboardData.couponCode;
+        if (S.user.work_profile) { /* already set from step 1 */ }
+        else applyWorkProfile(getWorkProfile());
         S.user.start_date = new Date().toISOString();
         S.user.onboarded = false; // Will be true after they finish all steps
         
@@ -7337,9 +7741,7 @@ function bindEvents(){
         localStorage.setItem('apc_session', JSON.stringify(S.user));
         localStorage.removeItem('apc_pending');
         
-        S.onboardStep=5; // Go to goals
-        applyTierDefaults();
-        render();
+        await completeOnboarding();
     });
     
     // Step 2: Start Assessment
@@ -7380,37 +7782,15 @@ function bindEvents(){
     }));
     
     // Go to Stripe payment (step 3) - save pending data before redirect
-    document.getElementById('go-to-stripe-link')?.addEventListener('click',()=>{
-        // Save pending user data before redirecting to Stripe
-        const pendingUser = {
-            email: S.onboardData.email,
-            industry: S.onboardData.industry,
-            scores: S.freeQuizScores || S.scores,
-            baseline_scores: S.freeQuizScores || S.scores,
-            onboardStep: 4, // After payment, continue to step 4
-            onboardData: S.onboardData,
-            onboardSelectedForecasts: S.onboardSelectedForecasts
-        };
-        localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
-        // Link will navigate to Stripe
+    document.getElementById('go-to-stripe-link')?.addEventListener('click', () => {
+        stashOnboardPending(5);
     });
-    document.getElementById('go-to-stripe-annual')?.addEventListener('click',()=>{
-        // Save pending user data before redirecting to Stripe (annual)
-        const pendingUser = {
-            email: S.onboardData.email,
-            industry: S.onboardData.industry,
-            scores: S.freeQuizScores || S.scores,
-            baseline_scores: S.freeQuizScores || S.scores,
-            onboardStep: 4,
-            onboardData: S.onboardData,
-            onboardSelectedForecasts: S.onboardSelectedForecasts
-        };
-        localStorage.setItem('apc_pending', JSON.stringify(pendingUser));
+    document.getElementById('go-to-stripe-annual')?.addEventListener('click', () => {
+        stashOnboardPending(5);
     });
 
     document.getElementById('mobile-skip-paywall')?.addEventListener('click', () => {
-        S.onboardStep = 4;
-        render();
+        advancePastPaywall();
     });
     
     // Diagnostic results — save pending user before Stripe (Join the Club / trial)
@@ -7443,9 +7823,23 @@ function bindEvents(){
     });
     
     // Finish onboarding
-    document.getElementById('finish-onboarding')?.addEventListener('click',async()=>{
-        // Complete the onboarding - save user and go to dashboard
-        await completeOnboarding();
+    document.getElementById('finish-onboarding')?.addEventListener('click', async () => {
+        if (S.onboardSelectedForecasts?.length) {
+            S.followedForecasts = [...S.onboardSelectedForecasts];
+        } else {
+            ensureFollowedForecasts();
+        }
+        if (needsOnboardPaywall()) {
+            S.onboardStep = 4;
+            render();
+            return;
+        }
+        if (needsOnboardAccount()) {
+            S.onboardStep = 5;
+            render();
+            return;
+        }
+        await advancePastPaywall();
     });
     
     // Suggested forecasts selection
@@ -7506,6 +7900,8 @@ function bindEvents(){
     }));
     document.getElementById('logout')?.addEventListener('click',logout);
     document.getElementById('mobile-logout')?.addEventListener('click',logout);
+    document.getElementById('pulse-sign-out')?.addEventListener('click', logout);
+    document.getElementById('settings-sign-out')?.addEventListener('click', logout);
     
     // More menu toggle
     document.getElementById('more-menu-toggle')?.addEventListener('click',e=>{e.stopPropagation();S.showMoreMenu=!S.showMoreMenu;render();});
@@ -7610,6 +8006,7 @@ function bindEvents(){
     document.querySelectorAll('.complete-forecast-tool').forEach(b=>b.addEventListener('click',()=>completeForecastTool(b.dataset.fid)));
     document.querySelectorAll('.complete-forecast-q').forEach(b=>b.addEventListener('click',()=>completeForecastTool(b.dataset.fid)));
     document.querySelectorAll('.follow-forecast').forEach(b=>b.addEventListener('click',()=>toggleFollowForecast(b.dataset.id)));
+    document.querySelectorAll('.boost-forecast').forEach(b=>b.addEventListener('click',()=>boostFollowedForecast(b.dataset.id)));
     
     // Modal
     document.getElementById('modal-bg')?.addEventListener('click',e=>{if(e.target.id==='modal-bg')closeModal();});
@@ -7822,6 +8219,17 @@ async function toggleFollowForecast(forecastId){
     render();
 }
 
+async function boostFollowedForecast(forecastId) {
+    const ids = [...(S.followedForecasts || [])];
+    const idx = ids.indexOf(forecastId);
+    if (idx <= 0) return;
+    ids.splice(idx, 1);
+    ids.unshift(forecastId);
+    S.followedForecasts = ids;
+    await save();
+    render();
+}
+
 function completeForecastQuest(forecastId, oppIndex){
     oppIndex = parseInt(oppIndex);
     const forecast = FORECAST_DATABASE.find(f => f.id === forecastId);
@@ -7978,6 +8386,14 @@ async function signup(){
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
     const pass = document.getElementById('pass').value;
+    const couponInput = document.getElementById('signup-coupon');
+    if (couponInput?.value?.trim()) {
+        const coupon = stashCouponOnUser(couponInput.value);
+        if (!coupon) {
+            alert('Invalid coupon code. Check spelling and try again.');
+            return;
+        }
+    }
     
     // Check if email exists in users table
     const ex = await db('users', 'GET', null, `?email=eq.${encodeURIComponent(email)}`);
@@ -7996,16 +8412,29 @@ async function signup(){
     
     subscribeToBeehiiv(email, 'signup');
     
+    const freeAccess = IS_MOBILE_APP || hasFreeCouponAccess();
     // Store user data (without password - it's in Supabase Auth now)
-    S.user = {name, email, start_date: new Date().toISOString(), onboarded: false, plan: IS_MOBILE_APP ? 'free' : undefined};
-    if (IS_MOBILE_APP) {
+    S.user = {
+        name,
+        email,
+        start_date: new Date().toISOString(),
+        onboarded: false,
+        plan: freeAccess ? 'free' : undefined,
+        coupon_code: S.onboardData?.couponCode || S.user?.coupon_code || undefined
+    };
+    if (freeAccess) {
         S.onboardData = S.onboardData || {};
         S.onboardData.email = email;
         S.onboardStep = 1;
+        S.onboardTourSlide = 0;
         S.screen = 'onboarding';
     } else {
+        S.onboardData = S.onboardData || {};
+        S.onboardData.email = email;
         localStorage.setItem('apc_pending', JSON.stringify(S.user));
-        S.screen = 'pricing';
+        S.onboardStep = 1;
+        S.onboardTourSlide = 0;
+        S.screen = 'onboarding';
     }
     render();
 }
@@ -8072,33 +8501,41 @@ function answerQuiz(i){
 }
 
 async function completeOnboarding(){
-    // This is called after payment, at the end of onboarding step 5
-    // Include onboarding data in user object
     S.user = S.user || {};
-    S.user.email = S.onboardData.email;
-    S.user.industry = S.onboardData.industry;
-    if(S.onboardData.tier) S.user.tier = S.onboardData.tier;
-    if(S.onboardData.role) S.user.role = S.onboardData.role;
-    if(S.onboardData.responsibilities) S.user.responsibilities = S.onboardData.responsibilities;
+    S.user.email = S.onboardData?.email || S.user.email;
+    S.user.industry = getWorkProfile().industry || S.onboardData?.industry || S.user.industry;
+    if (S.onboardData?.tier) S.user.tier = S.onboardData.tier;
+    if (S.onboardData?.role) S.user.role = S.onboardData.role;
+    if (S.onboardData?.responsibilities) S.user.responsibilities = S.onboardData.responsibilities;
+    if (S.user.work_profile || getWorkProfile().role) {
+        S.user.work_profile = S.user.work_profile || getWorkProfile();
+    }
+    S.scores = S.scores || { ideas: 50, personality: 50, execution: 50 };
     S.user.onboarded = true;
-    S.user.baseline_scores = {...S.scores};
+    S.user.baseline_scores = { ...S.scores };
     S.user.scores = S.scores;
     S.user.diff = S.diff || 'standard';
-    S.user.goals = S.onboardData.goals;
-    S.user.forecast_interests = S.onboardData.forecastInterests;
+    if (S.onboardData?.couponCode) S.user.coupon_code = S.onboardData.couponCode;
+    if (hasFreeCouponAccess()) S.user.plan = 'free';
     
-    // Follow selected forecasts
-    if(S.onboardSelectedForecasts?.length){
+    if (S.onboardSelectedForecasts?.length) {
         S.followedForecasts = [...S.onboardSelectedForecasts];
+    } else {
+        ensureFollowedForecasts();
     }
     
     S.quests = genQuests();
-    const res = await db('users','POST', S.user);
-    if(res?.length){
-        S.user = res[0];
-        localStorage.setItem('apc_session',JSON.stringify(S.user));
+    const existingOnboard = S.user.email ? await db('users', 'GET', null, `?email=eq.${encodeURIComponent(S.user.email)}`) : null;
+    if (existingOnboard?.length) {
+        await db('users', 'PATCH', { ...S.user, followedForecasts: S.followedForecasts, quests: S.quests }, `?email=eq.${encodeURIComponent(S.user.email)}`);
+        S.user = { ...existingOnboard[0], ...S.user, followedForecasts: S.followedForecasts, quests: S.quests };
+    } else {
+        const res = await db('users', 'POST', { ...S.user, followedForecasts: S.followedForecasts, quests: S.quests });
+        if (res?.length) S.user = res[0];
+    }
+    if (S.user.email) {
+        localStorage.setItem('apc_session', JSON.stringify(S.user));
         localStorage.removeItem('apc_pending');
-        // Send welcome email (don't await - fire and forget)
         sendWelcomeEmail(S.user.name || 'there', S.user.email);
     }
     S.screen = 'dashboard';
@@ -8119,6 +8556,8 @@ async function startApp(){
     S.user.forecast_interests = S.onboardData.forecastInterests;
     if(S.onboardData.role) S.user.role = S.onboardData.role;
     if(S.onboardData.responsibilities) S.user.responsibilities = S.onboardData.responsibilities;
+    if (S.onboardData.couponCode) S.user.coupon_code = S.onboardData.couponCode;
+    if (hasFreeCouponAccess()) S.user.plan = 'free';
     
     S.quests = genQuests();
     const res = await db('users','POST', S.user);
@@ -8504,7 +8943,9 @@ async function save(){
         goals: S.user.goals,
         forecast_interests: S.user.forecast_interests,
         industry: wp.industry,
-        work_profile: S.user.work_profile || wp
+        work_profile: S.user.work_profile || wp,
+        plan: S.user.plan,
+        coupon_code: S.user.coupon_code
     };
     const result = await db('users','PATCH',data,`?email=eq.${encodeURIComponent(S.user.email)}`);
     if(!result) console.error('Save to Supabase failed');
@@ -21862,11 +22303,11 @@ function renderForecastRippleBlock(f, limit = FORECAST_RIPPLE_MIN) {
     const show = ripples.slice(0, limit);
     if (!show.length) return '';
     return `<div class="forecast-ripple-block">
-        <div class="forecast-ripple-block-label">Second-order impacts · ${show.length}</div>
+        <div class="forecast-ripple-block-label">Second order impacts · ${show.length}</div>
         <div class="forecast-ripple-grid">${show.map((imp) => {
             const p = splitImpactCardCopy(imp.text);
             return `<div class="forecast-ripple-item">
-                <div class="forecast-ripple-tag">${escHtml(imp.tag || 'Ripple')}</div>
+                <div class="forecast-ripple-tag">${escHtml(imp.tag || 'Impact')}</div>
                 <div class="forecast-ripple-headline">${escHtml(p.headline)}</div>
                 ${p.detail ? `<div class="forecast-ripple-detail">${escHtml(p.detail)}</div>` : ''}
             </div>`;
@@ -21896,7 +22337,7 @@ function renderForecastCard(f) {
         ${renderForecastRippleBlock(f, FORECAST_RIPPLE_MIN)}
         
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-            <button class="btn btn-small btn-primary view-forecast-detail" data-id="${f.id}">All ripples & opportunities →</button>
+            <button class="btn btn-small btn-primary view-forecast-detail" data-id="${f.id}">Impacts & pathways →</button>
             <button class="btn btn-small ${following ? 'btn-success' : 'btn-secondary'} follow-forecast" data-id="${f.id}">
                 ${following ? '✓ Following' : '+ Follow'}
             </button>
@@ -21935,7 +22376,7 @@ function forecastDetailModalH() {
                 ${renderForecastRippleBlock(f, FORECAST_RIPPLE_MIN)}
 
                 <details style="margin-bottom:16px">
-                    <summary style="font-size:12px;color:var(--accent);cursor:pointer;font-weight:600">All ripples (${getForecastImpactCascade(f, 20, FORECAST_RIPPLE_MIN).length})</summary>
+                    <summary style="font-size:12px;color:var(--accent);cursor:pointer;font-weight:600">All second order impacts (${getForecastImpactCascade(f, 20, FORECAST_RIPPLE_MIN).length})</summary>
                     <div style="margin-top:10px">${renderImpactSimple(getForecastImpactCascade(f, 20, FORECAST_RIPPLE_MIN), { limit: 20 })}</div>
                 </details>
 
@@ -22137,25 +22578,30 @@ async function init(){
             const pendingData = JSON.parse(pending);
             S.user = {
                 email: pendingData.email,
+                name: pendingData.name,
                 plan: 'paid',
                 industry: pendingData.industry || '',
                 role: pendingData.role || '',
-                responsibilities: pendingData.responsibilities || ''
+                responsibilities: pendingData.responsibilities || '',
+                work_profile: pendingData.work_profile
             };
-            S.scores = pendingData.scores || {ideas:50,personality:50,execution:50};
-            S.freeQuizScores = pendingData.baseline_scores || S.scores;
-            S.onboardData = pendingData.onboardData || {goals: [], forecastInterests: []};
-            // Ensure goals array exists
-            if(!S.onboardData.goals) S.onboardData.goals = [];
-            if(!S.onboardData.forecastInterests) S.onboardData.forecastInterests = [];
-            if(pendingData.role && !S.onboardData.role) S.onboardData.role = pendingData.role;
-            if(pendingData.responsibilities && !S.onboardData.responsibilities) S.onboardData.responsibilities = pendingData.responsibilities;
+            if (pendingData.work_profile) applyWorkProfile(pendingData.work_profile);
+            S.scores = pendingData.scores || { ideas: 50, personality: 50, execution: 50 };
+            S.onboardData = pendingData.onboardData || {};
+            if (pendingData.role && !S.onboardData.role) S.onboardData.role = pendingData.role;
+            if (pendingData.responsibilities && !S.onboardData.responsibilities) S.onboardData.responsibilities = pendingData.responsibilities;
             S.onboardSelectedForecasts = pendingData.onboardSelectedForecasts || [];
-            if(pendingData.matchedForecastIds && pendingData.matchedForecastIds.length){
+            S.followedForecasts = pendingData.followedForecasts || S.onboardSelectedForecasts || [];
+            if (pendingData.matchedForecastIds?.length) {
                 S.followedForecasts = Array.from(new Set([...(S.followedForecasts || []), ...pendingData.matchedForecastIds]));
             }
-            S.onboardStep = pendingData.onboardStep || 4; // Continue to goals
+            S.onboardStep = pendingData.onboardStep ?? 5;
             S.screen = 'onboarding';
+            if (S.onboardStep === 0 || (S.onboardStep === 5 && !needsOnboardAccount())) {
+                S.user.plan = 'paid';
+                await completeOnboarding();
+                return;
+            }
             render();
             return;
         }

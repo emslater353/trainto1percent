@@ -4,23 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Proof Club — Become AI Proof</title>
-    <meta name="description" content="Get weekly quests to survive AGI. Build the skills AI can't replace.">
+    <meta name="description" content="See beyond the headlines. Understand what happens after the news — and what to do about it. Daily Pulse, forecasts, and tools to stay ahead.">
     
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://aiproof.club/">
     <meta property="og:title" content="AI Proof Club — Become AI Proof">
-    <meta property="og:description" content="Get weekly quests to survive AGI. Build the skills AI can't replace.">
+    <meta property="og:description" content="See beyond the headlines. Understand what happens after the news — and what to do about it.">
     <meta property="og:image" content="https://aiproof.club/og-image.png">
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AI Proof Club — Become AI Proof">
-    <meta name="twitter:description" content="Get weekly quests to survive AGI. Build the skills AI can't replace.">
+    <meta name="twitter:description" content="See beyond the headlines. Understand what happens after the news — and what to do about it.">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             /* Original AI Proof Club palette */
@@ -39,6 +39,7 @@
             /* Original site type: Space Mono sitewide (paired with current layout/components) */
             --font-sans: 'Space Mono', monospace;
             --font-mono: 'Space Mono', monospace;
+            --font-signature: 'Dancing Script', cursive;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -107,25 +108,57 @@
 
         /* Hero */
         .hero {
-            min-height: 92vh;
+            min-height: auto;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 124px 24px 72px;
+            padding: 120px 24px 80px;
             max-width: 1400px;
             margin: 0 auto;
         }
 
+        .hero-inner {
+            width: 100%;
+            max-width: 680px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
         .hero h1 {
-            font-size: clamp(36px, 11vw, 160px);
-            font-weight: 800;
-            line-height: 0.95;
-            margin-bottom: 28px;
-            letter-spacing: -0.03em;
-            white-space: nowrap;
+            font-size: clamp(48px, 8.5vw, 80px);
+            font-weight: 700;
+            line-height: 1.02;
+            margin: 0 auto 32px;
+            letter-spacing: -0.01em;
+            white-space: normal;
+            width: 100%;
             max-width: 100%;
+            text-align: center;
+            text-wrap: balance;
+            box-sizing: border-box;
+        }
+
+        .hero-letter-box {
+            border: 1px solid var(--accent);
+            border-radius: 14px;
+            padding: 28px 32px;
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.75;
+            color: var(--text-primary);
+            background: rgba(0, 240, 255, 0.02);
+            box-sizing: border-box;
+        }
+        .hero-letter-box p {
+            margin: 0 0 20px;
+            color: var(--text-primary);
+        }
+        .hero-letter-box p:last-child {
+            margin-bottom: 0;
         }
 
         .hero-letter {
@@ -177,14 +210,26 @@
             font-weight: 600;
         }
         .hero-signoff {
-            margin-top: 28px;
+            margin-top: 32px;
             color: var(--text-primary);
+            font-weight: 700;
+            font-size: 15px;
+            text-align: center;
+            line-height: 1.4;
         }
         .hero-signature {
             display: block;
-            margin-top: 6px;
-            font-style: italic;
+            margin-top: 4px;
+            font-family: var(--font-signature);
+            font-size: clamp(22px, 3.8vw, 28px);
+            font-weight: 400;
+            font-style: normal;
             color: var(--accent);
+            letter-spacing: 0.04em;
+            transform: rotate(-4deg);
+            text-shadow: none;
+            opacity: 0.92;
+            -webkit-font-smoothing: antialiased;
         }
 
         .btn-primary {
@@ -211,6 +256,7 @@
             border: 1px solid var(--accent);
             margin-left: 0 !important;
             box-shadow: none;
+            border-radius: 12px;
         }
         .btn-secondary:hover {
             color: var(--text-primary);
@@ -224,9 +270,41 @@
             justify-content: center;
             margin-bottom: 14px;
         }
+        .hero-cta-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            width: 100%;
+            margin: 0 0 16px;
+        }
+        .hero-cta-stack .hero-actions {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 0;
+            flex-wrap: nowrap;
+        }
+        .hero-cta-stack .hero-actions .btn-primary {
+            flex: 1 1 0;
+            min-width: 0;
+            text-align: center;
+            padding: 14px 10px;
+            font-size: 13px;
+        }
+        .btn-hero-signup {
+            width: 100%;
+            text-align: center;
+            padding: 16px 20px;
+            font-size: 15px;
+            border-radius: 12px;
+        }
         .hero-meta {
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 13px;
+            text-align: center;
+            margin: 0 0 36px;
+            letter-spacing: 0.02em;
         }
         .hero-meta strong {
             color: var(--accent);
@@ -237,6 +315,15 @@
         .how-it-works {
             padding: 90px 24px;
             background: var(--bg-secondary);
+        }
+        .how-it-works-intro {
+            text-align: center;
+            max-width: 820px;
+            margin: 0 auto 46px;
+        }
+        .how-it-works-intro .section-heading {
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .section-title {
@@ -687,31 +774,38 @@
         @media (max-width: 600px) {
             header { padding: 15px 16px; }
             .hero {
-                padding: 96px 16px 48px;
-                min-height: auto;
+                padding: 96px 16px 56px;
+                max-width: 100%;
+            }
+            .hero-inner {
                 max-width: 100%;
             }
             .hero h1 {
-                font-size: clamp(40px, 13vw, 72px);
-                white-space: normal;
-                line-height: 1;
-                word-break: break-word;
-                margin-bottom: 20px;
+                font-size: clamp(40px, 11vw, 64px);
+                line-height: 1.05;
+                margin-bottom: 28px;
             }
-            .hero-subhead { font-size: 22px; }
-            .hero-letter {
-                font-size: 15px;
+            .hero-signature {
+                font-size: clamp(20px, 5vw, 24px);
+            }
+            .hero-letter-box {
+                padding: 22px 20px;
+                font-size: 14px;
                 line-height: 1.7;
-                margin-top: 40px;
-                max-width: 100%;
             }
+            .hero-cta-stack .hero-actions {
+                flex-direction: column;
+            }
+            .hero-cta-stack .hero-actions .btn-primary {
+                width: 100%;
+                font-size: 14px;
+                padding: 14px 16px;
+            }
+            .hero-meta { margin-bottom: 28px; }
+            .hero-signoff { margin-top: 28px; }
             .how-it-works, .email-preview-section, .pricing-section { padding: 64px 16px; }
             .email-stats { flex-direction: column; }
             .modes-preview { justify-content: center; }
-            .btn-primary { width: 100%; text-align: center; }
-            .hero-actions { width: 100%; }
-            .hero-list { display: flex; }
-            .hero-list li { font-size: 15px; }
         }
     </style>
 </head>
@@ -725,58 +819,46 @@
     </header>
 
     <section class="hero">
-        <h1>Become AI Proof</h1>
-        <div class="hero-actions">
-            <a href="app.html?mode=diagnostic" class="btn-primary">Am I AI Proof? →</a>
-            <a href="app.html?mode=company" class="btn-primary btn-secondary">Is My Company AI Proof? →</a>
-        </div>
-        <p class="hero-meta"><strong>7-day free trial</strong> · Cancel anytime</p>
-
-        <div class="hero-letter">
-            <h2 class="hero-subhead">Stay Ahead of AI. Stay AI Proof.</h2>
-            <p>AI is changing jobs and it's also creating new ones.</p>
-            <p>The challenge is keeping up with the news to adopt AI skillsets and changes before industries shift.</p>
-            <p>AI Proof Club helps you identify emerging opportunities across AI, robotics, automation, and software and shows you how to position yourself for them.</p>
-
-            <p class="hero-prompt">Tell us what you do today.</p>
-            <p>We'll show you:</p>
-            <ul class="hero-list">
-                <li>Emerging career opportunities</li>
-                <li>Industries gaining momentum</li>
-                <li>Skills worth learning</li>
-                <li>Communities to join</li>
-                <li>Quests to stay ahead</li>
-            </ul>
-
-            <p>I built AI Proof Club after transitioning from a decade in luxury fashion to an AI startup by recognizing where technology was heading before most people around me.</p>
-            <p class="hero-emphasis">The future belongs to people who adapt early.</p>
+        <div class="hero-inner">
+            <h1>Become AI Proof</h1>
+            <div class="hero-cta-stack">
+                <a href="app.html#signup" class="btn-primary btn-hero-signup">Sign Up →</a>
+                <div class="hero-actions">
+                    <a href="app.html?mode=diagnostic" class="btn-primary btn-secondary">Am I AI Proof? →</a>
+                    <a href="app.html?mode=company" class="btn-primary btn-secondary">Is My Company AI Proof? →</a>
+                </div>
+            </div>
+            <p class="hero-meta"><strong>$9.99/mo</strong> · Cancel anytime</p>
+            <div class="hero-letter-box">
+                <p>The news moves fast. Predictions of AI's capabilities are a bit doomsday. Right now, the landscape looks a bit weary as advancements are moving faster than ever and capabilities are matching humans. So let's make it so there is no more "Claude ate my startup." or "AI is going to take my job." Take the control back and understand what is happening and how you can stay ahead by what skills matter, and where the next opportunities open up.</p>
+                <p>Most people read the story. AI Proof Club shows you what happens after the headline and what to do about it.</p>
+            </div>
             <p class="hero-signoff">Stay AI Proof.<span class="hero-signature">Erica</span></p>
         </div>
     </section>
 
     <section class="how-it-works">
-        <div class="section-title">How It Works</div>
-        <h2 class="section-heading">Look at weak spots. Track what is changing. Move before everyone else does.</h2>
+        <div class="how-it-works-intro">
+            <div class="section-title">How It Works</div>
+            <h2 class="section-heading">See beyond the headlines by connecting rapid innovation to the changes that come next.</h2>
+        </div>
         
         <div class="features-grid">
-            <!-- Modes Card -->
+            <!-- Pulse Card -->
             <div class="feature-card">
                 <div class="feature-label">Step 1</div>
-                <h3 class="feature-title">Your Modes</h3>
-                <p class="feature-desc">There are three buckets: Ideas, Personality, and Execution. You will get a score like 72 / 45 / 83. Most people assume the wrong one matters most, and that is where they get caught off guard.</p>
+                <h3 class="feature-title">Daily Pulse</h3>
+                <p class="feature-desc">Every day we connect headlines to the forecasts you care about with a take on what it means for opportunities to come. No more doomsday headlines, innovation creates opportunities.</p>
                 
-                <div class="modes-preview">
-                    <div class="mode-item">
-                        <div class="mode-circle ideas">72</div>
-                        <div class="mode-label">Ideas</div>
+                <div class="forecast-card" style="margin-top:16px">
+                    <div class="forecast-header">
+                        <span class="forecast-category">TechCrunch · Your forecast</span>
+                        <span class="forecast-confidence">For you</span>
                     </div>
-                    <div class="mode-item">
-                        <div class="mode-circle personality">45</div>
-                        <div class="mode-label">Personality</div>
-                    </div>
-                    <div class="mode-item">
-                        <div class="mode-circle execution">83</div>
-                        <div class="mode-label">Execution</div>
+                    <div class="forecast-title">Waymo expands to 4 new cities</div>
+                    <div class="forecast-section opportunities">
+                        <div class="forecast-section-label">What it means</div>
+                        <div class="forecast-section-text">Car interiors become the next status battleground — accessories, comfort, mobile offices. Most people only watch the headline.</div>
                     </div>
                 </div>
             </div>
@@ -784,29 +866,23 @@
             <!-- Forecasts Card -->
             <div class="feature-card">
                 <div class="feature-label">Step 2</div>
-                <h3 class="feature-title">Forecasts</h3>
-                <p class="feature-desc">Pick what is relevant to you or what you are making your biggest bet on. We show what is likely coming, a timeline, and the opportunity shifts that could emerge if the prediction becomes true.</p>
+                <h3 class="feature-title">Track forecasts</h3>
+                <p class="feature-desc">Follow predictions such as autonomous vehicles, AI agents, job shifts. See odds, timelines, and second-order impacts if they land.</p>
                 
                 <div class="forecast-card">
                     <div class="forecast-header">
                         <span class="forecast-category">Transportation</span>
-                        <span class="forecast-confidence">High Confidence</span>
+                        <span class="forecast-confidence">72% likely</span>
                     </div>
                     <div class="forecast-title">"Fully autonomous vehicles reach mass adoption by 2030"</div>
                     <div class="forecast-source">— Waymo, Tesla FSD trajectory</div>
                     
                     <div class="forecast-section">
-                        <div class="forecast-section-label">What Changes</div>
-                        <div class="forecast-section-text">The time inside the car will not become obsolete. Which means something else fills it.</div>
-                    </div>
-                    
-                    <div class="forecast-section opportunities">
-                        <div class="forecast-section-label">Opportunity Shifts</div>
+                        <div class="forecast-section-label">Second-order impacts</div>
                         <div class="opportunities-list">
-                            <div class="opportunity-item"><strong>Insurance</strong> starts thinking about systems instead of people</div>
-                            <div class="opportunity-item"><strong>Healthcare</strong> shows up in weird places, like your commute</div>
-                            <div class="opportunity-item"><strong>Car interiors</strong> become a focal point for businesses</div>
-                            <div class="opportunity-item"><strong>Most people miss this shift</strong> because they only watch the headline, not the second-order opportunities</div>
+                            <div class="opportunity-item"><strong>Insurance</strong> shifts from drivers to systems</div>
+                            <div class="opportunity-item"><strong>Healthcare</strong> shows up in commutes</div>
+                            <div class="opportunity-item"><strong>Interiors</strong> become mobile living rooms</div>
                         </div>
                     </div>
                 </div>
@@ -817,75 +893,42 @@
     <section class="email-preview-section">
         <div class="email-preview-container">
             <div class="section-title" style="text-align: center;">Step 3</div>
-            <h2 class="section-heading" style="text-align: center; margin: 0 auto 20px;">Weekly Quests</h2>
-            <p class="feature-desc" style="text-align: center; max-width: 760px; margin: 0 auto 40px;">Every Monday you get a short list of things to do based on the predictions you are following. Simple actions you can actually finish. They are tied to your scores and what you follow, so over time you build proof that you are not standing still.</p>
+            <h2 class="section-heading" style="text-align: center; margin: 0 auto 20px;">Tools to try</h2>
+            <p class="feature-desc" style="text-align: center; max-width: 760px; margin: 0 auto 40px;">Short experiments matched to what you're tracking and stay on top of the technology and update your stack in real time tied to forecasts you follow. Scan, understand, act.</p>
             
             <div class="email-mockup">
                 <div class="email-header">
                     <div class="email-dot red"></div>
                     <div class="email-dot yellow"></div>
                     <div class="email-dot green"></div>
-                    <div class="email-subject">Week 3: Your AI Proof Quests Are Ready</div>
+                    <div class="email-subject">Today's Pulse + tools for your forecasts</div>
                 </div>
                 <div class="email-body">
                     <div class="email-logo">AI PROOF <span>CLUB</span></div>
                     <div class="email-content">
-                        <div class="email-week">Week 3 Quests</div>
-                        <div class="email-greeting">Hey Sarah, here's what's on deck this week:</div>
+                        <div class="email-week">This week · Autonomous vehicles</div>
+                        <div class="email-greeting">Sarah — 2 stories matched your forecasts today:</div>
                         
-                        <div class="email-stats">
-                            <div class="email-stat">
-                                <div class="email-stat-value">12</div>
-                                <div class="email-stat-label">Day Streak</div>
-                            </div>
-                            <div class="email-stat">
-                                <div class="email-stat-value">2,450</div>
-                                <div class="email-stat-label">Total XP</div>
-                            </div>
-                            <div class="email-stat">
-                                <div class="email-stat-value">18</div>
-                                <div class="email-stat-label">Receipts</div>
-                            </div>
-                        </div>
-
                         <div class="email-forecast-tag">
-                            <span></span> Fashion & Lifestyle opportunity from: "Autonomous vehicles reach mass adoption by 2030"
-                        </div>
-
-                        <div class="email-quest ideas">
-                            <div class="email-quest-mode">Ideas</div>
-                            <div class="email-quest-text">Study the Labubu and Stanley Cup accessory phenomenon — what made personalization go viral? List 3 patterns that could apply to AV interiors.</div>
-                            <div class="email-quest-xp">+150 XP</div>
-                        </div>
-
-                        <div class="email-quest ideas">
-                            <div class="email-quest-mode">Ideas</div>
-                            <div class="email-quest-text">Research 3 luxury brands that have expanded into lifestyle accessories (Hermès blankets, Louis Vuitton travel cases). How might they approach AV interiors?</div>
-                            <div class="email-quest-xp">+150 XP</div>
-                        </div>
-
-                        <div class="email-quest personality">
-                            <div class="email-quest-mode">Personality</div>
-                            <div class="email-quest-text">Interview 2 people who accessorize their car interiors — what emotional need does it fulfill? Document their "status signals."</div>
-                            <div class="email-quest-xp">+200 XP</div>
-                        </div>
-
-                        <div class="email-quest personality">
-                            <div class="email-quest-mode">Personality</div>
-                            <div class="email-quest-text">Post a hot take on social: "The next Stanley Cup moment will happen inside autonomous vehicles" — engage with responses.</div>
-                            <div class="email-quest-xp">+175 XP</div>
+                            <span></span> Waymo expands · <strong>Impact:</strong> car interiors become status symbols
                         </div>
 
                         <div class="email-quest execution">
-                            <div class="email-quest-mode">Execution</div>
-                            <div class="email-quest-text">Sketch 3 AV accessory concepts: one for comfort (blankets, pillows), one for status (branded interior kits), one for productivity (mobile office setup).</div>
-                            <div class="email-quest-xp">+250 XP</div>
+                            <div class="email-quest-mode">Try now</div>
+                            <div class="email-quest-text"><strong>12 min · Figma:</strong> Sketch a 2×2 of AV interior players. Circle the white space you'd bet on.</div>
+                            <div class="email-quest-xp">Matched to your role</div>
                         </div>
 
-                        <div class="email-quest execution">
-                            <div class="email-quest-mode">Execution</div>
-                            <div class="email-quest-text">Create a mood board for a "luxury AV interior collection" — source 10 images that capture the aesthetic of mobile living rooms as status symbols.</div>
-                            <div class="email-quest-xp">+200 XP</div>
+                        <div class="email-quest ideas">
+                            <div class="email-quest-mode">Try now</div>
+                            <div class="email-quest-text"><strong>10 min · Perplexity:</strong> Find 3 primary sources on AV adoption. One paragraph: second-order effect for fashion/retail.</div>
+                            <div class="email-quest-xp">From your forecast feed</div>
+                        </div>
+
+                        <div class="email-quest personality">
+                            <div class="email-quest-mode">Track</div>
+                            <div class="email-quest-text"><strong>Forecast:</strong> Fully autonomous vehicles reach mass adoption by 2030 — 72% likely. Open impacts & pathways →</div>
+                            <div class="email-quest-xp">Watching · Priority</div>
                         </div>
                     </div>
                 </div>
@@ -896,7 +939,7 @@
     <section class="pricing-section" id="pricing">
         <div class="pricing-container">
             <div class="section-title">Join the Club</div>
-            <h2 class="section-heading pricing-heading">Start free. Cancel whenever.</h2>
+            <h2 class="section-heading pricing-heading">Daily Pulse. Forecast tracking. Tools to try.</h2>
             
             <div class="pricing-panels">
                 <div class="pricing-card">
@@ -905,13 +948,13 @@
                     <div class="pricing-period">per month</div>
                     
                     <ul class="pricing-features">
-                        <li>✓ 7-day free trial</li>
-                        <li>✓ You get your score, forecasts to track, and weekly quests</li>
-                        <li>✓ Slack community if you want to see how others are approaching it</li>
-                        <li>✓ Cancel whenever</li>
+                        <li>✓ Daily Pulse tuned to your role & topics</li>
+                        <li>✓ Forecast tracking + second-order impacts</li>
+                        <li>✓ Tools to try — short experiments each week</li>
+                        <li>✓ Cancel anytime</li>
                     </ul>
                     
-                    <a href="https://buy.stripe.com/8x2eVdbgP4yL6VK32q9ws01" class="btn-primary btn-full" style="margin-top: auto;">Start free trial →</a>
+                    <a href="app.html#signup" class="btn-primary btn-full" style="margin-top: auto;">Get started →</a>
                 </div>
                 
                 <div class="pricing-card pricing-card-annual">
@@ -920,16 +963,16 @@
                     <div class="pricing-period">per year</div>
                     
                     <ul class="pricing-features">
-                        <li>✓ Same thing, just less per month</li>
-                        <li>✓ 7-day free trial</li>
-                        <li>✓ Full access to score, forecasts, and weekly quests</li>
-                        <li>✓ Cancel whenever</li>
+                        <li>✓ Everything in monthly</li>
+                        <li>✓ 2 months free vs monthly</li>
+                        <li>✓ Full Pulse feed + forecast library</li>
+                        <li>✓ Cancel anytime</li>
                     </ul>
                     
-                    <a href="https://buy.stripe.com/dRm5kDbgP5CPdk89qO9ws02" class="btn-primary btn-full" style="margin-top: auto;">Start free trial →</a>
+                    <a href="https://buy.stripe.com/dRm5kDbgP5CPdk89qO9ws02" class="btn-primary btn-full" style="margin-top: auto;">Start annual →</a>
                 </div>
             </div>
-            <p class="feature-desc" style="text-align: center; max-width: 820px; margin: 30px auto 0;">Some jobs are already thinner than they were a year ago. Others look the same and some people are entirely unaware of what is coming for them. A lot of people will ignore it, but you can make a move from here.</p>
+            <p class="feature-desc" style="text-align: center; max-width: 820px; margin: 30px auto 0;">Industries are shifting faster than most people's feeds. The edge isn't reading more — it's knowing what a headline actually means for your work, and trying one small move before everyone else catches up.</p>
         </div>
     </section>
 
