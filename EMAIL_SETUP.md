@@ -52,6 +52,11 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS industry TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS experience TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS goals JSONB DEFAULT '[]';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS forecast_interests JSONB DEFAULT '[]';
+
+-- Work profile (role, career path, hybrid opportunities) — required for profile save
+ALTER TABLE users ADD COLUMN IF NOT EXISTS work_profile JSONB DEFAULT '{}';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS responsibilities TEXT;
 ```
 
 ---

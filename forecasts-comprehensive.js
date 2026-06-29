@@ -1,6 +1,6 @@
 // COMPREHENSIVE FORECAST DATABASE
 // Real odds from Polymarket + Metaculus + Billionaire predictions
-// Last updated: February 2026
+// Last updated: June 2026
 // 50+ forecasts per category with realistic, gradual quest progressions
 
 const FORECAST_DATABASE = [

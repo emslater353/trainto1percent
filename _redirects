@@ -1,4 +1,7 @@
 # Clean URLs for AI Proof Club
+/mobile         /app.html?app=1             200
+/app            /app.html?app=1             200
+/privacy        /privacy.html               200
 /company        /app.html?mode=company      200
 /diagnostic     /app.html?mode=diagnostic   200
 /google         /app.html?threat=google     200
