@@ -23,3 +23,8 @@ yarn-error.log*
 # Local Netlify folder
 .netlify
 
+# Capacitor mobile shell
+aiproof-mobile/node_modules
+aiproof-mobile/.expo
+aiproof-mobile/dist
+

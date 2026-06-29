@@ -23,9 +23,50 @@ exports.handler = async (event) => {
     }
 
     try {
-        const { messages, type } = JSON.parse(event.body);
+        const body = JSON.parse(event.body);
+        const { messages, type, prompt, summary } = body;
+
+        if (type === 'future-world-image') {
+            if (!prompt) {
+                return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing prompt' }) };
+            }
+            const imageRes = await fetch('https://api.openai.com/v1/images/generations', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${OPENAI_API_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'dall-e-3',
+                    prompt: String(prompt).slice(0, 900),
+                    n: 1,
+                    size: '1024x1024',
+                    quality: 'standard',
+                }),
+            });
+            if (!imageRes.ok) {
+                const err = await imageRes.text();
+                console.error('OpenAI image error:', err);
+                return { statusCode: imageRes.status, headers, body: JSON.stringify({ error: 'Image generation failed' }) };
+            }
+            const imageData = await imageRes.json();
+            const url = imageData?.data?.[0]?.url || null;
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({ url, summary: summary || null }),
+            };
+        }
 
         let systemPrompt = '';
+        let userContext = '';
+        const chatMessages = (messages || []).filter(m => {
+            if (m.role === 'system') {
+                userContext += (m.content || '') + '\n';
+                return false;
+            }
+            return true;
+        });
         
         if (type === 'analyze') {
             systemPrompt = `You are analyzing a user's ChatGPT conversation history to assess their behavioral patterns across three modes:
@@ -76,8 +117,8 @@ Keep it under 200 words. Be direct and insightful.`;
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
                 messages: [
-                    { role: 'system', content: systemPrompt },
-                    ...messages
+                    { role: 'system', content: systemPrompt + (userContext ? '\n\nUser context:\n' + userContext.trim() : '') },
+                    ...chatMessages
                 ],
                 max_tokens: maxTokens,
                 temperature: 0.7
