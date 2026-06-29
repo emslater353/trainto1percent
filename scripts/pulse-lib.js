@@ -786,9 +786,18 @@ function selectDiverseCandidates(articles, maxItems = 6) {
   return picked.length ? picked : pool.slice(0, maxItems);
 }
 
+function normalizeSupabaseUrl(url) {
+  const fallback = 'https://snbchuvvnbwvghmbxehv.supabase.co';
+  if (!url || typeof url !== 'string') return fallback;
+  const trimmed = url.trim().replace(/\/$/, '');
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.includes('.supabase.co')) return `https://${trimmed}`;
+  return `https://${trimmed}.supabase.co`;
+}
+
 async function runPulseRefresh(options = {}) {
   const {
-    supabaseUrl = process.env.SUPABASE_URL,
+    supabaseUrl = normalizeSupabaseUrl(process.env.SUPABASE_URL),
     supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY,
     openaiKey = process.env.OPENAI_API_KEY,
     maxItems = 6,

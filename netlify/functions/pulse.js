@@ -1,7 +1,16 @@
 // GET latest pulse items for the web app (public read)
 // Optional fallback if Supabase RLS blocks direct client reads
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://snbchuvvnbwvghmbxehv.supabase.co';
+function normalizeSupabaseUrl(url) {
+  const fallback = 'https://snbchuvvnbwvghmbxehv.supabase.co';
+  if (!url || typeof url !== 'string') return fallback;
+  const trimmed = url.trim().replace(/\/$/, '');
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.includes('.supabase.co')) return `https://${trimmed}`;
+  return `https://${trimmed}.supabase.co`;
+}
+
+const SUPABASE_URL = normalizeSupabaseUrl(process.env.SUPABASE_URL);
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const headers = {
