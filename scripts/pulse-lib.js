@@ -797,13 +797,14 @@ function normalizeSupabaseUrl(url) {
 
 async function runPulseRefresh(options = {}) {
   const {
-    supabaseUrl = normalizeSupabaseUrl(process.env.SUPABASE_URL),
+    supabaseUrl: supabaseUrlIn = process.env.SUPABASE_URL,
     supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY,
     openaiKey = process.env.OPENAI_API_KEY,
     maxItems = 6,
     dryRun = false,
     skipAi = false,
   } = options;
+  const supabaseUrl = normalizeSupabaseUrl(supabaseUrlIn);
 
   if (!dryRun && (!supabaseUrl || !supabaseKey)) {
     throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
