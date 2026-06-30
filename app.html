@@ -356,6 +356,45 @@
         }
         .onboard-arrow-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
         .onboard-arrow-btn:disabled { opacity: 0.35; cursor: default; }
+
+        /* Onboarding — live Pulse preview */
+        .onboard-pulse-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 28px 20px 56px;
+        }
+        .onboard-pulse-wrap .logo { text-align: center; margin-bottom: 18px; }
+        .onboard-pulse-step-label {
+            font-size: 10px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .onboard-pulse-intro {
+            text-align: center;
+            max-width: 620px;
+            margin: 0 auto 24px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+        .onboard-pulse-demo .pulse-topnav-right { display: none; }
+        .onboard-pulse-demo .pulse-topnav-tab { pointer-events: none; cursor: default; }
+        .onboard-pulse-demo .pulse-story-card,
+        .onboard-pulse-demo .pulse-impact-card,
+        .onboard-pulse-demo .pulse-more-row,
+        .onboard-pulse-demo .pulse-signal-row,
+        .onboard-pulse-demo .view-forecast-detail,
+        .onboard-pulse-demo .follow-forecast { pointer-events: none; }
+        .onboard-pulse-demo .pulse-tool-row-btn,
+        .onboard-pulse-demo .pulse-signals-cta { pointer-events: auto; }
+        .onboard-pulse-cta {
+            max-width: 360px;
+            margin: 28px auto 0;
+        }
+
         .q-number { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; text-shadow: 0 0 10px var(--accent-glow); }
         .q-text { font-family: var(--font-display); font-size: 20px; line-height: 1.4; margin-bottom: 20px; }
         .options { display: flex; flex-direction: column; gap: 8px; }
@@ -6462,57 +6501,101 @@ function signupH(){return `<div class="screen-center"><div class="container-sm">
 
 function pricingH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center"><h2 class="card-title">Choose Your Plan</h2><p class="text-secondary text-small mb-20">7-day free trial · full Pulse feed, forecast tracking & indie tools</p>${hasFreeCouponAccess() ? `<div style="border:2px solid var(--accent);padding:16px;margin-bottom:20px;text-align:left;background:rgba(0,240,255,0.04)"><div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Coupon applied</div><p class="text-small" style="line-height:1.55;margin-bottom:12px">Code <strong>${escHtml(S.onboardData?.couponCode || S.user?.coupon_code || '')}</strong> unlocks complimentary access.</p><button type="button" class="btn btn-primary btn-full" id="coupon-continue-onboarding">Continue free →</button></div>` : `<div style="text-align:left;margin-bottom:20px">${renderCouponCodeField({ id: 'pricing-coupon', msgId: 'pricing-coupon-msg', hint: 'Have an invite code? Apply to skip payment.' })}</div>`}<div style="display:flex;flex-direction:column;gap:15px;${hasFreeCouponAccess() ? 'opacity:0.45;pointer-events:none;' : ''}"><div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary)"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Most Popular</div><div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div><div style="font-size:11px;color:var(--text-muted);margin-top:6px;margin-bottom:4px">7-day free trial · cancel anytime</div><a href="${STRIPE_LINK}" class="btn btn-primary btn-full mt-20">Start free trial →</a></div>${STRIPE_ANNUAL?`<div style="border:1px solid var(--bg-tertiary);padding:20px"><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Best Value — 2 Months Free</div><div style="font-size:36px;font-weight:700">$99<span style="font-size:14px;color:var(--text-secondary)">/year</span></div><a href="${STRIPE_ANNUAL}" class="btn btn-secondary btn-full mt-20">Start Annual →</a></div>`:''}</div><ul style="list-style:none;text-align:left;margin-top:25px;font-size:12px"><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ 7-day free trial — full access</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Daily Pulse tuned to your role & topics</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Forecast tracking + second-order impacts</li><li style="padding:8px 0">✓ Indie tools to try — niche picks each week</li></ul></div></div></div>`;}
 
-const ONBOARD_TOUR_SLIDES = [
-    {
-        icon: '📡',
-        title: 'Today\'s Pulse',
-        body: 'Every morning we scan the news and connect headlines to the forecasts you care about — with a plain-English take on what it means for you.',
-        hint: 'Headlines → meaning → what to watch next. No doom-scrolling.',
-        mock: `<div class="pulse-card-compact" style="margin:0"><div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">TechCrunch · Autonomous vehicles</div><div style="font-size:12px;font-weight:600;line-height:1.4;margin-bottom:6px">Waymo expands to 4 new cities</div><p style="font-size:11px;color:var(--text-secondary);margin:0;line-height:1.5">→ Car interiors become the next status battleground — accessories, comfort, mobile offices.</p></div>`
-    },
-    {
-        icon: '🔮',
-        title: 'Track forecasts',
-        body: 'Follow predictions that matter to your work — AI agents, job shifts, autonomous vehicles. See odds, timelines, and pathways if they land.',
-        hint: 'Your Following list powers everything else in the app.',
-        mock: `<div style="font-size:11px;color:var(--accent);margin-bottom:6px">72% likely · 2028–2030</div><div style="font-size:12px;font-weight:600;line-height:1.4">Fully autonomous vehicles reach mass adoption</div><div style="font-size:10px;color:var(--text-muted);margin-top:8px">Watching · Priority forecast</div>`
-    },
-    {
-        icon: '🌊',
-        title: 'Second-order impacts',
-        body: 'We don\'t stop at the headline. Each story opens into ripple effects — who wins, who loses, what shifts before most people notice.',
-        hint: 'This is how you stay ahead, not just informed.',
-        mock: `<div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:11px;padding:8px;border-left:2px solid var(--accent);background:var(--bg-secondary)"><strong>Insurance</strong> shifts from drivers to systems</div><div style="font-size:11px;padding:8px;border-left:2px solid var(--personality);background:var(--bg-secondary)"><strong>Healthcare</strong> shows up in commutes</div><div style="font-size:11px;padding:8px;border-left:2px solid var(--execution);background:var(--bg-secondary)"><strong>Interiors</strong> become mobile living rooms</div></div>`
-    },
-    {
-        icon: '🛠',
-        title: 'Tools to try',
-        body: 'Matched plays you can run this week — 10-minute experiments with real tools, tied to what you\'re tracking. Scan, understand, act.',
-        hint: 'No homework. One small move beats reading another thread.',
-        mock: `<div style="font-size:11px;padding:10px;border:1px dashed var(--accent)">⚡ <strong>Try now (12 min · Runway):</strong> Generate a 4-sec clip visualizing your top forecast. Use it as a storyboard frame.</div>`
+const ONBOARD_DEMO_STORY_ID = 'pulse-cursor-mobile';
+
+function getOnboardDemoStory() {
+    const base = PULSE_FEED.find((i) => i.id === ONBOARD_DEMO_STORY_ID) || PULSE_FEED[0];
+    if (!base) return null;
+    return {
+        ...base,
+        headline: 'Cursor deploys to mobile',
+        toolsBlock: base.toolsBlock || (typeof buildPulseToolsBlock === 'function'
+            ? buildPulseToolsBlock(base.topics || ['ai', 'tech'], base.headline, base.id, {
+                secondOrder: base.insight?.second_order || base.meaning,
+                archetype: { id: 'agents', label: 'Agents × Workflow' },
+            })
+            : null),
+    };
+}
+
+function renderOnboardPulseSidebar() {
+    const linked = FORECAST_DATABASE.find((f) => f.id === 'ai-agents-autonomous');
+    return `<aside class="pulse-dash-sidebar">
+        <div class="pulse-brief-box">
+            <span class="pulse-brief-icon">☀</span>
+            <div>
+                <div class="pulse-brief-label">Daily Brief</div>
+                <div class="pulse-brief-meta">Yesterday · Curated for you</div>
+            </div>
+        </div>
+        ${linked ? `<div class="pulse-signals-box">
+            <div class="pulse-signals-title">Linked forecast</div>
+            <div class="pulse-signal-row" style="width:100%;border-bottom:1px solid var(--bg-tertiary);padding:10px 0;display:flex;align-items:center;gap:10px">
+                <span class="pulse-signal-icon">${linked.probability}</span>
+                <span class="pulse-signal-name">${escHtml(linked.title.length > 36 ? linked.title.slice(0, 33) + '…' : linked.title)}</span>
+                <span class="pulse-signal-chg up">→</span>
+            </div>
+            <p class="text-secondary text-small" style="margin-top:10px;line-height:1.5">${escHtml(linked.threatReason || '')}</p>
+        </div>` : ''}
+    </aside>`;
+}
+
+function renderOnboardPulseDemo() {
+    const lead = getOnboardDemoStory();
+    if (!lead) return '<p class="text-secondary text-small">Pulse preview loading…</p>';
+
+    const linked = FORECAST_DATABASE.find((f) => f.id === (lead.forecastId || 'ai-agents-autonomous'));
+    const insight = getPulseInsight(lead);
+    const takeaway = insight.second_order || lead.meaning || '';
+    const desc = takeaway.split('.')[0] + (takeaway.includes('.') ? '.' : '');
+
+    return `<div class="onboard-pulse-demo pulse-dashboard">
+        ${renderPulseTopNav('today')}
+
+        <h1 class="pulse-hero-title">The future isn't coming. <em>It's already here.</em></h1>
+        <p class="pulse-hero-sub">News you need. Impacts that matter. Actions to stay ahead.</p>
+
+        <div class="pulse-dash-grid">
+            <div class="pulse-dash-main">
+                <article class="pulse-story-card">
+                    <div class="pulse-story-visual">${renderPulsePredictionGraph(lead, linked)}</div>
+                    <div class="pulse-story-body">
+                        <span class="pulse-story-badge">Top story · yesterday</span>
+                        <h2 class="pulse-story-title">${escHtml(lead.headline)}</h2>
+                        <p class="pulse-story-desc">${escHtml(desc)}</p>
+                        ${linked ? `<div class="pulse-story-forecast-inset view-forecast-detail" data-id="${linked.id}">
+                            <span class="pulse-story-forecast-pct">${linked.probability}%</span>
+                            <span class="pulse-story-forecast-text">Linked prediction: ${escHtml(linked.title)}</span>
+                        </div>` : ''}
+                    </div>
+                </article>
+
+                ${renderImpactGrid(lead, linked)}
+
+                <div class="pulse-bottom-grid">
+                    ${linked ? renderTrackedForecastWidget(linked) : ''}
+                    ${renderToolsStayAheadWidget(lead)}
+                </div>
+            </div>
+            ${renderOnboardPulseSidebar()}
+        </div>
+    </div>`;
+}
+
+function advanceOnboardFromPulseDemo() {
+    if (!S.onboardSelectedForecasts?.length) {
+        const suggested = getSuggestedForecasts();
+        const agents = FORECAST_DATABASE.find((f) => f.id === 'ai-agents-autonomous');
+        const ids = agents ? [agents.id] : [];
+        suggested.slice(0, 2).forEach((f) => { if (!ids.includes(f.id)) ids.push(f.id); });
+        S.onboardSelectedForecasts = ids.slice(0, 3);
     }
-];
+    S.onboardStep = 3;
+    render();
+}
 
 function onboardProgressBar(step, totalSteps) {
     return `<div class="progress-bar" style="margin-bottom:30px">${Array(totalSteps).fill(0).map((_, i) => `<div class="progress-dot ${i < step ? 'done' : i === step - 1 ? 'active' : ''}"></div>`).join('')}</div>`;
-}
-
-function renderOnboardTourH() {
-    const slides = ONBOARD_TOUR_SLIDES;
-    const idx = S.onboardTourSlide || 0;
-    const slide = slides[idx];
-    return `<div class="onboard-tour-slide">
-        <div class="onboard-tour-icon">${slide.icon}</div>
-        <h2 class="card-title" style="margin-bottom:10px">${slide.title}</h2>
-        <p class="text-secondary text-small" style="line-height:1.65;max-width:420px;margin:0 auto">${slide.body}</p>
-        <div class="onboard-tour-mock"><div class="onboard-tour-mock-label">Preview</div>${slide.mock}</div>
-        <div class="onboard-tour-hint"><strong style="color:var(--text-primary)">Why it matters:</strong> ${slide.hint}</div>
-        <div class="onboard-tour-nav">
-            <button type="button" class="onboard-arrow-btn" id="tour-prev" ${idx === 0 ? 'disabled' : ''}>← Back</button>
-            <div class="onboard-tour-dots">${slides.map((_, i) => `<div class="onboard-tour-dot ${i < idx ? 'done' : i === idx ? 'active' : ''}"></div>`).join('')}</div>
-            <button type="button" class="btn btn-primary btn-small" id="tour-next">${idx === slides.length - 1 ? 'Continue →' : 'Next →'}</button>
-        </div>
-    </div>`;
 }
 
 function renderOnboardPaywallH() {
@@ -6618,7 +6701,7 @@ function onboardingH(){
                 </div>
                 <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="ob-email" value="${escHtml(S.onboardData.email || S.user?.email || S.diagnosticEmail || '')}" ${S.user?.email ? 'readonly style="opacity:0.75"' : ''} required></div>
                 ${profileFormFieldsH('ob', { expanded: true })}
-                <button type="submit" class="btn btn-primary btn-full">Next: how it works →</button>
+                <button type="submit" class="btn btn-primary btn-full">Next: see your Pulse →</button>
             </form>
         </div>
         <p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p>
@@ -6626,13 +6709,16 @@ function onboardingH(){
     }
     
     if (step === 2) {
-        return `<div class="screen-center"><div class="container-md"><div class="logo">AI PROOF <span>CLUB</span></div>
+        return `<div class="onboard-pulse-wrap">
+        <div class="logo">AI PROOF <span>CLUB</span></div>
         ${progressBar}
-        <div class="card">
-            <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Step 2 · How it works</div>
-            ${renderOnboardTourH()}
+        <div class="onboard-pulse-step-label">Step 2 · Your daily Pulse</div>
+        <p class="onboard-pulse-intro">This is what you'll see every day — a headline like <strong>Cursor deploys to mobile</strong>, linked to a forecast on <strong>AI agents</strong>, with second-order impacts and indie tools to try.</p>
+        ${renderOnboardPulseDemo()}
+        <div class="onboard-pulse-cta">
+            <button type="button" class="btn btn-primary btn-full" id="onboard-pulse-continue">Pick your forecasts →</button>
         </div>
-        </div></div>`;
+        </div>`;
     }
     
     if (step === 3) {
@@ -7850,25 +7936,8 @@ function bindEvents(){
         S.onboardStep = 2;
         render();
     });
-    document.getElementById('tour-prev')?.addEventListener('click', () => {
-        if ((S.onboardTourSlide || 0) > 0) {
-            S.onboardTourSlide--;
-            render();
-        }
-    });
-    document.getElementById('tour-next')?.addEventListener('click', () => {
-        const last = ONBOARD_TOUR_SLIDES.length - 1;
-        if ((S.onboardTourSlide || 0) < last) {
-            S.onboardTourSlide++;
-            render();
-        } else {
-            if (!S.onboardSelectedForecasts?.length) {
-                const suggested = getSuggestedForecasts();
-                S.onboardSelectedForecasts = suggested.slice(0, 2).map(f => f.id);
-            }
-            S.onboardStep = 3;
-            render();
-        }
+    document.getElementById('onboard-pulse-continue')?.addEventListener('click', () => {
+        advanceOnboardFromPulseDemo();
     });
     
     // Step 4: Post-payment account creation (name + password)
