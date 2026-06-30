@@ -36,14 +36,11 @@ Configured in `netlify.toml`:
 
 Each run:
 
-1. Fetches RSS (TechCrunch, The Verge, Google News wearables query, etc.)
-2. Ranks by buzz + story clusters
-3. Matches forecasts from `shared/forecasts-data.js`
-4. Enriches with OpenAI (second-order, tools, predictions)
-5. Upserts ~10 items into Supabase
-6. Deactivates items older than 14 days
+1. **Cron** (`refresh-pulse`) fires hourly and immediately queues **`refresh-pulse-background`** (Netlify scheduled functions cap at **30 seconds**; full RSS + OpenAI ingest needs longer).
+2. Background job fetches RSS, ranks, matches forecasts, enriches with OpenAI, upserts ~10 items into Supabase.
+3. Deactivates items older than 14 days.
 
-The app also **re-fetches the feed every hour** while you're on Pulse (no extra OpenAI cost). Users can tap **↻ Refresh feed** anytime for an immediate ingest.
+Manual **↻ Refresh feed** or `curl` hits `refresh-pulse` directly (60s sync limit). The app also **re-fetches the feed every hour** while you're on Pulse (no extra OpenAI cost).
 
 ---
 
