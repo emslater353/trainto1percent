@@ -83,7 +83,7 @@ const STATIC_SEED = [
     forecast_id: 'ai-agents-autonomous',
     meaning: 'Busywork is getting automated end-to-end. Value shifts to directing agents and reviewing output.',
     meaning_personal: 'In {role}, list tasks that are "brief → wait → review" — those are agent-shaped.',
-    startup_hint: 'Watch Lindy or Bardeen — agent-style workflow glue. Try: automate one brief → review loop from your week.',
+    startup_hint: 'Watch Howie AI or Bardeen — text an errand or automate one brief → review loop from your week.',
   },
   {
     id: 'pulse-fashion-ai-seed',

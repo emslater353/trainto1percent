@@ -12,8 +12,11 @@ const TOOL_DISCOVERY_CATALOG = [
   { name: 'Notion', category: 'Ops', tags: ['work', 'tech'], signals: ['workflow', 'documentation', 'knowledge', 'team', 'sop', 'playbook', 'organiz', 'wiki', 'collabor'], hook: 'docs + wikis + lightweight ops' },
   { name: 'Linear', category: 'Ops', tags: ['tech', 'work'], signals: ['project', 'issue', 'engineering', 'roadmap', 'sprint', 'team', 'ship'], hook: 'issue tracking built for product teams' },
   { name: 'Granola', category: 'Notes', tags: ['work', 'ai'], signals: ['meeting', 'notes', 'call', 'clinical', 'patient', 'coordination', 'capture'], hook: 'AI meeting notes without losing context' },
-  { name: 'Howie AI', category: 'Assistant', tags: ['work', 'ai'], signals: ['schedule', 'calendar', 'assistant', 'executive', 'errand', 'texting'], hook: 'texting executive assistant' },
-  { name: 'Lindy', category: 'Agents', tags: ['work', 'ai', 'tech'], signals: ['agent', 'workflow', 'automate', 'ops', 'orchestr', 'multi-step'], hook: 'no-code AI agents for repetitive ops' },
+  { name: 'Howie AI', category: 'Assistant', tags: ['work', 'ai'], signals: ['schedule', 'calendar', 'assistant', 'executive', 'errand', 'texting', 'delegate'], hook: 'texting executive assistant', curated: true },
+  { name: 'Wispr Flow', category: 'Productivity', tags: ['work', 'ai', 'creator'], signals: ['voice', 'dictation', 'speech', 'writing', 'speed'], hook: 'voice dictation that works everywhere you type', curated: true },
+  { name: 'Screen Studio', category: 'Video', tags: ['creator', 'media', 'tech'], signals: ['demo', 'record', 'screen', 'launch', 'video'], hook: 'beautiful screen recordings in one take', curated: true },
+  { name: 'Limitless', category: 'Hardware', tags: ['tech', 'ai', 'work'], signals: ['wearable', 'memory', 'recall', 'meeting', 'capture'], hook: 'personal AI pendant — capture & recall' },
+  { name: 'Raycast', category: 'Productivity', tags: ['tech', 'ai', 'work'], signals: ['productivity', 'launcher', 'shortcut', 'command'], hook: 'launcher + AI commands for power users' },
   { name: 'Bardeen', category: 'Agents', tags: ['work', 'ai', 'tech'], signals: ['automate', 'workflow', 'browser', 'glue', 'saas', 'integrat'], hook: 'browser automations that glue SaaS tools' },
   { name: 'Dust', category: 'Agents', tags: ['work', 'ai', 'tech'], signals: ['assistant', 'team', 'knowledge', 'workflow', 'agent'], hook: 'custom AI assistants wired to team data' },
   { name: 'Reelful', category: 'Video', tags: ['media', 'creator', 'ai'], signals: ['video', 'clip', 'reels', 'tiktok', 'youtube', 'short', 'snip', 'distribution'], hook: 'long clips → short hooks fast', curated: true },
@@ -24,7 +27,7 @@ const TOOL_DISCOVERY_CATALOG = [
   { name: 'NotebookLM', category: 'Research', tags: ['media', 'ai', 'work'], signals: ['research', 'sources', 'podcast', 'audio', 'learn', 'synthes', 'medical', 'clinical'], hook: 'sources → audio briefs', curated: true },
   { name: 'Exa', category: 'Research', tags: ['tech', 'ai'], signals: ['research', 'search', 'source', 'primary', 'due diligence', 'signal'], hook: 'neural search for primary sources', curated: true },
   { name: 'Parallel', category: 'Research', tags: ['tech', 'ai', 'work'], signals: ['research', 'agent', 'extract', 'web', 'structured'], hook: 'web agents that extract structured research' },
-  { name: 'FSHN AI', category: 'Fashion', tags: ['fashion', 'retail', 'ai'], signals: ['try-on', 'fashion', 'lookbook', 'apparel', 'retail', 'visual', 'drop'], hook: 'virtual try-on for fashion brands', curated: true },
+  { name: 'FSHN AI', category: 'Fashion', tags: ['fashion', 'retail', 'ai'], signals: ['try-on', 'fashion', 'lookbook', 'apparel', 'retail', 'visual', 'drop'], hook: 'virtual try-on for fashion brands' },
   { name: 'Botika', category: 'Fashion', tags: ['fashion', 'retail', 'ai'], signals: ['fashion', 'model', 'shoot', 'e-commerce', 'lookbook'], hook: 'AI models for fashion shoots without a studio' },
   { name: 'Memelord', category: 'Social', tags: ['creator', 'media', 'ai'], signals: ['meme', 'social', 'viral', 'humor', 'marketing', 'engagement'], hook: 'meme-native social marketing', curated: true },
   { name: 'Pops', category: 'Social', tags: ['creator', 'media', 'ai'], signals: ['game', 'playful', 'engagement', 'social'], hook: 'playful game formats that drive engagement', curated: true },
@@ -111,7 +114,9 @@ function scoreRippleAgainstTool(rippleText, tool, headline) {
 
   const head = normalizeToolKey(headline || '');
   if (head && (tool.signals || []).some((s) => s.length >= 4 && head.includes(s))) score += 3;
-  if (tool.curated) score += 2;
+  const tagOverlap = (tool.tags || []).filter((t) => h.includes(t)).length;
+  if (tool.curated) score += tagOverlap > 0 ? 3 : 1;
+  if (normalizeToolKey(tool.name) === 'howie ai' && /schedule|calendar|assistant|errand|text/.test(`${h} ${head}`)) score += 4;
 
   return score;
 }

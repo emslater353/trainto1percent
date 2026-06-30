@@ -2102,23 +2102,27 @@ console.log('AI Proof Club version:', APP_VERSION);
 
 /** Inline fallback — tools always show even if shared/*.js fails to load (404, cache, etc.) */
 const PULSE_TOOLS_FALLBACK = [
+    { name: 'Howie AI', url: 'https://howie.com', hook: 'texting executive assistant', why: 'If your calendar owns you — text beats dashboards.', tags: ['work', 'ai'] },
     { name: 'Cursor', url: 'https://cursor.com', hook: 'vibe-code apps in your IDE', why: 'If you ship product — idea-to-demo time is the edge.', tags: ['tech', 'ai'] },
     { name: 'Reelful', url: 'https://www.reelful.app', hook: 'video snipping — long clips → short hooks', why: 'If you publish video — clipping speed is distribution.', tags: ['media', 'creator', 'ai'] },
-    { name: 'FSHN AI', url: 'https://fashn.ai', hook: 'virtual try-on for fashion brands', why: 'If you sell fashion — try-on is table stakes.', tags: ['fashion', 'retail', 'ai'] },
+    { name: 'Wispr Flow', url: 'https://wisprflow.ai', hook: 'voice dictation everywhere you type', why: 'If you think faster than you type — voice-native wins.', tags: ['work', 'ai', 'creator'] },
     { name: 'NotebookLM', url: 'https://notebooklm.google.com', hook: 'sources → audio briefs', why: 'If you research fast — skip the tab overload.', tags: ['media', 'ai', 'work', 'health'] },
     { name: 'Gamma', url: 'https://gamma.app', hook: 'AI decks from a prompt', why: 'If you pitch often — skip rebuilding slides.', tags: ['work', 'creator', 'ai'] },
     { name: 'Memelord', url: 'https://www.memelord.com', hook: 'meme-native social marketing', why: 'If you grow via social — humor beats corporate.', tags: ['creator', 'media'] },
-    { name: 'Howie AI', url: 'https://howie.com', hook: 'texting executive assistant', why: 'If your calendar owns you — text beats dashboards.', tags: ['work', 'ai'] },
     { name: 'Granola', url: 'https://granola.ai', hook: 'AI meeting notes', why: 'If you live in calls — notes that follow up matter.', tags: ['work', 'ai'] },
-    { name: 'Lindy', url: 'https://www.lindy.ai', hook: 'no-code AI agents', why: 'If you automate ops — agents beat manual glue.', tags: ['ai', 'tech', 'work'] },
+    { name: 'Screen Studio', url: 'https://screen.studio', hook: 'polished screen recordings', why: 'If you ship demos — one-take capture is distribution.', tags: ['creator', 'tech', 'media'] },
     { name: 'Brilliant Labs', url: 'https://brilliant.xyz', hook: 'Frame — AI glasses for builders', why: 'If spatial is your bet — watch hardware-native AI.', tags: ['spatial', 'wearables', 'ai', 'tech'] },
     { name: 'Pops', url: 'https://apps.apple.com/us/app/pops-ai-games-with-friends/id6755313727', hook: 'game app — playful engagement formats', why: 'If you care about engagement — playful formats compound.', tags: ['creator', 'media', 'ai'] },
     { name: 'Exa', url: 'https://exa.ai', hook: 'neural search for primary sources', why: 'If you need real sources — not SEO recap chains.', tags: ['tech', 'ai', 'health'] }
 ];
 
 function resolvePulseToolUrl(tool) {
-    if (tool?.url) return tool.url;
-    if (typeof resolveToolUrl === 'function') return resolveToolUrl(tool?.name);
+    const raw = tool?.url || '';
+    if (raw && !/producthunt\.com/i.test(raw)) return raw;
+    if (typeof resolveToolUrl === 'function') {
+        const resolved = resolveToolUrl(tool?.name, raw);
+        if (resolved && !/producthunt\.com/i.test(resolved)) return resolved;
+    }
     const key = (tool?.name || '').trim().toLowerCase();
     const hit = PULSE_TOOLS_FALLBACK.find(t => t.name.toLowerCase() === key);
     return hit?.url || '';
@@ -2976,11 +2980,11 @@ const TOPIC_EMOJI = {
 const FORECAST_TOOL_PLAYS = {
     ai: [
         { name: 'Indie Demo Sprint', tool: 'Lovable or Marblism', emoji: '⚡', play: 'Ship a one-screen landing for a wedge idea inspired by [topic]. Real copy, one CTA — not a chat answer.', minutes: 15, xp: 45 },
-        { name: 'Agent Workflow', tool: 'Lindy or Bardeen', emoji: '🤖', play: 'Automate one repetitive task this forecast makes obsolete. Run it once end-to-end and screenshot the output.', minutes: 12, xp: 40 },
+        { name: 'Agent Workflow', tool: 'Howie AI or Bardeen', emoji: '🤖', play: 'Text-delegate or automate one repetitive task this forecast makes obsolete. Run it once end-to-end and screenshot the output.', minutes: 12, xp: 40 },
         { name: 'Research Sprint', tool: 'Exa or Parallel', emoji: '🔬', play: 'Find 3 primary sources on [topic]. One paragraph: second-order effect + which indie startup wins.', minutes: 10, xp: 35 }
     ],
     tech: [
-        { name: 'Competitive Map', tool: 'Figma + Product Hunt', emoji: '🗺️', play: 'Sketch a 2×2 of players in [topic]. Drop 6 real companies. Circle the white space you\'d bet on.', minutes: 12, xp: 40 },
+        { name: 'Competitive Map', tool: 'FigJam + Exa', emoji: '🗺️', play: 'Sketch a 2×2 of players in [topic]. Drop 6 real companies. Circle the white space you\'d bet on.', minutes: 12, xp: 40 },
         { name: 'Ship a Spec', tool: 'Notion or Linear', emoji: '📋', play: 'Write a one-pager: problem, user, metric, MVP scope for [topic]. Shareable in 10 min.', minutes: 10, xp: 35 },
         { name: 'Trend Deep Dive', tool: 'Perplexity Pro + Exa', emoji: '💻', play: 'Find 3 primary sources (not blog spam) on [topic]. Summarize second-order effects in your own words.', minutes: 12, xp: 35 }
     ],
@@ -4792,7 +4796,7 @@ function renderPulseToolsTab() {
     return `<div class="pulse-dashboard">
         ${renderPulseTopNav('tools')}
         <h1 class="pulse-hero-title">Discover <em>tools</em></h1>
-        <p class="pulse-hero-sub">Indie apps and early-stage picks — matched to today's news, browsable by lane. Never heard of most of these? Good.</p>
+        <p class="pulse-hero-sub">Quirky indie apps you probably haven't heard of — matched to today's news, browsable by lane. Howie, Cursor, Wispr Flow, and friends. Never heard of most of these? Good.</p>
 
         ${storyPicks.length ? `<div style="margin-bottom:28px">
             <div class="pulse-section-head"><span class="pulse-section-title">Matched to today's story</span></div>
@@ -6454,9 +6458,9 @@ function forgotH(){return `<div class="screen-center"><div class="container-sm">
 
 function resetPasswordH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Set New Password</h2><p class="card-subtitle">Enter your new password below</p><form id="reset-password-form"><div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-input" id="reset-new-pass" required minlength="6" placeholder="Min 6 characters"></div><div class="form-group"><label class="form-label">Confirm Password</label><input type="password" class="form-input" id="reset-confirm-pass" required minlength="6"></div><button type="submit" class="btn btn-primary btn-full">Set New Password</button></form><p class="text-center text-secondary text-small mt-20"><a class="text-link" id="back-login">Back to sign in</a></p></div></div></div>`;}
 
-function signupH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Stay ahead of what's shifting</h2><p class="card-subtitle">Track forecasts, read daily Pulse, act before the crowd</p><ul style="list-style:none;text-align:left;margin:0 0 20px 0;padding:0;font-size:13px;color:var(--text-secondary)"><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Daily Pulse — news tied to forecasts you follow</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Second-order impacts — what headlines actually mean</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Tools to try — 10-min experiments matched to your role</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Forecast tracking & pathways if predictions hit</li><li style="padding:6px 0">✓ Cancel anytime · invite codes welcome</li></ul><form id="signup-form"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="name" required></div><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required minlength="6"></div>${renderCouponCodeField({ id: 'signup-coupon', msgId: 'signup-coupon-msg', hint: 'Have an invite code? Apply before creating your account.' })}<button type="submit" class="btn btn-primary btn-full">Create Account</button></form><p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p></div></div></div>`;}
+function signupH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card"><h2 class="card-title">Stay ahead of what's shifting</h2><p class="card-subtitle">7-day free trial · then $9.99/mo · cancel anytime</p><ul style="list-style:none;text-align:left;margin:0 0 20px 0;padding:0;font-size:13px;color:var(--text-secondary)"><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Daily Pulse — news tied to forecasts you follow</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Second-order impacts — what headlines actually mean</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Indie tools to try — niche picks matched to your role</li><li style="padding:6px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Forecast tracking & pathways if predictions hit</li><li style="padding:6px 0">✓ 7-day free trial · invite codes welcome</li></ul><form id="signup-form"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="name" required></div><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="email" required></div><div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="pass" required minlength="6"></div>${renderCouponCodeField({ id: 'signup-coupon', msgId: 'signup-coupon-msg', hint: 'Have an invite code? Apply before creating your account.' })}<button type="submit" class="btn btn-primary btn-full">Start 7-day free trial</button></form><p class="text-center text-secondary text-small mt-20">Have account? <a class="text-link" id="to-login">Sign in</a></p></div></div></div>`;}
 
-function pricingH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center"><h2 class="card-title">Choose Your Plan</h2><p class="text-secondary text-small mb-20">Full Pulse feed, forecast tracking & tools to try</p>${hasFreeCouponAccess() ? `<div style="border:2px solid var(--accent);padding:16px;margin-bottom:20px;text-align:left;background:rgba(0,240,255,0.04)"><div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Coupon applied</div><p class="text-small" style="line-height:1.55;margin-bottom:12px">Code <strong>${escHtml(S.onboardData?.couponCode || S.user?.coupon_code || '')}</strong> unlocks complimentary access.</p><button type="button" class="btn btn-primary btn-full" id="coupon-continue-onboarding">Continue free →</button></div>` : `<div style="text-align:left;margin-bottom:20px">${renderCouponCodeField({ id: 'pricing-coupon', msgId: 'pricing-coupon-msg', hint: 'Have an invite code? Apply to skip payment.' })}</div>`}<div style="display:flex;flex-direction:column;gap:15px;${hasFreeCouponAccess() ? 'opacity:0.45;pointer-events:none;' : ''}"><div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary)"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Most Popular</div><div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div><div style="font-size:11px;color:var(--text-muted);margin-top:6px;margin-bottom:4px">$9.99/mo · Cancel anytime</div><a href="${STRIPE_LINK}" class="btn btn-primary btn-full mt-20">Subscribe →</a></div>${STRIPE_ANNUAL?`<div style="border:1px solid var(--bg-tertiary);padding:20px"><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Best Value — 2 Months Free</div><div style="font-size:36px;font-weight:700">$99<span style="font-size:14px;color:var(--text-secondary)">/year</span></div><a href="${STRIPE_ANNUAL}" class="btn btn-secondary btn-full mt-20">Start Annual →</a></div>`:''}</div><ul style="list-style:none;text-align:left;margin-top:25px;font-size:12px"><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Daily Pulse tuned to your role & topics</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Forecast tracking + second-order impacts</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Tools to try — short experiments each week</li><li style="padding:8px 0">✓ Cancel anytime</li></ul></div></div></div>`;}
+function pricingH(){return `<div class="screen-center"><div class="container-sm"><div class="logo">AI PROOF <span>CLUB</span></div><div class="card text-center"><h2 class="card-title">Choose Your Plan</h2><p class="text-secondary text-small mb-20">7-day free trial · full Pulse feed, forecast tracking & indie tools</p>${hasFreeCouponAccess() ? `<div style="border:2px solid var(--accent);padding:16px;margin-bottom:20px;text-align:left;background:rgba(0,240,255,0.04)"><div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Coupon applied</div><p class="text-small" style="line-height:1.55;margin-bottom:12px">Code <strong>${escHtml(S.onboardData?.couponCode || S.user?.coupon_code || '')}</strong> unlocks complimentary access.</p><button type="button" class="btn btn-primary btn-full" id="coupon-continue-onboarding">Continue free →</button></div>` : `<div style="text-align:left;margin-bottom:20px">${renderCouponCodeField({ id: 'pricing-coupon', msgId: 'pricing-coupon-msg', hint: 'Have an invite code? Apply to skip payment.' })}</div>`}<div style="display:flex;flex-direction:column;gap:15px;${hasFreeCouponAccess() ? 'opacity:0.45;pointer-events:none;' : ''}"><div style="border:2px solid var(--accent);padding:20px;background:var(--bg-primary)"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Most Popular</div><div style="font-size:36px;font-weight:700">$9.99<span style="font-size:14px;color:var(--text-secondary)">/month</span></div><div style="font-size:11px;color:var(--text-muted);margin-top:6px;margin-bottom:4px">7-day free trial · cancel anytime</div><a href="${STRIPE_LINK}" class="btn btn-primary btn-full mt-20">Start free trial →</a></div>${STRIPE_ANNUAL?`<div style="border:1px solid var(--bg-tertiary);padding:20px"><div style="font-size:11px;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Best Value — 2 Months Free</div><div style="font-size:36px;font-weight:700">$99<span style="font-size:14px;color:var(--text-secondary)">/year</span></div><a href="${STRIPE_ANNUAL}" class="btn btn-secondary btn-full mt-20">Start Annual →</a></div>`:''}</div><ul style="list-style:none;text-align:left;margin-top:25px;font-size:12px"><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ 7-day free trial — full access</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Daily Pulse tuned to your role & topics</li><li style="padding:8px 0;border-bottom:1px solid var(--bg-tertiary)">✓ Forecast tracking + second-order impacts</li><li style="padding:8px 0">✓ Indie tools to try — niche picks each week</li></ul></div></div></div>`;}
 
 const ONBOARD_TOUR_SLIDES = [
     {
@@ -6540,8 +6544,9 @@ function renderOnboardPaywallH() {
                     <div>
                         <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Monthly</div>
                         <div style="font-size:20px;font-weight:700">$9.99<span style="font-size:11px;color:var(--text-secondary)">/month</span></div>
+                        <div style="font-size:10px;color:var(--text-muted);margin-top:4px">7-day free trial</div>
                     </div>
-                    <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email || S.user?.email || '')}" class="btn btn-primary btn-small" id="go-to-stripe-link">Subscribe →</a>
+                    <a href="${STRIPE_LINK}?prefilled_email=${encodeURIComponent(S.onboardData.email || S.user?.email || '')}" class="btn btn-primary btn-small" id="go-to-stripe-link">Start trial →</a>
                 </div>
             </div>
             <div style="border:1px solid var(--success);padding:12px">
@@ -6554,7 +6559,7 @@ function renderOnboardPaywallH() {
                 </div>
             </div>
         </div>
-        <p class="text-center text-secondary text-small mt-10">Cancel anytime</p>
+        <p class="text-center text-secondary text-small mt-10">7-day free trial · cancel anytime</p>
         `}
     </div>`;
 }
