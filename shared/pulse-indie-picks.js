@@ -237,7 +237,8 @@ function scoreByTags(item, topicList, headline, archetype) {
     else score += overlap * 8;
     if (item.curated && overlap === 0) score -= 10;
   } else if (item.curated) {
-    score += overlap > 0 ? 6 : 1;
+    const tagOverlap = [...tags].filter((t) => (item.tags || []).includes(t)).length;
+    score += tagOverlap > 0 ? 6 : 1;
   }
   return score;
 }
