@@ -58,7 +58,7 @@ const CURATED_STORIES = [
     url: 'https://techcrunch.com/category/artificial-intelligence/',
     pubDate: '2026-06-29T14:00:00Z',
     topics: ['ai', 'tech'],
-    maxAgeDays: 3,
+    maxAgeDays: 1,
   },
 ];
 
