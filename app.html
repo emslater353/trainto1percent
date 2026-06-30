@@ -3396,7 +3396,7 @@ function renderPulseItem(item, opts = {}) {
     const insight = getPulseInsight(item);
     const expanded = S.expandedPulseIds?.includes(item.id);
     const takeaway = (insight.second_order || item.meaning || '').split('.')[0];
-    const metaParts = opts.isLead ? [] : [escHtml(item.source || 'News'), escHtml(item.date || 'Recently')];
+    const metaParts = opts.isLead ? [] : [escHtml(item.date || 'Recently')];
 
     return `<div class="pulse-card-compact ${saved ? 'done' : ''}${opts.isLead ? ' pulse-snapshot-compact' : ''}">
         ${opts.isLead ? '<div class="pulse-wave-label">Today</div>' : ''}
@@ -3659,7 +3659,7 @@ function futureWorldH() {
             const linked = getLinkedPulseForecast(item);
             const takeaway = (getPulseInsight(item).second_order || item.meaning || '').split('.')[0];
             return `<div class="pulse-card-compact" style="margin-bottom:8px">
-                <div class="pulse-meta-row" style="font-size:10px;margin-bottom:4px">${escHtml(item.source || 'News')} · ${linked ? escHtml(linked.title.slice(0, 40)) + '…' : ''}</div>
+                <div class="pulse-meta-row" style="font-size:10px;margin-bottom:4px">${linked ? escHtml(linked.title.slice(0, 40)) + '…' : ''}</div>
                 <div style="font-size:13px;font-weight:600;line-height:1.4;margin-bottom:4px">${escHtml(item.headline.length > 90 ? item.headline.slice(0, 87) + '…' : item.headline)}</div>
                 ${takeaway ? `<p class="pulse-takeaway" style="margin:0">${escHtml(takeaway)}.</p>` : ''}
             </div>`;
@@ -4355,7 +4355,7 @@ function renderPulseProfileLenses(item, insight) {
 
 function renderPulsePipeline(item, archetype, matchStrength, linked) {
     const profileMeta = PULSE_PROFILES[getPrimaryPulseProfile()] || PULSE_PROFILES.founder;
-    const parts = [`<strong>${escHtml(item.source || 'RSS')}</strong>`, escHtml(archetype.label)];
+    const parts = [escHtml(archetype.label)];
     if (matchStrength !== 'none' && matchStrength !== 'weak' && linked) {
         parts.push(`${linked.probability}% forecast`);
     } else if (matchStrength === 'weak') {
@@ -4823,9 +4823,12 @@ function renderToolsStayAheadWidget(item) {
 function renderMoreStoryRow(item) {
     const insight = getPulseInsight(item);
     const takeaway = (insight.second_order || item.meaning || '').split('.')[0];
+    const meta = takeaway
+        ? `${escHtml(takeaway)}… · Click for impacts & tools`
+        : 'Click for impacts & tools';
     return `<button type="button" class="pulse-more-row open-pulse-story" data-pulse-id="${item.id}">
         <div class="pulse-more-row-title">${escHtml(item.headline.length > 90 ? item.headline.slice(0, 87) + '…' : item.headline)}</div>
-        <div class="pulse-more-row-meta">${escHtml(item.source || 'News')} · ${escHtml(takeaway)}… · Click for impacts & tools</div>
+        <div class="pulse-more-row-meta">${meta}</div>
     </button>`;
 }
 
@@ -4989,7 +4992,7 @@ function renderPulseDashboard() {
     const lead = byDay.today[0] || byDay.yesterday[0] || getPulseFeed(1)[0];
     if (!lead) return pulseEmptyStateH();
 
-    const leadBadge = leadIsYesterday ? 'Top story · yesterday' : 'Top story · tap for full breakdown';
+    const leadBadge = 'Top story · tap for full breakdown';
 
     const linked = getLinkedPulseForecast(lead);
     const insight = getPulseInsight(lead);
@@ -4998,9 +5001,13 @@ function renderPulseDashboard() {
     const forecastForWidget = linked
         || getFollowedForecastsOrdered()[0]
         || null;
-    const moreToday = byDay.today.slice(1);
-    const yesterdayStories = leadIsYesterday ? byDay.yesterday.slice(1) : byDay.yesterday;
-    const earlierStories = byDay.older.slice(0, 8);
+    const moreStories = [];
+    if (leadIsYesterday) moreStories.push(...byDay.yesterday.slice(1));
+    else {
+        moreStories.push(...byDay.today.slice(1));
+        moreStories.push(...byDay.yesterday);
+    }
+    moreStories.push(...byDay.older);
 
     return `<div class="pulse-dashboard">
         ${renderPulseTopNav('today')}
@@ -5030,9 +5037,7 @@ function renderPulseDashboard() {
                     ${renderToolsStayAheadWidget(lead)}
                 </div>
 
-                ${renderPulseDaySection('More today', moreToday)}
-                ${renderPulseDaySection('Yesterday', yesterdayStories)}
-                ${renderPulseDaySection('Earlier this week', earlierStories)}
+                ${renderPulseDaySection('More stories', moreStories.slice(0, 12))}
             </div>
             ${renderPulseSidebar()}
         </div>
@@ -6603,7 +6608,7 @@ function renderOnboardPulseDemo() {
                 <article class="pulse-story-card">
                     <div class="pulse-story-visual">${renderPulsePredictionGraph(lead, linked)}</div>
                     <div class="pulse-story-body">
-                        <span class="pulse-story-badge">Top story · yesterday</span>
+                        <span class="pulse-story-badge">Top story · tap for full breakdown</span>
                         <h2 class="pulse-story-title">${escHtml(lead.headline)}</h2>
                         <p class="pulse-story-desc">${escHtml(desc)}</p>
                         ${linked ? `<div class="pulse-story-forecast-inset view-forecast-detail" data-id="${linked.id}">
