@@ -29,9 +29,11 @@ const { expandForecastImpactRipples, expandHeadlineRipples, deriveStoryRipples }
 
 const RSS_FEEDS = [
   { name: 'TechCrunch AI', url: 'https://techcrunch.com/category/artificial-intelligence/feed/', topics: ['ai', 'tech'] },
-  { name: 'TechCrunch', url: 'https://techcrunch.com/feed/', topics: ['tech', 'ai'] },
-  { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', topics: ['tech', 'ai'] },
   { name: 'The Verge AI', url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml', topics: ['ai', 'tech'] },
+  { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', topics: ['tech', 'ai'] },
+  { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/technology-lab', topics: ['tech', 'ai'] },
+  { name: 'Wired', url: 'https://www.wired.com/feed/rss', topics: ['tech', 'ai'] },
+  { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/', topics: ['ai', 'tech'] },
 ];
 
 const TOPIC_KEYWORDS = {
@@ -54,7 +56,7 @@ function defaultPrep(topics, headline, secondOrder) {
 const CURATED_STORIES = [
   {
     headline: 'Cursor now has a mobile app for guiding your coding agent on the go',
-    source: 'TechCrunch',
+    source: 'Developer tools',
     url: 'https://techcrunch.com/category/artificial-intelligence/',
     pubDate: '2026-06-29T14:00:00Z',
     topics: ['ai', 'tech'],
@@ -124,6 +126,21 @@ function extractTag(block, tag) {
   return m ? decodeEntities(m[1]) : '';
 }
 
+function extractAtomLink(block) {
+  const alt = block.match(/<link[^>]*rel=["']alternate["'][^>]*href=["']([^"']+)["']/i)
+    || block.match(/<link[^>]*href=["']([^"']+)["'][^>]*rel=["']alternate["']/i);
+  if (alt) return alt[1];
+  const any = block.match(/<link[^>]*href=["']([^"']+)["']/i);
+  return any ? any[1] : '';
+}
+
+function parseFeedBlocks(xml) {
+  const rss = xml.match(/<item[\s\S]*?<\/item>/gi) || [];
+  if (rss.length) return { blocks: rss, kind: 'rss' };
+  const atom = xml.match(/<entry[\s\S]*?<\/entry>/gi) || [];
+  return { blocks: atom, kind: 'atom' };
+}
+
 async function fetchRssItems(feed, limit = 12) {
   try {
     const res = await fetch(feed.url, {
@@ -132,12 +149,14 @@ async function fetchRssItems(feed, limit = 12) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const xml = await res.text();
+    const { blocks, kind } = parseFeedBlocks(xml);
     const items = [];
-    const blocks = xml.match(/<item[\s\S]*?<\/item>/gi) || [];
     for (const block of blocks.slice(0, limit)) {
       const title = extractTag(block, 'title');
-      const link = extractTag(block, 'link');
-      const pubDate = extractTag(block, 'pubDate');
+      const link = kind === 'atom' ? extractAtomLink(block) : extractTag(block, 'link');
+      const pubDate = kind === 'atom'
+        ? (extractTag(block, 'published') || extractTag(block, 'updated'))
+        : extractTag(block, 'pubDate');
       if (!title || title.length < 12) continue;
       items.push({
         title,
@@ -897,7 +916,18 @@ function injectCuratedStories(articles) {
 
 
 const WEARABLES_CAP = 1;
+const SOURCE_CAP = 2;
 const TOP_ENTITIES = ['openai', 'anthropic', 'google', 'nvidia', 'microsoft', 'amazon', 'apple', 'meta', 'startup', 'agent', 'chip'];
+
+function publisherKey(source) {
+  const s = (source || '').toLowerCase();
+  if (s.includes('techcrunch')) return 'techcrunch';
+  if (s.includes('verge')) return 'verge';
+  if (s.includes('ars')) return 'ars';
+  if (s.includes('wired')) return 'wired';
+  if (s.includes('mit') || s.includes('technology review')) return 'mit-tr';
+  return s.split(/\s+/)[0] || 'other';
+}
 
 function entityBucket(title) {
   const h = (title || '').toLowerCase();
@@ -914,6 +944,7 @@ function selectDiverseCandidates(articles, maxItems = 6) {
   let wearablesCount = 0;
   const usedArchetypes = new Set();
   const usedEntities = new Set();
+  const usedPublishers = new Map();
 
   const mustInclude = [];
   const mustKeys = new Set();
@@ -940,7 +971,9 @@ function selectDiverseCandidates(articles, maxItems = 6) {
     let arch = classifyStoryArchetype(title, article.feedTopics || []).id;
     if (FUNDING_HEADLINE.test(title)) arch = 'finance';
     const entity = entityBucket(title);
+    const pub = publisherKey(article.source);
 
+    if (!force && (usedPublishers.get(pub) || 0) >= SOURCE_CAP) return false;
     if (!force && arch !== 'general' && usedArchetypes.has(arch)) return false;
     if (!force && entity !== 'other' && usedEntities.has(entity) && arch === 'general') return false;
 
@@ -948,6 +981,7 @@ function selectDiverseCandidates(articles, maxItems = 6) {
     if (wear) wearablesCount += 1;
     if (arch !== 'general') usedArchetypes.add(arch);
     if (entity !== 'other') usedEntities.add(entity);
+    usedPublishers.set(pub, (usedPublishers.get(pub) || 0) + 1);
     return true;
   };
 
