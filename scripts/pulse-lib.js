@@ -26,6 +26,7 @@ const { gatherLaunches } = require('../shared/launch-feeds.js');
 const { buildWorryFrame } = require('../shared/pulse-worry-frames.js');
 const { isWearablesHeadline, isLowQualityHeadline, classifyPulseWave } = require('../shared/pulse-waves.js');
 const { expandForecastImpactRipples, expandHeadlineRipples, deriveStoryRipples } = require('../shared/forecast-impact-ripples.js');
+const { gatherPodcastArticles } = require('../shared/pulse-podcasts.js');
 
 const RSS_FEEDS = [
   { name: 'TechCrunch AI', url: 'https://techcrunch.com/category/artificial-intelligence/feed/', topics: ['ai', 'tech'] },
@@ -516,6 +517,8 @@ function heuristicImportance(article, ctx = {}) {
   else if (resolvedType === 'funding') score -= 18;
   else if (resolvedType === 'personality') score -= 14;
 
+  if (article._podcast) score += 10;
+
   return Math.round(Math.min(100, Math.max(0, score)));
 }
 
@@ -605,11 +608,12 @@ ${rule.defaultFashionImpact}`;
   const prompt = `You write short Pulse cards for AI Proof Club — a high-level tech snapshot for busy founders.
 
 Headline: ${article.title}
-Source: ${article.source}
+Source: ${article.source}${article._podcast ? ` (podcast signal${article._episodeTitle ? ` from "${article._episodeTitle}"` : ''})` : ''}
 
 ${forecastBlock}
 
 VOICE: Broad tech lens. Not gadget blogs. One screen, three beats: what happened → second-order effect → linked prediction → tools to try.
+${article._podcast ? '\nPODCAST RULE: This is distilled from a podcast discussion. Focus on structural second-order impacts (regulation, platforms, markets, AI shifts). Skip election horse-race framing unless there is a concrete policy or economic mechanism.' : ''}
 
 RULES:
 1. "what_happened" = plain fact (max 1 short sentence).
@@ -880,6 +884,14 @@ async function gatherArticles(maxPerFeed = 12) {
     }
   }
 
+  const podcastArticles = await gatherPodcastArticles({ maxSignalsPerFeed: 3 });
+  for (const item of podcastArticles) {
+    const key = item.title.toLowerCase().slice(0, 90);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    articles.push(item);
+  }
+
   return articles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
 }
 
@@ -917,6 +929,7 @@ function injectCuratedStories(articles) {
 
 const WEARABLES_CAP = 1;
 const SOURCE_CAP = 2;
+const PODCAST_CAP = 2;
 const TOP_ENTITIES = ['openai', 'anthropic', 'google', 'nvidia', 'microsoft', 'amazon', 'apple', 'meta', 'startup', 'agent', 'chip'];
 
 function publisherKey(source) {
@@ -926,6 +939,9 @@ function publisherKey(source) {
   if (s.includes('ars')) return 'ars';
   if (s.includes('wired')) return 'wired';
   if (s.includes('mit') || s.includes('technology review')) return 'mit-tr';
+  if (s.includes('all-in')) return 'all-in';
+  if (s.includes('dwarkesh')) return 'dwarkesh';
+  if (s.includes('lenny')) return 'lenny';
   return s.split(/\s+/)[0] || 'other';
 }
 
@@ -945,6 +961,8 @@ function selectDiverseCandidates(articles, maxItems = 6) {
   const usedArchetypes = new Set();
   const usedEntities = new Set();
   const usedPublishers = new Map();
+  let podcastCount = 0;
+  const usedPodcastShows = new Set();
 
   const mustInclude = [];
   const mustKeys = new Set();
@@ -973,7 +991,11 @@ function selectDiverseCandidates(articles, maxItems = 6) {
     const entity = entityBucket(title);
     const pub = publisherKey(article.source);
 
-    if (!force && (usedPublishers.get(pub) || 0) >= SOURCE_CAP) return false;
+    if (!force && article._podcast) {
+      if (podcastCount >= PODCAST_CAP) return false;
+      if (usedPodcastShows.has(pub)) return false;
+    }
+    if (!force && !article._podcast && (usedPublishers.get(pub) || 0) >= SOURCE_CAP) return false;
     if (!force && arch !== 'general' && usedArchetypes.has(arch)) return false;
     if (!force && entity !== 'other' && usedEntities.has(entity) && arch === 'general') return false;
 
@@ -981,7 +1003,12 @@ function selectDiverseCandidates(articles, maxItems = 6) {
     if (wear) wearablesCount += 1;
     if (arch !== 'general') usedArchetypes.add(arch);
     if (entity !== 'other') usedEntities.add(entity);
-    usedPublishers.set(pub, (usedPublishers.get(pub) || 0) + 1);
+    if (article._podcast) {
+      podcastCount += 1;
+      usedPodcastShows.add(pub);
+    } else {
+      usedPublishers.set(pub, (usedPublishers.get(pub) || 0) + 1);
+    }
     return true;
   };
 
