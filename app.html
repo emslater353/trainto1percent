@@ -1912,7 +1912,6 @@
         .pulse-prep-tool { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
         .pulse-prep-play { font-size: 12px; line-height: 1.55; color: var(--text-secondary); }
 
-        .receipt { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--bg-tertiary); }
         .receipt:last-child { border-bottom: none; }
         .receipt-check { width: 20px; height: 20px; background: var(--accent); color: var(--bg-primary); display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
         .receipt-content { flex: 1; }
@@ -2524,6 +2523,7 @@ const S = {
     pulseLoading: false,
     pulseRefreshError: null,
     pulseTab: 'today', // today | forecast | trackers | tools | future
+    pulseLastFetchedAt: null,
     pulseToolsFilter: 'all', // all | Build | Video | Fashion | Agents | ...
     expandedPulseIds: [],
     futureWorldGenerating: false,
@@ -4403,7 +4403,7 @@ async function fetchPulseFeed() {
     S.pulseLoading = true;
     try {
         await fetchLaunchCache();
-        let rows = await db('pulse_items', 'GET', null, '?active=eq.true&order=published_at.desc&limit=20');
+        let rows = await db('pulse_items', 'GET', null, '?active=eq.true&order=published_at.desc&limit=30');
         if (!rows?.length) {
             try {
                 const r = await fetch(`${PULSE_API}?limit=20&_=${Date.now()}`);
@@ -4423,6 +4423,7 @@ async function fetchPulseFeed() {
     } finally {
         S.pulseLoaded = true;
         S.pulseLoading = false;
+        S.pulseLastFetchedAt = new Date();
     }
     return S.pulseItems || PULSE_FEED;
 }
@@ -4433,7 +4434,7 @@ async function refreshPulseFeed() {
     S.pulseItems = null;
     render();
     try {
-        const r = await fetch(`${PULSE_REFRESH_API}?limit=6&_=${Date.now()}`, { method: 'GET' });
+        const r = await fetch(`${PULSE_REFRESH_API}?limit=10&_=${Date.now()}`, { method: 'GET' });
         const d = await r.json().catch(() => ({}));
         if (!r.ok || d.ok === false) {
             S.pulseRefreshError = d.error || `Refresh failed (${r.status})`;
@@ -4447,6 +4448,24 @@ async function refreshPulseFeed() {
     }
     await fetchPulseFeed();
     render();
+}
+
+const PULSE_AUTO_FETCH_MS = 60 * 60 * 1000;
+let pulseAutoFetchTimer = null;
+
+function startPulseAutoFetch() {
+    if (pulseAutoFetchTimer) clearInterval(pulseAutoFetchTimer);
+    pulseAutoFetchTimer = setInterval(() => {
+        if (!S.user || S.screen !== 'dashboard') return;
+        fetchPulseFeed().then(() => render()).catch(() => {});
+    }, PULSE_AUTO_FETCH_MS);
+}
+
+function maybeRefreshPulseOnFocus() {
+    if (document.visibilityState !== 'visible' || !S.user) return;
+    const last = S.pulseLastFetchedAt?.getTime?.() || 0;
+    if (Date.now() - last < 30 * 60 * 1000) return;
+    fetchPulseFeed().then(() => render()).catch(() => {});
 }
 
 function getPulseFeed(limit = 6) {
@@ -4745,9 +4764,9 @@ function renderPulseSidebar() {
     const name = firstName(S.user?.name) || 'you';
     const updatedLabel = S.pulseRefreshError
         ? `<span style="color:var(--danger,#e55)">${escHtml(S.pulseRefreshError)}</span>`
-        : S.pulseRefreshedAt
-            ? formatPulseUpdated(S.pulseRefreshedAt)
-            : '9:00 AM ET';
+        : S.pulseLastFetchedAt
+            ? formatPulseUpdated(S.pulseLastFetchedAt)
+            : 'Refreshes hourly';
     const watched = getPulseWatchedForecasts();
 
     return `<aside class="pulse-dash-sidebar">
@@ -22788,6 +22807,11 @@ async function init(){
     }
 
     initTheme(); // Load saved theme preference
+    if (!window.__pulseFocusBound) {
+        window.__pulseFocusBound = true;
+        document.addEventListener('visibilitychange', maybeRefreshPulseOnFocus);
+    }
+    if (S.pulseTab === 'position') S.pulseTab = 'today';
     const params=new URLSearchParams(location.search);
     const hash=location.hash.replace('#','');
     
@@ -22975,6 +22999,7 @@ async function init(){
             checkWeeklyProgress();
             render();
             try { await fetchPulseFeed(); } catch (e) { console.warn('Pulse preload failed', e); }
+            startPulseAutoFetch();
             updateHash();
             render();return;
         }

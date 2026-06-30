@@ -25,13 +25,13 @@ Do these once, then Pulse runs on autopilot:
 
 ---
 
-## Daily refresh (automatic)
+## Hourly refresh (automatic)
 
 Configured in `netlify.toml`:
 
 ```toml
 [functions."refresh-pulse"]
-  schedule = "0 14 * * *"   # 9am ET daily
+  schedule = "0 * * * *"   # top of every hour UTC
 ```
 
 Each run:
@@ -40,10 +40,10 @@ Each run:
 2. Ranks by buzz + story clusters
 3. Matches forecasts from `shared/forecasts-data.js`
 4. Enriches with OpenAI (second-order, tools, predictions)
-5. Upserts ~12 items into Supabase
+5. Upserts ~10 items into Supabase
 6. Deactivates items older than 14 days
 
-Users can also tap **Refresh feed** anytime for an on-demand ingest.
+The app also **re-fetches the feed every hour** while you're on Pulse (no extra OpenAI cost). Users can tap **↻ Refresh feed** anytime for an immediate ingest.
 
 ---
 
