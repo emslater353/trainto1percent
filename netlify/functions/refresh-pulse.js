@@ -19,7 +19,7 @@ exports.handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'GET only' }) };
   }
 
-  const maxItems = Math.min(parseInt(event.queryStringParameters?.limit || '6', 10), 10);
+  const maxItems = Math.min(parseInt(event.queryStringParameters?.limit || '10', 10), 12);
 
   try {
     const result = await runPulseRefresh({

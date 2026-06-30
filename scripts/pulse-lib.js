@@ -1059,7 +1059,7 @@ async function runPulseRefresh(options = {}) {
   const launches = await gatherLaunches({
     productHuntToken: process.env.PRODUCTHUNT_TOKEN || process.env.PRODUCTHUNT_DEVELOPER_TOKEN,
   });
-  let articles = await gatherArticles(12);
+  let articles = await gatherArticles(24);
   articles = injectCuratedStories(articles);
 
   if (!articles.length) {
