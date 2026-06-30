@@ -100,6 +100,21 @@ const TOOL_URLS = {
   recraft: 'https://www.recraft.ai',
   ideogram: 'https://ideogram.ai',
   perplexity: 'https://www.perplexity.ai',
+  n8n: 'https://n8n.io',
+  gumloop: 'https://www.gumloop.com',
+  lex: 'https://lex.page',
+  fabric: 'https://fabric.so',
+  mymind: 'https://mymind.com',
+  reflect: 'https://reflect.app',
+  notion: 'https://www.notion.so',
+  'status ai': 'https://www.statusai.com',
+  hedra: 'https://www.hedra.com',
+  hedrea: 'https://www.hedra.com',
+  tana: 'https://tana.inc',
+  phia: 'https://www.joinphia.com',
+  'relay.app': 'https://www.relay.app',
+  relayapp: 'https://www.relay.app',
+  wisprflow: 'https://wisprflow.ai',
 };
 
 function resolveToolUrl(name, explicitUrl) {
@@ -121,7 +136,7 @@ const INDIE_STARTUP_PICKS = [
   { name: 'NotebookLM', hook: 'aggregate sources → podcasts and structured learnings', why: 'If you need to synthesize research fast — source → brief beats tab overload.', tags: ['media', 'ai', 'work', 'tech', 'health'], keywords: ['podcast', 'audio', 'sources', 'research', 'learn', 'cancer', 'medical', 'patient'], curated: true },
   { name: 'Gamma', hook: 'AI decks — slides from a prompt, not a blank deck', why: 'If you pitch often — decks from prompts beat rebuilding slides.', tags: ['work', 'creator', 'ai', 'tech'], keywords: ['deck', 'slides', 'presentation', 'pitch'], curated: true },
   { name: 'Screen Studio', hook: 'beautiful screen recordings in one take', why: 'If you ship demos — polished screen capture is distribution.', tags: ['creator', 'media', 'tech', 'ai'], keywords: ['demo', 'record', 'video', 'screen', 'launch'], curated: true },
-  { name: 'Limitless', hook: 'personal AI pendant — capture & recall what matters', why: 'If ambient AI is your bet — wearable memory is a weird wedge worth watching.', tags: ['tech', 'ai', 'work'], keywords: ['wearable', 'memory', 'recall', 'meeting', 'capture'] },
+  { name: 'Limitless', hook: 'personal AI pendant — capture & recall what matters', why: 'If ambient AI is your bet — wearable memory is a weird wedge worth watching.', tags: ['tech', 'ai', 'work'], keywords: ['wearable', 'memory', 'recall', 'meeting', 'capture'], curated: true },
   { name: 'Raycast', hook: 'launcher + AI commands for power users', why: 'If you live in shortcuts — AI at the command bar beats another tab.', tags: ['tech', 'ai', 'work'], keywords: ['productivity', 'launcher', 'shortcut', 'command'] },
   { name: 'Abridge', hook: 'ambient AI for patient–clinician conversations', why: 'If you\'re building in health — see how visit capture is being productized.', tags: ['health', 'ai', 'work'], keywords: ['patient', 'clinical', 'doctor', 'hospital', 'medical', 'cancer', 'diagnosis'] },
   { name: 'OpenEvidence', hook: 'medical-grade answers for clinicians and researchers', why: 'If health is your lane — see how evidence-backed AI differs from generic chat.', tags: ['health', 'ai', 'tech'], keywords: ['medical', 'clinical', 'doctor', 'diagnosis', 'cancer', 'patient', 'research'] },
@@ -140,13 +155,13 @@ const INDIE_STARTUP_PICKS = [
   { name: 'Opus Clip', hook: 'long video → viral shorts automatically', tags: ['media', 'creator', 'ai'], action: 'Feed a 5-min talk and ship the best 30-sec cut with your caption' },
   { name: 'Hypernatural', hook: 'text → styled video scenes for storytellers', tags: ['media', 'movies', 'creator', 'ai'], action: 'Turn the headline into a 20-sec scene with a consistent character' },
   { name: 'Captions', hook: 'AI editing + eye contact for talking-head video', tags: ['media', 'creator', 'ai'], action: 'Record a 45-sec take on the news and auto-cut the best version' },
-  { name: 'Krea', hook: 'real-time generative visuals for designers', tags: ['art', 'media', 'ai', 'fashion'], action: 'Live-prompt 6 frames that visualize the second-order effect' },
+  { name: 'Krea', hook: 'real-time generative visuals for designers', why: 'If you think in visuals — live-prompting beats static mood boards.', tags: ['art', 'media', 'ai', 'fashion'], keywords: ['visual', 'design', 'generative', 'creative', 'image'], curated: true, action: 'Live-prompt 6 frames that visualize the second-order effect' },
   { name: 'Dust', hook: 'custom AI assistants wired to team data', tags: ['ai', 'tech', 'work'], action: 'Build one assistant that only answers questions about your niche stack' },
   { name: 'Relevance AI', hook: 'agent workforce templates for GTM teams', tags: ['ai', 'tech', 'work'], action: 'Clone one sales/research agent and run it on a real lead list' },
   { name: 'Bardeen', hook: 'browser automations that glue SaaS tools', tags: ['ai', 'tech', 'work'], action: 'Wire a 3-step workflow the headline makes urgent — run once' },
   { name: 'Wordware', hook: 'English-as-code for production AI flows', tags: ['ai', 'tech'], action: 'Write a one-page "program" that turns headlines into briefs for your team' },
   { name: 'Onlook', hook: 'visual editor for React — ship UI without handoff', tags: ['tech', 'ai'], action: 'Rebuild one screen from a product you admire in 15 min' },
-  { name: 'Lovable', hook: 'full-stack app gen for non-engineers', tags: ['tech', 'ai'], action: 'Ship a landing page for a wedge idea inspired by the headline' },
+  { name: 'Lovable', hook: 'full-stack app gen for non-engineers', why: 'If you need to ship without an eng team — prompt → deployed app in an afternoon.', tags: ['tech', 'ai'], keywords: ['ship', 'landing', 'prototype', 'full-stack', 'demo', 'build'], curated: true, action: 'Ship a landing page for a wedge idea inspired by the headline' },
   { name: 'Marblism', hook: 'AI-generated SaaS starter from a prompt', tags: ['tech', 'ai'], action: 'Generate a micro-SaaS concept and list what you\'d validate first' },
   { name: 'Cline', hook: 'open-source coding agent in your IDE', tags: ['tech', 'ai'], action: 'Give it one scoped task from the headline and review the diff' },
   { name: 'Argil', hook: 'AI avatars for UGC-style ads', tags: ['creator', 'media', 'ai', 'retail'], action: 'Script a 15-sec UGC ad reacting to the news — export rough cut' },
@@ -195,6 +210,17 @@ const INDIE_STARTUP_PICKS = [
   { name: 'Arcade', hook: 'interactive product demos — no code, shareable links', why: 'If you ship product — clickable demos beat static screenshots.', tags: ['tech', 'creator', 'work'], keywords: ['demo', 'product', 'interactive', 'onboarding', 'sales'] },
   { name: 'Mintlify', hook: 'AI documentation — beautiful docs from your codebase', why: 'If docs lag code — auto-generated reference beats stale wikis.', tags: ['tech', 'ai'], keywords: ['docs', 'documentation', 'developer', 'api', 'reference'] },
   { name: 'tldraw', hook: 'infinite canvas + Make Real — sketch → working UI', why: 'If you think visually — whiteboard to prototype in one flow.', tags: ['tech', 'creator', 'ai'], keywords: ['design', 'sketch', 'prototype', 'ui', 'whiteboard'] },
+  { name: 'n8n', hook: 'open-source workflow automation — self-host or cloud', why: 'If you outgrew Zapier — flexible agents + 400 integrations with your data rules.', tags: ['tech', 'ai', 'work'], keywords: ['automate', 'workflow', 'integration', 'agent', 'api', 'ops'], curated: true },
+  { name: 'Gumloop', hook: 'AI-native automation — LLM steps + browser agents', why: 'If ops teams need agents without engineers — visual flows with AI built in.', tags: ['tech', 'ai', 'work'], keywords: ['automate', 'workflow', 'agent', 'llm', 'no-code', 'ops'], curated: true },
+  { name: 'Lex', hook: 'long-form writing with AI editing built in', why: 'If you publish essays or newsletters — draft and revise in one calm editor.', tags: ['creator', 'media', 'ai', 'work'], keywords: ['writing', 'essay', 'newsletter', 'edit', 'long-form', 'draft'] },
+  { name: 'Fabric', hook: 'AI workspace for notes, files, and meeting memory', why: 'If your knowledge is scattered — one searchable library that thinks with you.', tags: ['work', 'ai', 'tech'], keywords: ['notes', 'knowledge', 'search', 'meeting', 'files', 'wiki', 'organiz'], curated: true },
+  { name: 'MyMind', hook: 'private visual bookmarking — save anything, find by vibe', why: 'If inspiration is visual — tagless recall beats folder archaeology.', tags: ['creator', 'work', 'ai'], keywords: ['bookmark', 'save', 'visual', 'inspiration', 'recall', 'research'] },
+  { name: 'Reflect', hook: 'networked notes with AI — backlinked thinking', why: 'If Roam/Obsidian felt heavy — lightweight daily notes with AI assist.', tags: ['work', 'ai', 'tech'], keywords: ['notes', 'journal', 'think', 'backlink', 'daily', 'writing'] },
+  { name: 'Notion', hook: 'docs, wikis, and lightweight ops in one workspace', why: 'If your team lives in docs — AI blocks + databases without a new tool.', tags: ['work', 'tech', 'ai'], keywords: ['wiki', 'docs', 'database', 'team', 'sop', 'organiz', 'playbook'] },
+  { name: 'Tana', hook: 'supertags + AI — structured notes that stay flexible', why: 'If Notion databases feel rigid — nodes that morph as your thinking evolves.', tags: ['work', 'ai', 'tech'], keywords: ['notes', 'supertag', 'organiz', 'meeting', 'knowledge', 'structure'] },
+  { name: 'Status AI', hook: 'gamified social sim — play characters in AI worlds', why: 'If consumer social is shifting — watch how roleplay + feeds merge.', tags: ['creator', 'media', 'ai', 'tech'], keywords: ['social', 'game', 'character', 'roleplay', 'entertainment', 'creator'] },
+  { name: 'Hedra', hook: 'creative agent for video, image, and audio generation', why: 'If you need talking-head or character video — fast avatar clips without a crew.', tags: ['media', 'creator', 'ai', 'movies'], keywords: ['video', 'avatar', 'character', 'animate', 'audio', 'creative'] },
+  { name: 'Phia', hook: 'AI shopping agent — best price across retail + resale', why: 'If fashion or e-commerce is your lane — price intelligence beats guesswork.', tags: ['fashion', 'retail', 'ai', 'beauty'], keywords: ['shopping', 'price', 'retail', 'resale', 'fashion', 'deal'], curated: true },
 ];
 
 const STORY_ARCHETYPES = [
@@ -233,6 +259,8 @@ const INDIE_PREP_PLAYS = [
   { name: 'Agent Wire-up', tool: 'Composio or Relay.app', emoji: '🔌', play: 'Connect one agent to a real tool you use (Slack, GitHub, email). Run one task [topic] implies.', minutes: 15, xp: 45, tags: ['tech', 'ai', 'work'], keywords: ['agent', 'integration', 'workflow', 'automate'] },
   { name: 'Evidence Check', tool: 'Consensus or Hebbia', emoji: '📚', play: 'Find 2 cited sources on [topic]. One sentence: what changes if this is true?', minutes: 12, xp: 40, tags: ['health', 'finance', 'ai'], keywords: ['research', 'evidence', 'paper', 'analysis'] },
   { name: 'Interactive Demo', tool: 'Arcade or Screen Studio', emoji: '🖱️', play: 'Record a clickable 30-sec demo reacting to [topic]. One CTA — who is it for?', minutes: 12, xp: 45, tags: ['tech', 'creator', 'work'], keywords: ['demo', 'product', 'screen', 'interactive'] },
+  { name: 'Flow Build', tool: 'n8n or Gumloop', emoji: '⚙️', play: 'Sketch one automation [topic] makes urgent. Build a 3-step flow — run it once.', minutes: 15, xp: 45, tags: ['tech', 'ai', 'work'], keywords: ['automate', 'workflow', 'agent', 'integration'], curated: true },
+  { name: 'Voice Draft', tool: 'Wispr Flow + Lex', emoji: '🎤', play: 'Dictate a 200-word take on [topic] with Wispr. Paste into Lex — one edit pass.', minutes: 10, xp: 35, tags: ['work', 'ai', 'creator'], keywords: ['voice', 'dictation', 'writing', 'draft'], curated: true },
 ];
 
 const GENERIC_STARTUP_PATTERNS = [
