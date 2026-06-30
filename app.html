@@ -4011,28 +4011,59 @@ function heuristicPulseImportance(item) {
     return Math.round(Math.min(100, Math.max(0, score)));
 }
 
+function pulseDayRank(item) {
+    const label = formatPulseDate(item.publishedAt || item.date);
+    if (label === 'Today') return 0;
+    if (label === 'Yesterday') return 1;
+    return 2;
+}
+
+function pulseAgeHours(item) {
+    const pub = item.publishedAt || item.date;
+    if (!pub) return 999;
+    return Math.max(0, (Date.now() - new Date(pub).getTime()) / 3600000);
+}
+
+function scorePulseRecency(item) {
+    const ageHours = pulseAgeHours(item);
+    return Math.max(0, 48 - ageHours * 1.1);
+}
+
 function scorePulseImportance(item) {
     const heuristic = heuristicPulseImportance(item);
     const stored = item.importanceScore || item.insight?.importance_score;
     const h = (item.headline || '').toLowerCase();
 
-    if (stored == null || stored < 0) return heuristic;
-    if (PULSE_FUNDING_HEADLINE.test(h)) return Math.min(heuristic, stored, 52);
+    let score;
+    if (stored == null || stored < 0) {
+        score = heuristic;
+    } else if (PULSE_FUNDING_HEADLINE.test(h)) {
+        score = Math.min(heuristic, stored, 52);
+    } else {
+        let aiScore = stored;
+        const resolvedType = inferPulseStoryType(item.headline, item.insight?.story_type);
+        if (item.insight?.story_type === 'product_launch' && resolvedType === 'funding') aiScore -= 28;
+        score = Math.round(Math.min(100, Math.max(0, Math.max(heuristic, aiScore * 0.35 + heuristic * 0.65))));
+    }
 
-    let aiScore = stored;
-    const resolvedType = inferPulseStoryType(item.headline, item.insight?.story_type);
-    if (item.insight?.story_type === 'product_launch' && resolvedType === 'funding') aiScore -= 28;
+    const ageHours = pulseAgeHours(item);
+    if (ageHours > 36) score -= Math.min(45, (ageHours - 36) * 2);
+    else if (ageHours > 18) score -= Math.min(20, (ageHours - 18) * 0.8);
 
-    return Math.round(Math.min(100, Math.max(0, Math.max(heuristic, aiScore * 0.35 + heuristic * 0.65))));
+    return Math.round(Math.min(100, Math.max(0, score)));
 }
 
 function rankPulseItem(item) {
     const importance = scorePulseImportance(item);
     const hype = scorePulseHype(item);
-    return importance * 0.65 + hype * 0.35;
+    const recency = scorePulseRecency(item);
+    const dayBoost = pulseDayRank(item) === 0 ? 25 : pulseDayRank(item) === 1 ? 8 : 0;
+    return importance * 0.55 + hype * 0.25 + recency * 0.2 + dayBoost;
 }
 
 function comparePulseItems(a, b) {
+    const dayDiff = pulseDayRank(a) - pulseDayRank(b);
+    if (dayDiff !== 0) return dayDiff;
     const rankDiff = rankPulseItem(b) - rankPulseItem(a);
     if (Math.abs(rankDiff) > 0.5) return rankDiff;
     const impDiff = scorePulseImportance(b) - scorePulseImportance(a);
@@ -4945,8 +4976,11 @@ function renderPulseDashboardLoading() {
 function renderPulseDashboard() {
     if (!S.pulseLoaded) return renderPulseDashboardLoading();
     const byDay = getPulseFeedByDay(20);
-    const lead = byDay.today[0] || getPulseFeed(1)[0];
+    const leadIsYesterday = !byDay.today.length && byDay.yesterday.length;
+    const lead = byDay.today[0] || byDay.yesterday[0] || getPulseFeed(1)[0];
     if (!lead) return pulseEmptyStateH();
+
+    const leadBadge = leadIsYesterday ? 'Top story · yesterday' : 'Top story · tap for full breakdown';
 
     const linked = getLinkedPulseForecast(lead);
     const insight = getPulseInsight(lead);
@@ -4956,7 +4990,7 @@ function renderPulseDashboard() {
         || getFollowedForecastsOrdered()[0]
         || null;
     const moreToday = byDay.today.slice(1);
-    const yesterdayStories = byDay.yesterday;
+    const yesterdayStories = leadIsYesterday ? byDay.yesterday.slice(1) : byDay.yesterday;
     const earlierStories = byDay.older.slice(0, 8);
 
     return `<div class="pulse-dashboard">
@@ -4970,7 +5004,7 @@ function renderPulseDashboard() {
                 <article class="pulse-story-card open-pulse-story" data-pulse-id="${lead.id}">
                     <div class="pulse-story-visual">${renderPulsePredictionGraph(lead, linked)}</div>
                     <div class="pulse-story-body">
-                        <span class="pulse-story-badge">Top story · tap for full breakdown</span>
+                        <span class="pulse-story-badge">${leadBadge}</span>
                         <h2 class="pulse-story-title">${escHtml(lead.headline)}</h2>
                         <p class="pulse-story-desc">${escHtml(desc)}</p>
                         ${linked ? `<button type="button" class="pulse-story-forecast-inset view-forecast-detail" data-id="${linked.id}">
