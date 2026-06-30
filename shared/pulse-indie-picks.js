@@ -22,6 +22,10 @@ const TOOL_URLS = {
   memelord: 'https://www.memelord.com',
   cursor: 'https://cursor.com',
   'howie ai': 'https://howie.com',
+  'wispr flow': 'https://wisprflow.ai',
+  limitless: 'https://www.limitless.ai',
+  'screen studio': 'https://screen.studio',
+  raycast: 'https://raycast.com',
   granola: 'https://granola.ai',
   notebooklm: 'https://notebooklm.google.com',
   gamma: 'https://gamma.app',
@@ -43,7 +47,6 @@ const TOOL_URLS = {
   captions: 'https://www.captions.ai',
   krea: 'https://www.krea.ai',
   dust: 'https://dust.tt',
-  lindy: 'https://www.lindy.ai',
   'relevance ai': 'https://relevanceai.com',
   bardeen: 'https://www.bardeen.ai',
   wordware: 'https://wordware.ai',
@@ -65,24 +68,29 @@ const TOOL_URLS = {
 };
 
 function resolveToolUrl(name, explicitUrl) {
-  if (explicitUrl) return explicitUrl;
+  if (explicitUrl && !/producthunt\.com/i.test(explicitUrl)) return explicitUrl;
   const n = (name || '').trim().toLowerCase();
   return TOOL_URLS[n] || '';
 }
 
 const INDIE_STARTUP_PICKS = [
-  // AI Proof Club favorites
+  // AI Proof Club favorites — quirky indie tools, not the usual stack
+  { name: 'Howie AI', hook: 'texting executive assistant — scheduling + errands', why: 'If your calendar owns you — text-native EA beats another dashboard.', tags: ['work', 'ai', 'tech'], keywords: ['schedule', 'assistant', 'executive', 'calendar', 'texting', 'errand', 'delegate'], curated: true },
   { name: 'Pops', hook: 'game app — playful formats that drive engagement', why: 'If you care about engagement beyond the feed — playful formats are compounding.', tags: ['creator', 'media', 'ai', 'tech'], curated: true },
-  { name: 'FSHN AI', hook: 'virtual try-on app for fashion brands', why: 'If you sell fashion — try-on is table stakes, not a future bet.', tags: ['fashion', 'retail', 'ai', 'beauty'], curated: true },
+  { name: 'Cursor', hook: 'vibe-code apps and prototypes in your IDE', why: 'If you ship product — idea-to-demo time is the edge.', tags: ['tech', 'ai'], keywords: ['code', 'build', 'prototype', 'developer', 'software'], curated: true },
   { name: 'Reelful', hook: 'video snipping — long clips → short hooks fast', why: 'If you publish video — clipping speed is distribution now.', tags: ['media', 'creator', 'movies', 'ai'], keywords: ['video', 'clip', 'snip', 'reels', 'tiktok', 'youtube'], curated: true },
   { name: 'Memelord', hook: 'meme-native AI for humor-led social marketing', why: 'If you grow via social — humor-native beats polished corporate posts.', tags: ['creator', 'media', 'retail', 'ai'], keywords: ['meme', 'viral', 'social', 'humor', 'marketing'], curated: true },
-  { name: 'Cursor', hook: 'vibe-code apps and prototypes in your IDE', why: 'If you ship product — idea-to-demo time is the edge.', tags: ['tech', 'ai'], keywords: ['code', 'build', 'prototype', 'developer', 'software'], curated: true },
-  { name: 'Howie AI', hook: 'texting executive assistant — scheduling + errands', why: 'If your calendar owns you — text-native EA beats another dashboard.', tags: ['work', 'ai', 'tech'], keywords: ['schedule', 'assistant', 'executive', 'calendar', 'texting'], curated: true },
-  { name: 'Granola', hook: 'AI note-taking that captures meetings without losing context', why: 'If you\'re coordinating care — structured notes beat scattered search results.', tags: ['work', 'ai', 'tech', 'health'], curated: true },
-  { name: 'NotebookLM', hook: 'aggregate sources → podcasts and structured learnings', why: 'If you need to synthesize medical research fast — source → brief beats tab overload.', tags: ['media', 'ai', 'work', 'tech', 'health'], keywords: ['podcast', 'audio', 'sources', 'research', 'learn', 'cancer', 'medical', 'patient'], curated: true },
+  { name: 'Wispr Flow', hook: 'voice dictation that works everywhere you type', why: 'If you think faster than you type — voice-native beats another chat UI.', tags: ['work', 'ai', 'tech', 'creator'], keywords: ['voice', 'dictation', 'speech', 'writing', 'speed'], curated: true },
+  { name: 'Exa', hook: 'neural search for primary sources, not SEO slop', why: 'If you need primary sources on a fast-moving story — not blog recap chains.', tags: ['tech', 'ai', 'finance', 'health'], keywords: ['research', 'medical', 'patient', 'cancer', 'clinical'], curated: true },
+  { name: 'Granola', hook: 'AI note-taking that captures meetings without losing context', why: 'If you live in calls — structured notes beat scattered search results.', tags: ['work', 'ai', 'tech', 'health'], curated: true },
+  { name: 'NotebookLM', hook: 'aggregate sources → podcasts and structured learnings', why: 'If you need to synthesize research fast — source → brief beats tab overload.', tags: ['media', 'ai', 'work', 'tech', 'health'], keywords: ['podcast', 'audio', 'sources', 'research', 'learn', 'cancer', 'medical', 'patient'], curated: true },
   { name: 'Gamma', hook: 'AI decks — slides from a prompt, not a blank deck', why: 'If you pitch often — decks from prompts beat rebuilding slides.', tags: ['work', 'creator', 'ai', 'tech'], keywords: ['deck', 'slides', 'presentation', 'pitch'], curated: true },
-  { name: 'Abridge', hook: 'ambient AI for patient–clinician conversations', why: 'If you\'re building in health — see how visit capture is being productized.', tags: ['health', 'ai', 'work'], keywords: ['patient', 'clinical', 'doctor', 'hospital', 'medical', 'cancer', 'diagnosis'], curated: true },
-  { name: 'OpenEvidence', hook: 'medical-grade answers for clinicians and researchers', why: 'If health is your lane — see how evidence-backed AI differs from generic chat.', tags: ['health', 'ai', 'tech'], keywords: ['medical', 'clinical', 'doctor', 'diagnosis', 'cancer', 'patient', 'research'], curated: true },
+  { name: 'Screen Studio', hook: 'beautiful screen recordings in one take', why: 'If you ship demos — polished screen capture is distribution.', tags: ['creator', 'media', 'tech', 'ai'], keywords: ['demo', 'record', 'video', 'screen', 'launch'], curated: true },
+  { name: 'Limitless', hook: 'personal AI pendant — capture & recall what matters', why: 'If ambient AI is your bet — wearable memory is a weird wedge worth watching.', tags: ['tech', 'ai', 'work'], keywords: ['wearable', 'memory', 'recall', 'meeting', 'capture'] },
+  { name: 'Raycast', hook: 'launcher + AI commands for power users', why: 'If you live in shortcuts — AI at the command bar beats another tab.', tags: ['tech', 'ai', 'work'], keywords: ['productivity', 'launcher', 'shortcut', 'command'] },
+  { name: 'Abridge', hook: 'ambient AI for patient–clinician conversations', why: 'If you\'re building in health — see how visit capture is being productized.', tags: ['health', 'ai', 'work'], keywords: ['patient', 'clinical', 'doctor', 'hospital', 'medical', 'cancer', 'diagnosis'] },
+  { name: 'OpenEvidence', hook: 'medical-grade answers for clinicians and researchers', why: 'If health is your lane — see how evidence-backed AI differs from generic chat.', tags: ['health', 'ai', 'tech'], keywords: ['medical', 'clinical', 'doctor', 'diagnosis', 'cancer', 'patient', 'research'] },
+  { name: 'FSHN AI', hook: 'virtual try-on app for fashion brands', why: 'If you sell fashion — try-on is table stakes, not a future bet.', tags: ['fashion', 'retail', 'ai', 'beauty'] },
   { name: 'Brilliant Labs', hook: 'Frame — open AI glasses for builders', tags: ['spatial', 'wearables', 'ai', 'creator', 'tech'], action: 'Watch a Frame demo and sketch one AR workflow for your audience' },
   { name: 'Even Realities', hook: 'G1 — lightweight AI glasses with a real display', tags: ['spatial', 'wearables', 'ai', 'tech'], action: 'Compare their UX to phone-first AI — note one gap you could fill' },
   { name: 'Xreal', hook: 'consumer AR glasses + spatial apps', tags: ['spatial', 'wearables', 'media', 'tech'], action: 'Find one spatial app on Xreal and rewrite the pitch for your niche' },
@@ -99,7 +107,6 @@ const INDIE_STARTUP_PICKS = [
   { name: 'Captions', hook: 'AI editing + eye contact for talking-head video', tags: ['media', 'creator', 'ai'], action: 'Record a 45-sec take on the news and auto-cut the best version' },
   { name: 'Krea', hook: 'real-time generative visuals for designers', tags: ['art', 'media', 'ai', 'fashion'], action: 'Live-prompt 6 frames that visualize the second-order effect' },
   { name: 'Dust', hook: 'custom AI assistants wired to team data', tags: ['ai', 'tech', 'work'], action: 'Build one assistant that only answers questions about your niche stack' },
-  { name: 'Lindy', hook: 'no-code AI agents for repetitive ops', tags: ['ai', 'tech', 'work'], action: 'Automate one "brief → wait → review" loop from your actual week' },
   { name: 'Relevance AI', hook: 'agent workforce templates for GTM teams', tags: ['ai', 'tech', 'work'], action: 'Clone one sales/research agent and run it on a real lead list' },
   { name: 'Bardeen', hook: 'browser automations that glue SaaS tools', tags: ['ai', 'tech', 'work'], action: 'Wire a 3-step workflow the headline makes urgent — run once' },
   { name: 'Wordware', hook: 'English-as-code for production AI flows', tags: ['ai', 'tech'], action: 'Write a one-page "program" that turns headlines into briefs for your team' },
@@ -132,7 +139,7 @@ const STORY_ARCHETYPES = [
 const INDIE_PREP_PLAYS = [
   { name: 'Reelful Snip', tool: 'Reelful or Opus Clip', emoji: '🎬', play: 'Import or record a 60-sec take on [topic]. Snip the best 20-sec hook — export even if rough.', minutes: 12, xp: 45, tags: ['media', 'creator', 'movies'], keywords: ['video', 'clip', 'snip', 'reels', 'tiktok', 'youtube'], curated: true },
   { name: 'Meme Take', tool: 'Memelord', emoji: '😂', play: 'Turn [topic] into 3 meme-native post ideas. Pick one and draft copy you\'d actually publish.', minutes: 10, xp: 40, tags: ['creator', 'media', 'retail'], keywords: ['meme', 'viral', 'social', 'humor', 'marketing'], curated: true },
-  { name: 'Try-On Sprint', tool: 'FSHN AI or Fashn.ai', emoji: '👗', play: 'Run one look through virtual try-on reacting to [topic]. One caption — what would you refuse to automate?', minutes: 12, xp: 45, tags: ['fashion', 'retail', 'beauty'], keywords: ['fashion', 'try-on', 'lookbook', 'retail', 'apparel'], curated: true },
+  { name: 'Try-On Sprint', tool: 'FSHN AI or Fashn.ai', emoji: '👗', play: 'Run one look through virtual try-on reacting to [topic]. One caption — what would you refuse to automate?', minutes: 12, xp: 45, tags: ['fashion', 'retail', 'beauty'], keywords: ['fashion', 'try-on', 'lookbook', 'retail', 'apparel'] },
   { name: 'Audio Brief', tool: 'NotebookLM', emoji: '🎙️', play: 'Upload 3 sources on [topic]. Generate a 5-min audio brief — note one insight you\'d share with your team.', minutes: 15, xp: 50, tags: ['media', 'ai', 'work', 'tech'], keywords: ['podcast', 'audio', 'sources', 'research', 'learn'], curated: true },
   { name: 'Deck in 12', tool: 'Gamma', emoji: '📊', play: 'Build a 6-slide deck: headline, second-order effect, who wins, one bet. Real copy, not bullet spam.', minutes: 12, xp: 45, tags: ['work', 'creator', 'ai', 'tech'], keywords: ['deck', 'slides', 'presentation', 'pitch'], curated: true },
   { name: 'Vibe Ship', tool: 'Cursor', emoji: '⚡', play: 'Vibe-code one tiny feature or landing section inspired by [topic]. Prompt → diff → 30-sec demo.', minutes: 15, xp: 50, tags: ['tech', 'ai'], keywords: ['code', 'build', 'prototype', 'developer', 'software'], curated: true },
@@ -142,14 +149,14 @@ const INDIE_PREP_PLAYS = [
   { name: 'Indie Demo GIF', tool: 'Screen Studio + one indie tool from Pulse pick', emoji: '⚡', play: 'Sign up for a startup mentioned in your Pulse card. Record a 30-sec demo reacting to [topic] — narrate the wedge.', minutes: 12, xp: 45, tags: ['tech', 'ai'] },
   { name: 'Lookbook Sprint', tool: 'Fashn.ai or Botika', emoji: '👗', play: 'Generate a 4-image mini lookbook reacting to [topic]. One caption per look — what would you refuse to automate?', minutes: 12, xp: 45, tags: ['fashion', 'retail', 'beauty'] },
   { name: 'Clip Lab', tool: 'Opus Clip or Captions', emoji: '🎬', play: 'Record or import a 60-sec take on [topic]. Auto-cut the best 20-sec hook. Export even if rough.', minutes: 15, xp: 50, tags: ['media', 'creator', 'movies'] },
-  { name: 'Agent Loop', tool: 'Lindy or Bardeen', emoji: '🤖', play: 'Automate one real "brief → wait → review" task [topic] makes urgent. Run it once and screenshot output.', minutes: 15, xp: 50, tags: ['ai', 'tech', 'work'] },
+  { name: 'Agent Loop', tool: 'Howie AI or Bardeen', emoji: '🤖', play: 'Text-delegate or automate one real "brief → wait → review" task [topic] makes urgent. Run it once and screenshot output.', minutes: 15, xp: 50, tags: ['ai', 'tech', 'work'] },
   { name: 'Research Sprint', tool: 'Exa or Parallel', emoji: '🔬', play: 'Find 3 primary sources on [topic] (not blog spam). One paragraph: second-order effect + who wins.', minutes: 12, xp: 40, tags: ['tech', 'ai', 'finance'] },
   { name: 'Ship a Landing', tool: 'Lovable or Marblism', emoji: '🚀', play: 'Ship a one-screen landing for a wedge idea inspired by [topic]. Real copy, one CTA.', minutes: 15, xp: 50, tags: ['tech', 'ai'] },
   { name: 'UGC Ad Take', tool: 'Argil or Creatify', emoji: '📱', play: 'Write a 15-sec UGC script about [topic]. Generate or film one take — authentic, not corporate.', minutes: 12, xp: 45, tags: ['creator', 'retail', 'media'] },
   { name: 'Odds + Thesis', tool: 'Polymarket or Kalshi', emoji: '📈', play: 'Find a market tied to [topic]. Paper bet: size, thesis, invalidation — one paragraph.', minutes: 10, xp: 35, tags: ['finance', 'ai', 'tech'] },
   { name: 'Sonic Mood', tool: 'Suno or Udio', emoji: '🎵', play: 'Generate a 30-sec track that sounds like [topic] arriving. Title it — would you release this?', minutes: 10, xp: 40, tags: ['music', 'creator', 'media'] },
   { name: 'Visual Series', tool: 'Krea or Haiper', emoji: '🎨', play: 'Create 3 visuals in a consistent style reacting to [topic]. Name the series.', minutes: 15, xp: 50, tags: ['art', 'media', 'ai', 'fashion'] },
-  { name: 'Competitive Map', tool: 'FigJam + Product Hunt indie feed', emoji: '🗺️', play: 'Sketch a 2×2 of indie players in [topic]. Drop 6 real companies under ~50 people. Circle white space.', minutes: 12, xp: 40, tags: ['tech', 'ai'] },
+  { name: 'Competitive Map', tool: 'FigJam + Exa search', emoji: '🗺️', play: 'Sketch a 2×2 of indie players in [topic]. Drop 6 real companies under ~50 people. Circle white space.', minutes: 12, xp: 40, tags: ['tech', 'ai'] },
 ];
 
 const GENERIC_STARTUP_PATTERNS = [
@@ -230,7 +237,7 @@ function scoreByTags(item, topicList, headline, archetype) {
     else score += overlap * 8;
     if (item.curated && overlap === 0) score -= 10;
   } else if (item.curated) {
-    score += 4;
+    score += overlap > 0 ? 6 : 1;
   }
   return score;
 }

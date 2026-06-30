@@ -185,14 +185,34 @@ function matchLaunchesToStory(headline, archetype, launches, limit = 2) {
     .map((x) => x.l);
 }
 
+function isProductHuntUrl(url) {
+  return /producthunt\.com/i.test(url || '');
+}
+
+function resolveLaunchToolUrl(name, fallbackUrl) {
+  try {
+    const { resolveToolUrl } = require('./pulse-indie-picks.js');
+    const own = resolveToolUrl(name);
+    if (own) return own;
+  } catch (e) { /* browser bundle */ }
+  if (typeof window !== 'undefined' && typeof window.resolveToolUrl === 'function') {
+    const own = window.resolveToolUrl(name);
+    if (own) return own;
+  }
+  if (fallbackUrl && !isProductHuntUrl(fallbackUrl)) return fallbackUrl;
+  return '';
+}
+
 function launchToTool(launch, headline) {
+  const url = resolveLaunchToolUrl(launch.name, launch.url);
+  if (!url) return null;
   const days = Math.max(0, Math.floor((Date.now() - new Date(launch.publishedAt).getTime()) / 86400000));
   const fresh = days === 0 ? 'launched today' : days === 1 ? 'launched yesterday' : `launched ${days}d ago`;
   return {
     name: launch.name,
     hook: launch.tagline,
-    why: `New on ${launch.source} (${fresh}) — relevant to this signal.`,
-    url: launch.url,
+    why: `Fresh indie pick (${fresh}) — relevant to this signal.`,
+    url,
     badge: launch.source,
     sourceType: launch.sourceType || 'launch',
   };
@@ -201,7 +221,8 @@ function launchToTool(launch, headline) {
 function mergeLaunchesIntoTools(tools, launches, headline, archetype, maxLaunches = 1) {
   const matched = matchLaunchesToStory(headline, archetype, launches, maxLaunches);
   if (!matched.length) return tools || [];
-  const launchTools = matched.map((l) => launchToTool(l, headline));
+  const launchTools = matched.map((l) => launchToTool(l, headline)).filter(Boolean);
+  if (!launchTools.length) return tools || [];
   const names = new Set(launchTools.map((t) => t.name.toLowerCase()));
   const curated = (tools || []).filter((t) => !names.has(t.name.toLowerCase()));
   return [...launchTools, ...curated].slice(0, 3);
