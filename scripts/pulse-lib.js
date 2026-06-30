@@ -624,7 +624,7 @@ RULES:
 6. "fashion_impact" = same as profile_lenses.fashion (legacy field).
 7. "why_you" = {role} + {topics} with explicit chain (1 sentence).
 8. "topics" = 2-4 tags from: ai, tech, media, fashion, finance, work, health, crypto.
-9. "tools_to_try" = array of 2 indie tools from INDIE PICKS — each { "name", "hook", "why" }. "why" = one sentence on staying ahead in this lane.
+9. "tools_to_try" = array of 3 indie tools from INDIE PICKS — each { "name", "hook", "why" }. "why" = one sentence on staying ahead in this lane.
 10. "condensed" = one scannable sentence: second-order → tool(s) to try → what to ignore.
 11. Do NOT output generic ChatGPT/Figma exercises. No "prep" field.
 12. "importance_score" = 0-100 for founders/operators at AI Proof Club. HIGH: product ships, platform shifts, tools people can use today, model/API releases, policy. LOW: VC rounds, CEO moves, personality drama, hiring gossip, "raises $X" headlines.
@@ -826,7 +826,7 @@ function buildPulseRow(article, matchResult, enriched, extraTopics = [], hypeSco
     forecast_id: forecast?.id || null,
     meaning: insight.second_order,
     meaning_personal: insight.why_you,
-    startup_hint: startup_hint || formatToolsSummary(pickIndieTools(topics, article.title, seed, 2)),
+    startup_hint: startup_hint || formatToolsSummary(pickIndieTools(topics, article.title, seed, 3)),
     insight,
     prep: toolsBlock,
     active: true,
