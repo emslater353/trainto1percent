@@ -2513,6 +2513,7 @@ const S = {
     pulseItems: null,
     pulseLoaded: false,
     pulseLoading: false,
+    pulseRefreshError: null,
     pulseTab: 'today', // today | forecast | trackers | tools | future
     pulseToolsFilter: 'all', // all | Build | Video | Fashion | Agents | ...
     expandedPulseIds: [],
@@ -4419,14 +4420,20 @@ async function fetchPulseFeed() {
 
 async function refreshPulseFeed() {
     S.pulseLoading = true;
+    S.pulseRefreshError = null;
     S.pulseItems = null;
     render();
     try {
         const r = await fetch(`${PULSE_REFRESH_API}?limit=6&_=${Date.now()}`, { method: 'GET' });
-        const d = await r.json();
-        if (!d.ok) console.warn('Pulse ingest returned:', d);
-        else S.pulseRefreshedAt = new Date();
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok || d.ok === false) {
+            S.pulseRefreshError = d.error || `Refresh failed (${r.status})`;
+            console.warn('Pulse ingest returned:', d);
+        } else {
+            S.pulseRefreshedAt = new Date();
+        }
     } catch (e) {
+        S.pulseRefreshError = 'Could not reach refresh — showing cached feed';
         console.warn('Pulse ingest unavailable — loading cached feed', e);
     }
     await fetchPulseFeed();
@@ -4727,9 +4734,11 @@ function renderPulseTopNav(active) {
 
 function renderPulseSidebar() {
     const name = firstName(S.user?.name) || 'you';
-    const updatedLabel = S.pulseRefreshedAt
-        ? formatPulseUpdated(S.pulseRefreshedAt)
-        : '9:00 AM ET';
+    const updatedLabel = S.pulseRefreshError
+        ? `<span style="color:var(--danger,#e55)">${escHtml(S.pulseRefreshError)}</span>`
+        : S.pulseRefreshedAt
+            ? formatPulseUpdated(S.pulseRefreshedAt)
+            : '9:00 AM ET';
     const watched = getPulseWatchedForecasts();
 
     return `<aside class="pulse-dash-sidebar">
