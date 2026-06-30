@@ -2894,7 +2894,7 @@ function getDiscoveryForStory(item, opts = {}) {
     return matchRipplesToDiscoveryTools(
         { ...item, insight },
         catalog,
-        { linked, insight, profile: getPrimaryPulseProfile(), excludeNames: storyTools, limit: opts.limit ?? 4 },
+        { linked, insight, profile: getPrimaryPulseProfile(), excludeNames: storyTools, limit: opts.limit ?? 6 },
     );
 }
 
@@ -3278,9 +3278,9 @@ function renderPulseToolOne(block) {
 }
 
 function renderStoryStayAheadBlock(item, linked) {
-    const discoverPicks = getDiscoveryForStory(item, { linked, limit: 3 });
+    const discoverPicks = getDiscoveryForStory(item, { linked, limit: 5 });
     const toolsBlock = getPulseToolsBlock(item);
-    const editorTools = (toolsBlock?.tools || []).slice(0, 3);
+    const editorTools = (toolsBlock?.tools || []).slice(0, 4);
     const toolPlay = linked ? getToolPlayForForecast(linked) : null;
     const following = linked && S.followedForecasts.includes(linked.id);
 
@@ -3290,7 +3290,7 @@ function renderStoryStayAheadBlock(item, linked) {
         const key = (m.tool.name || '').toLowerCase();
         if (!toolMap.has(key)) toolMap.set(key, { ...m.tool, hook: m.tool.hook || m.blurb, why: m.why });
     });
-    const tools = [...toolMap.values()].slice(0, 4);
+    const tools = [...toolMap.values()].slice(0, 6);
 
     if (!linked && !tools.length) return '';
 
@@ -3362,7 +3362,7 @@ function renderPulseDetailPanel(item, linked) {
         step += 1;
     }
 
-    const discoverPicks = getDiscoveryForStory(item, { linked });
+    const discoverPicks = getDiscoveryForStory(item, { linked, limit: 6 });
     if (discoverPicks.length) {
         html += `<div class="pulse-detail-block">
             <div class="pulse-detail-kicker">${step} · Tools to try</div>
@@ -4796,8 +4796,8 @@ function renderTrackedForecastWidget(f) {
 
 function renderToolsStayAheadWidget(item) {
     const block = getPulseToolsBlock(item);
-    const tools = (block?.tools || []).slice(0, 6);
-    const icons = ['🎬', '✨', '🔍', '⌨', '🛠', '⚡'];
+    const tools = (block?.tools || []).slice(0, 8);
+    const icons = ['🎬', '✨', '🔍', '⌨', '🛠', '⚡', '🚀', '🎙️'];
     if (!tools.length) {
         return `<div class="pulse-tools-widget"><p class="text-secondary text-small">Tools appear with each story.</p></div>`;
     }
@@ -4864,7 +4864,7 @@ function renderPulseForecastTab() {
 function renderPulseToolsTab() {
     const lead = S.pulseLoaded ? getPulseFeed(1)[0] : null;
     const catalog = getDiscoveryCatalog();
-    const storyPicks = lead ? getDiscoveryForStory(lead, { limit: 6 }) : [];
+    const storyPicks = lead ? getDiscoveryForStory(lead, { limit: 8 }) : [];
     const storyToolNames = new Set(storyPicks.map((m) => (m.tool.name || '').toLowerCase()));
     const groups = typeof groupCatalogByCategory === 'function' ? groupCatalogByCategory(catalog) : {};
     const categories = ['all', ...Object.keys(groups).sort()];
@@ -7313,7 +7313,7 @@ function pulseStoryModalH() {
             })()}
 
             ${(() => {
-                const discoverPicks = getDiscoveryForStory(item, { linked });
+                const discoverPicks = getDiscoveryForStory(item, { linked, limit: 6 });
                 if (!discoverPicks.length) return '';
                 return `<div class="section-label">Tools to try</div>
                 <p class="text-secondary text-small" style="line-height:1.5;margin:-6px 0 12px">Matched to this story's second order impacts — try one today.</p>

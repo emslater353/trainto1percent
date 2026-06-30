@@ -65,6 +65,41 @@ const TOOL_URLS = {
   udio: 'https://www.udio.com',
   polymarket: 'https://polymarket.com',
   kalshi: 'https://kalshi.com',
+  bolt: 'https://bolt.new',
+  windsurf: 'https://codeium.com/windsurf',
+  factory: 'https://factory.ai',
+  greptile: 'https://greptile.com',
+  bloop: 'https://bloop.ai',
+  elevenlabs: 'https://elevenlabs.io',
+  descript: 'https://www.descript.com',
+  heygen: 'https://www.heygen.com',
+  runway: 'https://runwayml.com',
+  luma: 'https://lumalabs.ai',
+  pika: 'https://pika.art',
+  composio: 'https://composio.dev',
+  relay: 'https://www.relay.app',
+  fyxer: 'https://www.fyxer.com',
+  otter: 'https://otter.ai',
+  fathom: 'https://fathom.video',
+  fireflies: 'https://fireflies.ai',
+  arcade: 'https://arcade.software',
+  hebbia: 'https://www.hebbia.ai',
+  consensus: 'https://consensus.app',
+  phind: 'https://phind.com',
+  'same.new': 'https://same.new',
+  rork: 'https://rork.ai',
+  continue: 'https://continue.dev',
+  aider: 'https://aider.chat',
+  mintlify: 'https://mintlify.com',
+  tldraw: 'https://www.tldraw.com',
+  'magic patterns': 'https://www.magicpatterns.com',
+  shortwave: 'https://www.shortwave.com',
+  motion: 'https://www.usemotion.com',
+  reclaim: 'https://reclaim.ai',
+  manus: 'https://manus.im',
+  recraft: 'https://www.recraft.ai',
+  ideogram: 'https://ideogram.ai',
+  perplexity: 'https://www.perplexity.ai',
 };
 
 function resolveToolUrl(name, explicitUrl) {
@@ -125,6 +160,41 @@ const INDIE_STARTUP_PICKS = [
   { name: 'Udio', hook: 'AI music with clearer stems for editors', tags: ['music', 'creator', 'media', 'ai'], action: 'Make a 20-sec track that sounds like the headline\'s vibe' },
   { name: 'Polymarket', hook: 'prediction markets — price the second-order effect', tags: ['finance', 'ai', 'tech'], action: 'Find a market related to the story and write a one-paragraph thesis' },
   { name: 'Kalshi', hook: 'regulated event contracts for macro bets', tags: ['finance', 'tech'], action: 'Paper-trade one contract tied to the headline — note invalidation' },
+  { name: 'Bolt', hook: 'prompt → full-stack app in the browser', why: 'If you vibe-code — ship a working demo before the meeting ends.', tags: ['tech', 'ai'], keywords: ['build', 'prototype', 'ship', 'full-stack', 'demo'], curated: true },
+  { name: 'Windsurf', hook: 'agentic IDE — multi-step coding flows', why: 'If Cursor is your lane — compare agent flows side by side.', tags: ['tech', 'ai'], keywords: ['code', 'agent', 'ide', 'developer', 'build'] },
+  { name: 'Factory', hook: 'AI software agents for engineering teams', why: 'If agents are eating eng — see how teams delegate whole tasks.', tags: ['tech', 'ai', 'work'], keywords: ['agent', 'engineering', 'software', 'automation', 'dev'] },
+  { name: 'Greptile', hook: 'AI code review on every PR', why: 'If you ship fast — automated review catches what tired eyes miss.', tags: ['tech', 'ai'], keywords: ['code', 'review', 'pr', 'developer', 'quality'] },
+  { name: 'Bloop', hook: 'ask your codebase questions in plain English', why: 'If onboarding to a repo — semantic search beats grep rabbit holes.', tags: ['tech', 'ai'], keywords: ['code', 'search', 'codebase', 'developer', 'repo'] },
+  { name: 'Continue', hook: 'open-source AI pair programmer — your models, your rules', why: 'If you want control — bring your own model to the editor.', tags: ['tech', 'ai'], keywords: ['code', 'open source', 'ide', 'developer', 'copilot'] },
+  { name: 'Aider', hook: 'terminal pair programming with git-aware diffs', why: 'If you live in the shell — pair program without leaving it.', tags: ['tech', 'ai'], keywords: ['code', 'terminal', 'git', 'developer', 'diff'] },
+  { name: 'Rork', hook: 'text → mobile app — ship to TestFlight fast', why: 'If mobile is the wedge — prototype native apps from a prompt.', tags: ['tech', 'ai'], keywords: ['mobile', 'app', 'ios', 'prototype', 'ship'] },
+  { name: 'Same.new', hook: 'clone and remix any site in minutes', why: 'If you need a reference UI fast — remix, don\'t wireframe from scratch.', tags: ['tech', 'ai'], keywords: ['clone', 'design', 'prototype', 'landing', 'ui'] },
+  { name: 'Magic Patterns', hook: 'UI components from prompts — export to React', why: 'If design handoff slows you — generate components you can actually ship.', tags: ['tech', 'ai', 'creator'], keywords: ['ui', 'design', 'react', 'component', 'prototype'] },
+  { name: 'Composio', hook: 'wire agents to 100+ tools — Slack, GitHub, CRM', why: 'If your agent needs hands — pre-built integrations beat custom glue.', tags: ['tech', 'ai', 'work'], keywords: ['agent', 'integration', 'workflow', 'automation', 'api'] },
+  { name: 'Manus', hook: 'general AI agent that runs multi-step tasks autonomously', why: 'If you want a doer not a chatbot — delegate a full brief and review output.', tags: ['tech', 'ai', 'work'], keywords: ['agent', 'autonomous', 'task', 'workflow', 'delegate'], curated: true },
+  { name: 'Descript', hook: 'edit video and audio like a doc — overdub included', why: 'If you publish audio/video — text-based editing is a unfair speed edge.', tags: ['media', 'creator', 'ai'], keywords: ['podcast', 'video', 'audio', 'edit', 'voice'] },
+  { name: 'ElevenLabs', hook: 'voice cloning + TTS that sounds human', why: 'If voice is your format — prototype narration without a studio.', tags: ['media', 'creator', 'ai'], keywords: ['voice', 'audio', 'tts', 'podcast', 'narration'] },
+  { name: 'HeyGen', hook: 'AI avatars for explainer and sales video', why: 'If you need a presenter without booking talent — test hooks fast.', tags: ['media', 'creator', 'ai'], keywords: ['avatar', 'video', 'ugc', 'presenter', 'explainer'] },
+  { name: 'Runway', hook: 'Gen-3 video — near-cinematic short clips from text', why: 'If visual storytelling matters — storyboard ideas before you shoot.', tags: ['media', 'movies', 'ai', 'creator'], keywords: ['video', 'generate', 'film', 'creative', 'storyboard'] },
+  { name: 'Luma', hook: 'Dream Machine — fast 3D-aware video generation', why: 'If you test visual concepts — generate motion before committing budget.', tags: ['media', 'movies', 'ai', 'creator'], keywords: ['video', '3d', 'generate', 'creative', 'clip'] },
+  { name: 'Pika', hook: 'playful AI video — quick motion from a still or prompt', why: 'If short-form is distribution — rough motion beats static posts.', tags: ['media', 'creator', 'ai'], keywords: ['video', 'short', 'reels', 'motion', 'generate'] },
+  { name: 'Recraft', hook: 'vector + raster AI art with brand-consistent styles', why: 'If brand visuals matter — lock a style and iterate fast.', tags: ['art', 'creator', 'ai', 'retail'], keywords: ['design', 'visual', 'brand', 'illustration', 'creative'] },
+  { name: 'Ideogram', hook: 'AI images with readable text in the frame', why: 'If you make thumbnails or ads — legible text in-gen saves hours.', tags: ['creator', 'media', 'ai'], keywords: ['image', 'design', 'thumbnail', 'ad', 'visual'] },
+  { name: 'Relay.app', hook: 'human-in-the-loop automations across your stack', why: 'If agents need guardrails — approve steps before they run wild.', tags: ['work', 'ai', 'tech'], keywords: ['automate', 'workflow', 'integration', 'agent', 'ops'] },
+  { name: 'Fyxer', hook: 'AI email assistant — drafts replies in your voice', why: 'If inbox is the bottleneck — draft-native beats another dashboard.', tags: ['work', 'ai'], keywords: ['email', 'assistant', 'inbox', 'reply', 'productivity'] },
+  { name: 'Shortwave', hook: 'AI-native email client — summarize threads instantly', why: 'If email volume is insane — thread intelligence beats folder archaeology.', tags: ['work', 'ai', 'tech'], keywords: ['email', 'inbox', 'summary', 'productivity', 'thread'] },
+  { name: 'Otter', hook: 'live meeting transcription + searchable notes', why: 'If you miss details in calls — searchable transcripts beat memory.', tags: ['work', 'ai'], keywords: ['meeting', 'transcript', 'notes', 'call', 'capture'] },
+  { name: 'Fathom', hook: 'free AI meeting notes — highlights and action items', why: 'If Granola isn\'t your vibe — zero-cost meeting capture worth a spin.', tags: ['work', 'ai'], keywords: ['meeting', 'notes', 'call', 'summary', 'action items'] },
+  { name: 'Fireflies', hook: 'meeting bot + CRM sync for sales teams', why: 'If sales calls are data — auto-logging beats manual CRM hygiene.', tags: ['work', 'ai', 'tech'], keywords: ['meeting', 'sales', 'crm', 'call', 'transcript'] },
+  { name: 'Motion', hook: 'AI calendar that schedules tasks around your life', why: 'If time-blocking fails you — let AI rearrange when priorities shift.', tags: ['work', 'ai'], keywords: ['calendar', 'schedule', 'task', 'productivity', 'planning'] },
+  { name: 'Reclaim', hook: 'defends focus time + auto-schedules habits', why: 'If meetings eat your week — automated focus blocks are underrated.', tags: ['work', 'ai'], keywords: ['calendar', 'focus', 'schedule', 'habit', 'productivity'] },
+  { name: 'Consensus', hook: 'research paper search with cited answers', why: 'If you need evidence not vibes — scientific consensus beats blog takes.', tags: ['health', 'ai', 'tech'], keywords: ['research', 'paper', 'science', 'evidence', 'clinical'] },
+  { name: 'Hebbia', hook: 'matrix for finance — AI over docs, filings, and decks', why: 'If you diligence deals — structured doc intelligence beats ctrl+F.', tags: ['finance', 'ai', 'work'], keywords: ['research', 'finance', 'due diligence', 'document', 'analysis'] },
+  { name: 'Phind', hook: 'dev-focused search with code-aware answers', why: 'If Stack Overflow is stale — dev-native search for implementation questions.', tags: ['tech', 'ai'], keywords: ['code', 'search', 'developer', 'debug', 'implementation'] },
+  { name: 'Perplexity', hook: 'answer engine with sources — fast research loops', why: 'If you need quick synthesis with citations — one tab beats ten.', tags: ['tech', 'ai', 'work'], keywords: ['research', 'search', 'source', 'answer', 'learn'] },
+  { name: 'Arcade', hook: 'interactive product demos — no code, shareable links', why: 'If you ship product — clickable demos beat static screenshots.', tags: ['tech', 'creator', 'work'], keywords: ['demo', 'product', 'interactive', 'onboarding', 'sales'] },
+  { name: 'Mintlify', hook: 'AI documentation — beautiful docs from your codebase', why: 'If docs lag code — auto-generated reference beats stale wikis.', tags: ['tech', 'ai'], keywords: ['docs', 'documentation', 'developer', 'api', 'reference'] },
+  { name: 'tldraw', hook: 'infinite canvas + Make Real — sketch → working UI', why: 'If you think visually — whiteboard to prototype in one flow.', tags: ['tech', 'creator', 'ai'], keywords: ['design', 'sketch', 'prototype', 'ui', 'whiteboard'] },
 ];
 
 const STORY_ARCHETYPES = [
@@ -157,6 +227,12 @@ const INDIE_PREP_PLAYS = [
   { name: 'Sonic Mood', tool: 'Suno or Udio', emoji: '🎵', play: 'Generate a 30-sec track that sounds like [topic] arriving. Title it — would you release this?', minutes: 10, xp: 40, tags: ['music', 'creator', 'media'] },
   { name: 'Visual Series', tool: 'Krea or Haiper', emoji: '🎨', play: 'Create 3 visuals in a consistent style reacting to [topic]. Name the series.', minutes: 15, xp: 50, tags: ['art', 'media', 'ai', 'fashion'] },
   { name: 'Competitive Map', tool: 'FigJam + Exa search', emoji: '🗺️', play: 'Sketch a 2×2 of indie players in [topic]. Drop 6 real companies under ~50 people. Circle white space.', minutes: 12, xp: 40, tags: ['tech', 'ai'] },
+  { name: 'Bolt Ship', tool: 'Bolt or Rork', emoji: '🚀', play: 'Prompt one tiny app inspired by [topic]. Deploy or screen-record — 60 sec demo max.', minutes: 15, xp: 50, tags: ['tech', 'ai'], keywords: ['build', 'prototype', 'mobile', 'ship'], curated: true },
+  { name: 'Code Review Bot', tool: 'Greptile or Bloop', emoji: '🔍', play: 'Point it at a repo tied to [topic]. Ask one question the headline raises — save the answer.', minutes: 10, xp: 35, tags: ['tech', 'ai'], keywords: ['code', 'review', 'codebase', 'developer'] },
+  { name: 'Voice Take', tool: 'ElevenLabs or Descript', emoji: '🎙️', play: 'Record a 45-sec hot take on [topic]. Overdub or polish — would you publish it?', minutes: 12, xp: 40, tags: ['media', 'creator', 'ai'], keywords: ['voice', 'audio', 'podcast', 'video'] },
+  { name: 'Agent Wire-up', tool: 'Composio or Relay.app', emoji: '🔌', play: 'Connect one agent to a real tool you use (Slack, GitHub, email). Run one task [topic] implies.', minutes: 15, xp: 45, tags: ['tech', 'ai', 'work'], keywords: ['agent', 'integration', 'workflow', 'automate'] },
+  { name: 'Evidence Check', tool: 'Consensus or Hebbia', emoji: '📚', play: 'Find 2 cited sources on [topic]. One sentence: what changes if this is true?', minutes: 12, xp: 40, tags: ['health', 'finance', 'ai'], keywords: ['research', 'evidence', 'paper', 'analysis'] },
+  { name: 'Interactive Demo', tool: 'Arcade or Screen Studio', emoji: '🖱️', play: 'Record a clickable 30-sec demo reacting to [topic]. One CTA — who is it for?', minutes: 12, xp: 45, tags: ['tech', 'creator', 'work'], keywords: ['demo', 'product', 'screen', 'interactive'] },
 ];
 
 const GENERIC_STARTUP_PATTERNS = [
@@ -299,7 +375,7 @@ function pickToTool(pick) {
   };
 }
 
-function pickIndieTools(topics, headline, seed, count = 3, archetype) {
+function pickIndieTools(topics, headline, seed, count = 4, archetype) {
   return pickIndieStartups(topics, headline, seed, count, archetype).map(pickToTool);
 }
 
@@ -325,7 +401,7 @@ function buildCondensedTake(tools, secondOrder, headline, opts = {}) {
 
 function buildPulseToolsBlock(topics, headline, seed, opts = {}) {
   const archetype = opts.archetype || classifyStoryArchetype(headline, topics);
-  let tools = pickIndieTools(topics, headline, seed, opts.count || 3, archetype);
+  let tools = pickIndieTools(topics, headline, seed, opts.count || 4, archetype);
   const mergeLaunchesIntoTools = resolveMergeLaunchesIntoTools();
   if (opts.launches?.length && mergeLaunchesIntoTools) {
     tools = mergeLaunchesIntoTools(tools, opts.launches, headline, archetype, 1);
@@ -360,7 +436,7 @@ function resolvePulseToolsBlock(block, topics, headline, seed, opts = {}) {
     return {
       version: 2,
       archetype: archetype.id,
-      tools: block.tools.slice(0, 3),
+      tools: block.tools.slice(0, 4),
       condensed: block.condensed || buildCondensedTake(block.tools, opts.secondOrder, headline, { ...opts, archetype, topics, profile, profileLabel }),
     };
   }
@@ -373,7 +449,7 @@ function isGenericToolsBlock(block) {
 }
 
 function formatToolsSummary(tools) {
-  return (tools || []).slice(0, 2).map((t) => `${t.name} — ${t.hook}`).join(' · ');
+  return (tools || []).slice(0, 3).map((t) => `${t.name} — ${t.hook}`).join(' · ');
 }
 
 function formatIndieStartupHint(picks) {
