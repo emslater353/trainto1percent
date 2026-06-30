@@ -1040,6 +1040,52 @@ function normalizeSupabaseUrl(url) {
   return `https://${trimmed}.supabase.co`;
 }
 
+async function processPulseArticle(article, ctx) {
+  const { forecasts, openaiKey, skipAi, launches, sourceOverlap } = ctx;
+
+  if (article._seed) {
+    const s = article._seed;
+    return {
+      id: s.id,
+      published_at: new Date().toISOString(),
+      headline: s.headline,
+      source: s.source,
+      url: s.url || null,
+      topics: s.topics,
+      forecast_id: s.forecast_id,
+      meaning: s.meaning,
+      meaning_personal: s.meaning_personal,
+      startup_hint: s.startup_hint,
+      insight: s.insight || {
+        what_happened: s.headline,
+        second_order: s.meaning,
+        prediction_take: s.forecast_id ? `Linked forecast in library.` : '',
+        why_you: s.meaning_personal,
+        hype_score: 40,
+      },
+      prep: defaultPrep(s.topics, s.headline),
+      active: true,
+    };
+  }
+
+  const matchResult = await resolveForecastMatch(article, forecasts, openaiKey, skipAi);
+  let enriched = null;
+  if (!skipAi && openaiKey) {
+    enriched = await enrichWithOpenAI(article, matchResult, openaiKey);
+  }
+  const overlapKey = normalizeHeadlineKey(article.title);
+  const scoreCtx = {
+    sourceOverlap: sourceOverlap[overlapKey] || 1,
+    matchStrength: getMatchStrength(matchResult),
+    hasLaunch: (launches || []).some((l) => {
+      const hay = `${article.title} ${(article.feedTopics || []).join(' ')}`.toLowerCase();
+      return hay.includes((l.name || '').toLowerCase().slice(0, 8));
+    }),
+  };
+  const hypeScore = scoreArticleHype(article, scoreCtx);
+  return buildPulseRow({ ...article, _launches: launches }, matchResult, enriched, article.feedTopics || [], hypeScore, scoreCtx);
+}
+
 async function runPulseRefresh(options = {}) {
   const {
     supabaseUrl: supabaseUrlIn = process.env.SUPABASE_URL,
@@ -1074,56 +1120,13 @@ async function runPulseRefresh(options = {}) {
     }));
   }
 
-  const rows = [];
   const candidates = selectDiverseCandidates(articles, maxItems);
   const sourceOverlap = buildSourceOverlap(articles);
+  const articleCtx = { forecasts, openaiKey, skipAi, launches, sourceOverlap };
 
-  for (const article of candidates) {
-    if (rows.length >= maxItems) break;
-
-    if (article._seed) {
-      const s = article._seed;
-        rows.push({
-        id: s.id,
-        published_at: new Date().toISOString(),
-        headline: s.headline,
-        source: s.source,
-        url: s.url || null,
-        topics: s.topics,
-        forecast_id: s.forecast_id,
-        meaning: s.meaning,
-        meaning_personal: s.meaning_personal,
-        startup_hint: s.startup_hint,
-        insight: s.insight || {
-          what_happened: s.headline,
-          second_order: s.meaning,
-          prediction_take: s.forecast_id ? `Linked forecast in library.` : '',
-          why_you: s.meaning_personal,
-          hype_score: 40,
-        },
-        prep: defaultPrep(s.topics, s.headline),
-        active: true,
-      });
-      continue;
-    }
-
-    const matchResult = await resolveForecastMatch(article, forecasts, openaiKey, skipAi);
-    let enriched = null;
-    if (!skipAi && openaiKey) {
-      enriched = await enrichWithOpenAI(article, matchResult, openaiKey);
-    }
-    const overlapKey = normalizeHeadlineKey(article.title);
-    const scoreCtx = {
-      sourceOverlap: sourceOverlap[overlapKey] || 1,
-      matchStrength: getMatchStrength(matchResult),
-      hasLaunch: (launches || []).some((l) => {
-        const hay = `${article.title} ${(article.feedTopics || []).join(' ')}`.toLowerCase();
-        return hay.includes((l.name || '').toLowerCase().slice(0, 8));
-      }),
-    };
-    const hypeScore = scoreArticleHype(article, scoreCtx);
-    rows.push(buildPulseRow({ ...article, _launches: launches }, matchResult, enriched, article.feedTopics || [], hypeScore, scoreCtx));
-  }
+  const rows = await Promise.all(
+    candidates.slice(0, maxItems).map((article) => processPulseArticle(article, articleCtx))
+  );
 
   rows.sort((a, b) => {
     const imp = (b.insight?.importance_score || 0) - (a.insight?.importance_score || 0);
